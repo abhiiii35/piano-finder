@@ -1,0 +1,63 @@
+Book A Piano Tuner & Business Platform Feature List
+
+Models: 
+ZocDoc (booking & billing)
+Wyzant (job board & billing) 
+Indeed (job board) 
+
+Marketing Partners & Research: 
+North Bennet Street School 
+Piano Technician Academy
+Piano Technician Guild
+Piano Mart
+Piano World Forum 
+1. Customer Marketplace (Customer-Facing Features)
+Search & Discovery: location-based search, filters (rating, price, availability, services, piano type), map view, instant vs request booking
+Technician Profiles: bio, credentials, certifications, experience, services offered, pricing menu, availability calendar, service radius, reviews, photos/videos, FAQ
+Booking System: real-time booking, service type selection, appointment time, address input, notes about piano condition, photo uploads, add-ons (pitch raise, repair, humidity system)
+Pricing Transparency: standard tuning price, travel fee, additional services, estimate calculator
+Payments: pay at booking, pay after service, deposits, Apple Pay, Google Pay, credit card, tips
+Appointment Management: dashboard for bookings, reschedule, cancel, messaging
+Service History: online record for warranty purposes & future resale
+Notifications: confirmations, reminders, technician on-the-way alerts, payment receipts
+Reviews: post-service ratings, written reviews, photo uploads
+Job Board: customers can post what they are willing to pay for their repair/tuning and tuners can apply 
+2. Piano Technician Business Tools (Core SaaS)
+Business Dashboard: upcoming appointments, daily schedule, revenue summary, customer history, open invoices
+Scheduling System: calendar management, availability blocks, travel buffers, recurring client reminders, route optimization, calendar sync
+Payments & Billing: credit card acceptance, mark cash as paid, deposits, refunds, tips
+Invoicing: automatic invoices, custom invoices, email/SMS sending, PDF downloads, payment links
+Bookkeeping Tools: revenue tracking, expense tracking, mileage tracking, profit reports, tax summaries, QuickBooks/other bookkeeping software integration export
+CRM: customer profiles including piano make/model, serial number, service history, tuning notes, pitch history, environment notes
+Automated Reminders: 6‑month and annual tuning reminders via email/SMS with booking links
+Service Reports: pitch level logs, condition notes, repair recommendations sent to customers
+Estimates & Quotes: repair estimates, approval requests, convert estimate to invoice
+Route Planning: map-based scheduling and smart route optimization
+Mobile App: daily schedule, navigation, notes, invoices, payments, photos, voice notes
+3. Marketplace Infrastructure
+Payment Infrastructure: Stripe/merchant processor integration, commissions, technician payouts, instant payouts, escrow system, refund management
+Technician Onboarding: identity verification, certification verification, background checks, service area setup, pricing setup, availability setup
+Dispute Resolution: customer complaints, refund arbitration, support tickets
+Insurance / Guarantees: optional service guarantee or damage coverage
+Trust & Safety: fraud detection, review moderation, customer support
+4. Growth & Retention Features
+SEO Pages: city-based pages like 'Piano tuning in Boston', 'Piano tuner near me', blog content
+Referral System: customer referral rewards, technician referral bonuses
+Membership / Subscription Plans: e.g., annual piano care plan with priority booking and repair discounts
+Technician Marketing Tools: public booking page, shareable booking links, website widgets, Google Business integration
+Loyalty Programs: repeat client discounts, family/school accounts
+5. Advanced Future Features
+Piano Health Records: digital logbook with tuning history, repairs, pitch stability, climate data
+Smart Scheduling AI: route optimization, demand-based scheduling suggestions
+Dynamic Pricing: pricing based on distance, piano type, and demand
+Piano Marketplace Expansion: services like piano moving, piano sales, and repair specialists
+6. Monetization Model
+Marketplace commission percentage share
+SaaS subscription for technicians (e.g., $49-99/month) including CRM, reminders, invoicing, accounting tools, marketing tools
+Add-ons like instant payouts, advanced analytics, route optimization, job requests
+Marketing/Referral Revenue
+7. MVP Feature Set
+Customer Side: search tuners, technician profiles, booking, payments, reviews
+Technician Side: calendar, booking management, payment processing, basic invoicing, customer records
+Core Product Insight
+The platform should function as the operating system for piano technicians, replacing tools like paper logs, Square, QuickBooks, Google Calendar, and text-based scheduling.

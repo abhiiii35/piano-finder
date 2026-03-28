@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Users & Auth ────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  image          String?
+  phone          String?
+  role           String    @default("CUSTOMER") // CUSTOMER | TECHNICIAN | ADMIN
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts  Account[]
+  sessions  Session[]
+  technician TechnicianProfile?
+  bookings   Booking[]          @relation("CustomerBookings")
+  reviews    Review[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Technician ──────────────────────────────────────────────────
+
+model TechnicianProfile {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  bio             String?
+  businessName    String?
+  yearsExperience Int?
+  certifications  String? // JSON array stored as text
+  serviceRadius   Int?    // miles
+  latitude        Float?
+  longitude       Float?
+  addressLine1    String?
+  city            String?
+  state           String?
+  zipCode         String?
+  stripeAccountId String?
+  isVerified      Boolean @default(false)
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services         Service[]
+  availabilitySlots AvailabilitySlot[]
+  bookings         Booking[]         @relation("TechnicianBookings")
+  customerRecords  CustomerRecord[]
+}
+
+model Service {
+  id            String  @id @default(cuid())
+  technicianId  String
+  name          String  // e.g. "Standard Tuning", "Pitch Raise", "Repair"
+  description   String?
+  priceCents    Int     // price in cents
+  durationMin   Int     // estimated duration in minutes
+  isActive      Boolean @default(true)
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  bookingServices BookingService[]
+}
+
+model AvailabilitySlot {
+  id           String @id @default(cuid())
+  technicianId String
+  dayOfWeek    Int    // 0=Sun, 1=Mon, ..., 6=Sat
+  startTime    String // HH:mm format
+  endTime      String // HH:mm format
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+}
+
+// ─── Bookings ────────────────────────────────────────────────────
+
+model Booking {
+  id             String   @id @default(cuid())
+  customerId     String
+  technicianId   String
+  status         String   @default("PENDING") // PENDING | CONFIRMED | IN_PROGRESS | COMPLETED | CANCELLED
+  scheduledAt    DateTime
+  durationMin    Int
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  state          String
+  zipCode        String
+  notes          String?
+  pianoType      String?  // GRAND | UPRIGHT | DIGITAL | OTHER
+  pianoMake      String?
+  pianoModel     String?
+  totalCents     Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  customer   User              @relation("CustomerBookings", fields: [customerId], references: [id])
+  technician TechnicianProfile @relation("TechnicianBookings", fields: [technicianId], references: [id])
+  services   BookingService[]
+  payment    Payment?
+  review     Review?
+}
+
+model BookingService {
+  id        String @id @default(cuid())
+  bookingId String
+  serviceId String
+  priceCents Int
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+}
+
+// ─── Payments ────────────────────────────────────────────────────
+
+model Payment {
+  id                String   @id @default(cuid())
+  bookingId         String   @unique
+  stripePaymentId   String?  @unique
+  amountCents       Int
+  status            String   @default("PENDING") // PENDING | SUCCEEDED | FAILED | REFUNDED
+  method            String?  // CARD | CASH
+  tipCents          Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+// ─── Reviews ─────────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  authorId  String
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  author  User    @relation(fields: [authorId], references: [id])
+}
+
+// ─── CRM / Customer Records ─────────────────────────────────────
+
+model CustomerRecord {
+  id             String  @id @default(cuid())
+  technicianId   String
+  customerName   String
+  customerEmail  String?
+  customerPhone  String?
+  pianoMake      String?
+  pianoModel     String?
+  serialNumber   String?
+  pianoLocation  String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+}

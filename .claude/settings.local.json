@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(textutil:*)",
+      "Bash(unzip -l /Users/abhi/Documents/piano-finder/PRD.pages)",
+      "Read(//private/tmp/**)",
+      "Bash(rm -rf pages_extract)",
+      "Bash(mkdir pages_extract)",
+      "Bash(unzip -o /Users/abhi/Documents/piano-finder/PRD.pages -d pages_extract)",
+      "Bash(npx:*)",
+      "Bash(command -v nvm)",
+      "Read(//Users/abhi/.nvm/versions/**)",
+      "Bash(brew list:*)",
+      "Bash(curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh)",
+      "Bash(bash)"
+    ]
+  }
+}
