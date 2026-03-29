@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Header } from "@/components/layout/header";
-import { SidebarNav } from "@/components/dashboard/sidebar-nav";
+import { Footer } from "@/components/layout/footer";
 
 export default async function DashboardLayout({
   children,
@@ -18,12 +18,10 @@ export default async function DashboardLayout({
   return (
     <>
       <Header />
-      <div className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 py-8 sm:px-6 lg:px-8">
-        <aside className="hidden w-56 shrink-0 lg:block">
-          <SidebarNav role={session.user.role} />
-        </aside>
-        <main className="flex-1 min-w-0">{children}</main>
-      </div>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        {children}
+      </main>
+      <Footer />
     </>
   );
 }

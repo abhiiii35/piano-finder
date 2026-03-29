@@ -22,26 +22,32 @@ export default async function CustomerDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p className="mt-1 text-muted-foreground">
+      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+      <p className="mt-1 text-sm text-slate-500">
         Welcome back, {session.user.name}
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <StatCard
-          label="Upcoming Bookings"
+          label="Upcoming"
           value={upcoming.length}
+          subtitle="bookings"
           icon={CalendarDays}
+          iconClassName="bg-amber-50 text-amber-600"
         />
         <StatCard
-          label="Past Bookings"
+          label="Completed"
           value={completed.length}
+          subtitle="past bookings"
           icon={Clock}
+          iconClassName="bg-emerald-50 text-emerald-600"
         />
         <StatCard
-          label="Total Bookings"
+          label="Total"
           value={bookings.length}
+          subtitle="all bookings"
           icon={CalendarDays}
+          iconClassName="bg-blue-50 text-blue-600"
         />
       </div>
 
