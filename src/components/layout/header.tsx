@@ -63,24 +63,39 @@ export function Header() {
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" sideOffset={8}>
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{session.user.name}</p>
-                  <p className="text-xs text-muted-foreground">
+              <DropdownMenuContent align="end" sideOffset={8} className="w-56">
+                <div className="px-3 py-2.5">
+                  <p className="font-semibold text-slate-900">{session.user.name}</p>
+                  <p className="text-sm text-slate-500">
                     {session.user.email}
                   </p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                  <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
-                  <User className="mr-2 h-4 w-4" />
-                  Settings
+                {session.user.role === "CUSTOMER" && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/dashboard/customer/bookings")}
+                    className="px-3 py-2.5 text-sm"
+                  >
+                    My Bookings
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={() => router.push(
+                    session.user.role === "TECHNICIAN"
+                      ? "/dashboard/technician"
+                      : "/dashboard"
+                  )}
+                  className="px-3 py-2.5 text-sm"
+                >
+                  {session.user.role === "TECHNICIAN"
+                    ? "Technician Dashboard"
+                    : "Dashboard"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="px-3 py-2.5 text-sm"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
