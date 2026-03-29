@@ -28,6 +28,8 @@ export const prismaMock = {
   payment: createMockModel(),
   review: createMockModel(),
   customerRecord: createMockModel(),
+  job: createMockModel(),
+  jobApplication: createMockModel(),
 };
 
 // ─── Session Helpers ─────────────────────────────────────────
@@ -174,6 +176,28 @@ export const fixtures = {
     dayOfWeek: 1, // Monday
     startTime: "09:00",
     endTime: "17:00",
+  },
+
+  job: {
+    id: "job-1",
+    customerId: "customer-1",
+    title: "Annual piano tuning - Steinway Model B",
+    serviceType: "Tuning",
+    description: "Need my Steinway Model B tuned. It was last tuned about 14 months ago.",
+    budgetCents: 20000,
+    city: "Boston",
+    state: "MA",
+    status: "OPEN",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+
+  jobApplication: {
+    id: "app-1",
+    jobId: "job-1",
+    techId: "tech-user-1",
+    message: "I have 15 years of experience with Steinway grands.",
+    createdAt: new Date(),
   },
 };
 
