@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Clock, DollarSign, Star, ChevronDown } from "lucide-react";
+import { CalendarDays, Clock, DollarSign, Star } from "lucide-react";
+import { BookingFilter } from "@/components/dashboard/booking-filter";
 import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import Link from "next/link";
@@ -176,21 +177,7 @@ export default async function TechnicianDashboardPage({
         {activeTab === "bookings" && (
           <>
             {/* Filter dropdown */}
-            <div className="relative mb-6 inline-block">
-              <select
-                defaultValue={filter}
-                onChange={(e) => {
-                  window.location.href = `/dashboard/technician?tab=bookings&filter=${e.target.value}`;
-                }}
-                className="appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 focus:border-slate-300 focus:outline-none"
-              >
-                <option value="upcoming">Upcoming</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="all">All</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            </div>
+            <BookingFilter currentFilter={filter} />
 
             {tabBookings.length === 0 ? (
               <div className="flex flex-col items-center py-16 text-center">
