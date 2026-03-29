@@ -64,6 +64,58 @@ describe("searchTechnicians", () => {
   });
 });
 
+describe("searchTechnicians with location", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("filters by radius and sorts by distance", async () => {
+    prismaMock.technicianProfile.findMany.mockResolvedValue([
+      {
+        ...fixtures.technicianProfile,
+        id: "near",
+        latitude: 42.37,
+        longitude: -71.07,
+        user: { name: "Near Tech", image: null },
+        services: [fixtures.service],
+      },
+      {
+        ...fixtures.technicianProfile,
+        id: "far",
+        latitude: 40.71,
+        longitude: -74.01,
+        user: { name: "Far Tech", image: null },
+        services: [fixtures.service],
+      },
+    ]);
+    prismaMock.review.findMany.mockResolvedValue([]);
+
+    const results = await searchTechnicians({
+      lat: 42.36,
+      lng: -71.06,
+      radiusMiles: 25,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe("near");
+    expect(results[0].distanceMiles).toBeDefined();
+    expect(results[0].distanceMiles).toBeLessThan(5);
+  });
+
+  it("returns all when no location provided", async () => {
+    prismaMock.technicianProfile.findMany.mockResolvedValue([
+      {
+        ...fixtures.technicianProfile,
+        user: { name: "Tech", image: null },
+        services: [fixtures.service],
+      },
+    ]);
+    prismaMock.review.findMany.mockResolvedValue([]);
+
+    const results = await searchTechnicians({});
+    expect(results).toHaveLength(1);
+    expect(results[0].distanceMiles).toBeUndefined();
+  });
+});
+
 describe("getTechnicianById", () => {
   beforeEach(() => vi.clearAllMocks());
 

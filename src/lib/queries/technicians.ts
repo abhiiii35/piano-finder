@@ -1,9 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import { haversineDistance } from "@/lib/geocoding";
 
 export async function searchTechnicians(filters: {
   q?: string;
   city?: string;
   state?: string;
+  lat?: number;
+  lng?: number;
+  radiusMiles?: number;
 }) {
   const where: Record<string, unknown> = {
     isActive: true,
@@ -47,14 +51,37 @@ export async function searchTechnicians(filters: {
         profile.services.length > 0
           ? Math.min(...profile.services.map((s) => s.priceCents))
           : 0;
+      const distanceMiles =
+        filters.lat != null &&
+        filters.lng != null &&
+        profile.latitude != null &&
+        profile.longitude != null
+          ? Math.round(
+              haversineDistance(
+                filters.lat,
+                filters.lng,
+                profile.latitude,
+                profile.longitude
+              )
+            )
+          : undefined;
+
       return {
         ...profile,
         avgRating,
         reviewCount: reviews.length,
         minPrice,
+        ...(distanceMiles !== undefined ? { distanceMiles } : {}),
       };
     })
   );
+
+  if (filters.lat != null && filters.lng != null) {
+    const radius = filters.radiusMiles ?? 25;
+    return profilesWithRatings
+      .filter((p) => (p.distanceMiles ?? Infinity) <= radius)
+      .sort((a, b) => (a.distanceMiles ?? 0) - (b.distanceMiles ?? 0));
+  }
 
   return profilesWithRatings;
 }
