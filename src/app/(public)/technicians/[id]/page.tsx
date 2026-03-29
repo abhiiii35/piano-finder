@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { StarRating } from "@/components/reviews/star-rating";
 import { ReviewCard } from "@/components/reviews/review-card";
+import { ReviewSummary } from "@/components/reviews/review-summary";
 import { formatCents } from "@/lib/utils";
 import { MapPin, Award, Clock, Calendar } from "lucide-react";
 
@@ -109,11 +110,27 @@ export default async function TechnicianProfilePage({
             Reviews ({technician.reviewCount})
           </h2>
           {technician.reviews.length > 0 ? (
-            <div className="divide-y">
-              {technician.reviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
-            </div>
+            <>
+              <div className="mt-4">
+                <ReviewSummary
+                  avgRating={technician.avgRating}
+                  totalCount={technician.reviewCount}
+                  distribution={technician.reviews.reduce(
+                    (acc, r) => {
+                      acc[r.rating] = (acc[r.rating] ?? 0) + 1;
+                      return acc;
+                    },
+                    {} as Record<number, number>
+                  )}
+                />
+              </div>
+              <Separator className="my-6" />
+              <div className="divide-y">
+                {technician.reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            </>
           ) : (
             <p className="mt-4 text-muted-foreground">No reviews yet</p>
           )}
