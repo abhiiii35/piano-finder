@@ -1,129 +1,239 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Search, Calendar, Star, Shield } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  CalendarCheck,
+  ShieldCheck,
+  Star,
+  CheckCircle2,
+  ArrowRight,
+} from "lucide-react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    router.push(`/search?${params.toString()}`);
+  }
+
   return (
     <>
       <Header />
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-gradient-to-b from-muted/50 to-background px-4 py-20 text-center sm:py-32">
-          <div className="mx-auto max-w-3xl">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              Find a Trusted Piano Tuner Near You
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground sm:text-xl">
-              Book expert piano technicians for tuning, repair, and maintenance.
-              Transparent pricing, verified professionals, easy scheduling.
-            </p>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/search">
-                <Button size="lg" className="w-full sm:w-auto">
-                  <Search className="mr-2 h-5 w-5" />
-                  Find a Tuner
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  Join as a Technician
-                </Button>
-              </Link>
+        <section className="bg-gradient-to-b from-amber-50/60 to-white px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-sm font-medium text-amber-700">
+              <span>The #1 Piano Technician Platform</span>
             </div>
+
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+              Your piano deserves{" "}
+              <span className="text-amber-600">expert care</span>
+            </h1>
+
+            <p className="mt-6 text-lg leading-relaxed text-slate-600">
+              Find certified piano tuners and technicians near you. Book online,
+              pay securely, and keep your piano sounding its best.
+            </p>
+
+            {/* Search Bar */}
+            <form
+              onSubmit={handleSearch}
+              className="mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-slate-200 bg-white p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-slate-300"
+            >
+              <div className="flex flex-1 items-center gap-2 pl-3">
+                <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Enter your city or zip code"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+              >
+                <Search className="h-4 w-4" />
+                Find Tuners
+              </button>
+            </form>
+          </div>
+
+          {/* Stats */}
+          <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-8 sm:grid-cols-4">
+            {[
+              { value: "500+", label: "Verified Technicians" },
+              { value: "50K+", label: "Pianos Serviced" },
+              { value: "4.9", label: "Average Rating" },
+              { value: "48hrs", label: "Avg. Booking Time" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-2xl font-bold text-amber-600 sm:text-3xl">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* How It Works */}
         <section className="px-4 py-20">
           <div className="mx-auto max-w-5xl">
-            <h2 className="text-center text-3xl font-bold">How It Works</h2>
-            <div className="mt-12 grid gap-8 sm:grid-cols-3">
+            <h2 className="text-center text-3xl font-bold text-slate-900">
+              How it works
+            </h2>
+            <p className="mt-3 text-center text-slate-500">
+              Book a piano tuner in three simple steps
+            </p>
+
+            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {
                   icon: Search,
-                  title: "Search",
+                  title: "Easy Discovery",
                   description:
-                    "Browse verified piano technicians in your area. Compare ratings, services, and pricing.",
+                    "Search by location, read reviews, compare prices, and find the perfect technician for your piano.",
                 },
                 {
-                  icon: Calendar,
-                  title: "Book",
+                  icon: CalendarCheck,
+                  title: "Instant Booking",
                   description:
-                    "Choose your services, pick a convenient time, and book online in minutes.",
+                    "Book appointments online in seconds. No phone calls, no waiting. Real-time availability.",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Verified Professionals",
+                  description:
+                    "Every technician is verified with credentials, certifications, and background checks.",
                 },
                 {
                   icon: Star,
-                  title: "Enjoy",
+                  title: "Transparent Reviews",
                   description:
-                    "Get professional service at your door. Pay securely and leave a review.",
+                    "Read honest reviews from real customers. See ratings, photos, and detailed service feedback.",
                 },
               ].map((step, i) => (
-                <Card key={i}>
-                  <CardContent className="pt-6 text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                      <step.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {step.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div
+                  key={i}
+                  className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
+                    <step.icon className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <h3 className="mt-4 font-semibold text-slate-900">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                    {step.description}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Value Props for Technicians */}
-        <section className="bg-muted/30 px-4 py-20">
-          <div className="mx-auto max-w-5xl">
-            <h2 className="text-center text-3xl font-bold">
-              For Piano Technicians
-            </h2>
-            <p className="mt-4 text-center text-muted-foreground">
-              The all-in-one platform to run your piano service business
-            </p>
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                {
-                  icon: Calendar,
-                  title: "Easy Scheduling",
-                  description: "Manage your calendar and let clients book online",
-                },
-                {
-                  icon: Shield,
-                  title: "Get Verified",
-                  description: "Build trust with verified credentials and reviews",
-                },
-                {
-                  icon: Star,
-                  title: "Grow Your Business",
-                  description: "Reach new customers searching for tuners nearby",
-                },
-                {
-                  icon: Search,
-                  title: "Manage Clients",
-                  description: "Track customer records, piano details, and history",
-                },
-              ].map((feature, i) => (
-                <div key={i} className="text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <feature.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="mt-3 font-semibold">{feature.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-12 text-center">
-              <Link href="/sign-up">
-                <Button size="lg">Start Free Today</Button>
+        {/* For Technicians — dark section */}
+        <section className="bg-slate-900 px-4 py-20">
+          <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center">
+            {/* Left: copy */}
+            <div>
+              <div className="inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400">
+                For Piano Technicians
+              </div>
+
+              <h2 className="mt-6 text-3xl font-bold text-white sm:text-4xl">
+                Replace your entire tool stack
+              </h2>
+
+              <p className="mt-4 text-slate-400 leading-relaxed">
+                PianoTune replaces Square, QuickBooks, Google Calendar, and paper
+                logs. Everything you need to run your business in one platform.
+              </p>
+
+              <ul className="mt-8 space-y-3">
+                {[
+                  "Manage bookings, invoicing, and payments in one place",
+                  "Automated 6-month and annual tuning reminders",
+                  "Customer CRM with piano details and service history",
+                  "Route optimization for daily scheduling",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                    <span className="text-sm text-slate-300">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/sign-up"
+                className="mt-10 inline-flex items-center gap-2 rounded-full bg-amber-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+              >
+                Join as a Technician
+                <ArrowRight className="h-4 w-4" />
               </Link>
+            </div>
+
+            {/* Right: schedule mockup */}
+            <div className="rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-white">
+                  Today&apos;s Schedule
+                </h3>
+                <span className="text-sm text-slate-400">March 29</span>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                {[
+                  {
+                    time: "9:00 AM",
+                    name: "Sarah M.",
+                    service: "Tuning - Steinway Grand",
+                  },
+                  {
+                    time: "11:30 AM",
+                    name: "Tom W.",
+                    service: "Repair - Yamaha Upright",
+                  },
+                  {
+                    time: "2:00 PM",
+                    name: "Maria L.",
+                    service: "Regulation - Bosendorfer",
+                  },
+                ].map((appointment) => (
+                  <div
+                    key={appointment.time}
+                    className="flex items-center gap-4 rounded-lg border border-slate-700 bg-slate-800/50 p-4"
+                  >
+                    <span className="text-sm font-semibold text-amber-400 w-20 shrink-0">
+                      {appointment.time}
+                    </span>
+                    <div>
+                      <p className="font-medium text-white text-sm">
+                        {appointment.name}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {appointment.service}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
