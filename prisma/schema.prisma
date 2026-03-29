@@ -82,6 +82,9 @@ model TechnicianProfile {
   city            String?
   state           String?
   zipCode         String?
+  pianoTypes      String? // JSON array: ["Grand", "Upright", etc.]
+  travelFeeCents  Int?
+  ptgMember       Boolean @default(false)
   stripeAccountId String?
   isVerified      Boolean @default(false)
   isActive        Boolean @default(true)
