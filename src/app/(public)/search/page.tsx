@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { searchTechnicians } from "@/lib/queries/technicians";
+import { geocode } from "@/lib/geocoding";
 import { SearchFilters } from "@/components/search/search-filters";
 import { TechnicianCard } from "@/components/search/technician-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string; state?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; radius?: string; sort?: string }>;
 }) {
   const params = await searchParams;
 
@@ -31,9 +32,26 @@ export default async function SearchPage({
 async function SearchResults({
   filters,
 }: {
-  filters: { q?: string; city?: string; state?: string; sort?: string };
+  filters: { q?: string; radius?: string; sort?: string };
 }) {
-  const technicians = await searchTechnicians(filters);
+  let lat: number | undefined;
+  let lng: number | undefined;
+  if (filters.q) {
+    const geo = await geocode(filters.q);
+    if (geo) {
+      lat = geo.lat;
+      lng = geo.lng;
+    }
+  }
+
+  const radiusMiles = filters.radius ? parseInt(filters.radius) : undefined;
+
+  const technicians = await searchTechnicians({
+    q: filters.q,
+    lat,
+    lng,
+    radiusMiles,
+  });
 
   if (technicians.length === 0) {
     return (
@@ -70,6 +88,8 @@ async function SearchResults({
             minPrice={tech.minPrice}
             services={tech.services.map((s) => ({ name: s.name }))}
             isVerified={tech.isVerified}
+            // @ts-expect-error distanceMiles will be added to TechnicianCard in Task 5
+            distanceMiles={tech.distanceMiles}
           />
         ))}
       </div>
