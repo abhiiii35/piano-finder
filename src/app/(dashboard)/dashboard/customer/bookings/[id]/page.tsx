@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
+import { PayButton } from "@/components/booking/payment-actions";
 import Link from "next/link";
 
 export default async function CustomerBookingDetailPage({
@@ -96,12 +97,15 @@ export default async function CustomerBookingDetailPage({
         </Card>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         <BookingStatusButtons
           bookingId={booking.id}
           currentStatus={booking.status}
           role="CUSTOMER"
         />
+        {booking.payment?.status !== "SUCCEEDED" && booking.status !== "CANCELLED" && (
+          <PayButton bookingId={booking.id} />
+        )}
         {booking.status === "COMPLETED" && !booking.review && (
           <Link href={`/dashboard/customer/bookings/${booking.id}/review`}>
             <Button>Leave a Review</Button>

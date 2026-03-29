@@ -4,9 +4,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
+import { MarkCashButton } from "@/components/booking/payment-actions";
+import Link from "next/link";
 
 export default async function TechnicianBookingDetailPage({
   params,
@@ -105,11 +108,24 @@ export default async function TechnicianBookingDetailPage({
         </Card>
       </div>
 
-      <BookingStatusButtons
-        bookingId={booking.id}
-        currentStatus={booking.status}
-        role="TECHNICIAN"
-      />
+      <div className="flex gap-3 flex-wrap">
+        <BookingStatusButtons
+          bookingId={booking.id}
+          currentStatus={booking.status}
+          role="TECHNICIAN"
+        />
+        {booking.payment?.status !== "SUCCEEDED" && (
+          <MarkCashButton bookingId={booking.id} />
+        )}
+        <Link href={`/dashboard/technician/bookings/${booking.id}/invoice`}>
+          <Button variant="outline">View Invoice</Button>
+        </Link>
+      </div>
+      {booking.payment && (
+        <Badge variant={booking.payment.status === "SUCCEEDED" ? "default" : "secondary"}>
+          Payment: {booking.payment.status} ({booking.payment.method ?? "pending"})
+        </Badge>
+      )}
     </div>
   );
 }
