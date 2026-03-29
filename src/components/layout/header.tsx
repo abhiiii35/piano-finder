@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Music, Search, LayoutDashboard, LogOut, User } from "lucide-react";
+import { Music, Search, LayoutDashboard, LogOut, User, Briefcase } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +36,13 @@ export function Header() {
           >
             <Search className="h-4 w-4" />
             Find a Tuner
+          </Link>
+          <Link
+            href="/jobs"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+          >
+            <Briefcase className="h-4 w-4" />
+            Job Board
           </Link>
           <Link
             href="/dashboard"

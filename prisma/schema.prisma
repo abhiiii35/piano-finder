@@ -26,6 +26,8 @@ model User {
   technician TechnicianProfile?
   bookings   Booking[]          @relation("CustomerBookings")
   reviews    Review[]
+  jobs       Job[]
+  jobApplications JobApplication[]
 }
 
 model Account {
@@ -183,6 +185,36 @@ model Review {
 
   booking Booking @relation(fields: [bookingId], references: [id])
   author  User    @relation(fields: [authorId], references: [id])
+}
+
+// ─── Job Board ───────────────────────────────────────────────
+
+model Job {
+  id          String   @id @default(cuid())
+  customerId  String
+  title       String
+  serviceType String   // Tuning | Repair | Regulation | Voicing | Appraisal | Other
+  description String
+  budgetCents Int
+  city        String
+  state       String
+  status      String   @default("OPEN") // OPEN | CLOSED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer     User             @relation(fields: [customerId], references: [id])
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id        String   @id @default(cuid())
+  jobId     String
+  techId    String
+  message   String?
+  createdAt DateTime @default(now())
+
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  technician User @relation(fields: [techId], references: [id])
 }
 
 // ─── CRM / Customer Records ─────────────────────────────────────
