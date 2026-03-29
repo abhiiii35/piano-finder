@@ -27,6 +27,25 @@ export const availabilitySchema = z.object({
   enabled: z.coerce.boolean(),
 });
 
+export const technicianSignupSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().optional(),
+  yearsExperience: z.coerce.number().int().min(0).optional(),
+  bio: z.string().max(1000).optional(),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required").max(2),
+  zipCode: z.string().optional(),
+  serviceRadius: z.coerce.number().int().min(1).max(200).optional(),
+  services: z.string().optional(),
+  pianoTypes: z.string().optional(),
+  baseTuningPrice: z.coerce.number().min(0).optional(),
+  travelFee: z.coerce.number().min(0).optional(),
+  pitchRaiseFee: z.coerce.number().min(0).optional(),
+  ptgMember: z.string().optional(),
+});
+
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type AvailabilityInput = z.infer<typeof availabilitySchema>;
+export type TechnicianSignupInput = z.infer<typeof technicianSignupSchema>;

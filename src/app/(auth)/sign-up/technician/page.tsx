@@ -7,23 +7,7 @@ import Link from "next/link";
 import { createTechnicianProfile } from "@/actions/technician-signup";
 import { Music, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-
-const SERVICE_OPTIONS = [
-  "Tuning",
-  "Repair",
-  "Regulation",
-  "Voicing",
-  "Appraisal",
-  "Humidity System",
-];
-
-const PIANO_TYPE_OPTIONS = [
-  "Grand",
-  "Upright",
-  "Baby Grand",
-  "Digital",
-  "Player",
-];
+import { SERVICE_TYPES, PIANO_TYPES } from "@/lib/constants";
 
 export default function TechnicianSignupPage() {
   const { data: session } = useSession();
@@ -210,7 +194,7 @@ export default function TechnicianSignupPage() {
         <section>
           <h2 className="text-lg font-semibold text-slate-900">Services Offered</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {SERVICE_OPTIONS.map((svc) => (
+            {SERVICE_TYPES.map((svc) => (
               <label
                 key={svc}
                 className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-4 py-3 text-sm transition-colors ${
@@ -235,7 +219,7 @@ export default function TechnicianSignupPage() {
         <section>
           <h2 className="text-lg font-semibold text-slate-900">Piano Types</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {PIANO_TYPE_OPTIONS.map((type) => (
+            {PIANO_TYPES.map((type) => (
               <label
                 key={type}
                 className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-4 py-3 text-sm transition-colors ${

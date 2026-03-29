@@ -30,35 +30,37 @@ export default async function TechnicianDashboardPage({
   const todayEnd = new Date();
   todayEnd.setHours(23, 59, 59, 999);
 
-  const [todayBookings, pendingBookings, completedBookings, reviews] =
+  const [todayCount, pendingCount, revenueAgg, reviewAgg] =
     await Promise.all([
-      prisma.booking.findMany({
+      prisma.booking.count({
         where: {
           technicianId: profile.id,
           scheduledAt: { gte: todayStart, lte: todayEnd },
           status: { in: ["CONFIRMED", "IN_PROGRESS"] },
         },
       }),
-      prisma.booking.findMany({
+      prisma.booking.count({
         where: { technicianId: profile.id, status: "PENDING" },
       }),
-      prisma.booking.findMany({
-        where: { technicianId: profile.id, status: "COMPLETED" },
-        include: { payment: true },
+      prisma.payment.aggregate({
+        _sum: { amountCents: true },
+        where: {
+          status: "SUCCEEDED",
+          booking: { technicianId: profile.id },
+        },
       }),
-      prisma.review.findMany({
+      prisma.review.aggregate({
+        _avg: { rating: true },
+        _count: true,
         where: { booking: { technicianId: profile.id } },
       }),
     ]);
 
-  const totalRevenue = completedBookings.reduce(
-    (sum, b) => sum + (b.payment?.amountCents ?? 0),
-    0
-  );
-  const avgRating =
-    reviews.length > 0
-      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-      : "0.0";
+  const totalRevenue = revenueAgg._sum.amountCents ?? 0;
+  const avgRating = reviewAgg._avg.rating
+    ? reviewAgg._avg.rating.toFixed(1)
+    : "0.0";
+  const reviewCount = reviewAgg._count;
 
   // Tab content
   const activeTab = params.tab ?? "bookings";
@@ -127,21 +129,21 @@ export default async function TechnicianDashboardPage({
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Today"
-          value={todayBookings.length}
+          value={todayCount}
           subtitle="appointments"
           icon={CalendarDays}
           iconClassName="bg-amber-50 text-amber-600"
         />
         <StatCard
           label="Pending"
-          value={pendingBookings.length}
+          value={pendingCount}
           subtitle="to confirm"
           icon={Clock}
           iconClassName="bg-blue-50 text-blue-600"
         />
         <StatCard
           label="Revenue"
-          value={`$${(totalRevenue / 100).toFixed(0)}`}
+          value={formatCents(totalRevenue)}
           subtitle="total earned"
           icon={DollarSign}
           iconClassName="bg-emerald-50 text-emerald-600"
@@ -149,7 +151,7 @@ export default async function TechnicianDashboardPage({
         <StatCard
           label="Rating"
           value={avgRating}
-          subtitle={`${reviews.length} reviews`}
+          subtitle={`${reviewCount} reviews`}
           icon={Star}
           iconClassName="bg-amber-50 text-amber-500"
         />
@@ -287,11 +289,10 @@ export default async function TechnicianDashboardPage({
             <div className="rounded-xl border border-slate-200 bg-white p-6">
               <h3 className="font-semibold text-slate-900">Revenue Summary</h3>
               <p className="mt-4 text-3xl font-bold text-slate-900">
-                ${(totalRevenue / 100).toFixed(2)}
+                {formatCents(totalRevenue)}
               </p>
               <p className="text-sm text-slate-500">
-                from {completedBookings.length} completed booking
-                {completedBookings.length !== 1 ? "s" : ""}
+                total earned
               </p>
             </div>
           </div>

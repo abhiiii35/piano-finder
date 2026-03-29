@@ -11,3 +11,7 @@ export function formatCents(cents: number): string {
     currency: "USD",
   }).format(cents / 100);
 }
+
+export function toCents(dollars: number): number {
+  return Math.round(dollars * 100);
+}

@@ -3,6 +3,7 @@
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
+import { toCents } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { jobSchema } from "@/lib/validations/job";
 
@@ -24,7 +25,7 @@ export async function createJob(formData: FormData) {
       title,
       serviceType,
       description,
-      budgetCents: Math.round(budget * 100),
+      budgetCents: toCents(budget),
       city,
       state,
     },

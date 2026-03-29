@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { toCents } from "@/lib/utils";
 import {
   profileSchema,
   serviceSchema,
@@ -73,7 +74,7 @@ export async function createService(formData: FormData) {
       technicianId: profile.id,
       name: result.data.name,
       description: result.data.description ?? null,
-      priceCents: Math.round(result.data.price * 100),
+      priceCents: toCents(result.data.price),
       durationMin: result.data.durationMin,
     },
   });
@@ -101,7 +102,7 @@ export async function updateService(serviceId: string, formData: FormData) {
     data: {
       name: result.data.name,
       description: result.data.description ?? null,
-      priceCents: Math.round(result.data.price * 100),
+      priceCents: toCents(result.data.price),
       durationMin: result.data.durationMin,
     },
   });

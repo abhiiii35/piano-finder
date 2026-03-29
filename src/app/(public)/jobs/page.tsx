@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { MapPin, DollarSign, Users } from "lucide-react";
+import { formatCents } from "@/lib/utils";
+import { JOB_STATUS } from "@/lib/constants";
 import { ServiceFilter } from "@/components/jobs/service-filter";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -13,16 +15,17 @@ export default async function JobBoardPage({
   const params = await searchParams;
   const session = await getServerSession(authOptions);
 
-  const where: Record<string, unknown> = { status: "OPEN" };
-  if (params.service) where.serviceType = params.service;
-
   const jobs = await prisma.job.findMany({
-    where,
+    where: {
+      status: JOB_STATUS.OPEN,
+      ...(params.service && { serviceType: params.service }),
+    },
     include: {
       customer: { select: { name: true } },
       _count: { select: { applications: true } },
     },
     orderBy: { createdAt: "desc" },
+    take: 50,
   });
 
   return (
@@ -89,7 +92,7 @@ export default async function JobBoardPage({
                   </span>
                   <span className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3" />
-                    Budget: ${(job.budgetCents / 100).toFixed(0)}
+                    Budget: {formatCents(job.budgetCents)}
                   </span>
                   <span className="flex items-center gap-1">
                     <Users className="h-3 w-3" />

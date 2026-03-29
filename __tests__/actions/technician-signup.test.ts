@@ -41,7 +41,7 @@ describe("createTechnicianProfile", () => {
     prismaMock.technicianProfile.findUnique.mockResolvedValue(null);
     prismaMock.user.update.mockResolvedValue({});
     prismaMock.technicianProfile.create.mockResolvedValue({ id: "new-profile" });
-    prismaMock.service.create.mockResolvedValue({});
+    prismaMock.service.createMany.mockResolvedValue({ count: 3 });
 
     const fd = makeFormData(validForm);
     const result = await createTechnicianProfile(fd);
@@ -63,25 +63,23 @@ describe("createTechnicianProfile", () => {
     expect(JSON.parse(profileData.pianoTypes)).toEqual(["Grand", "Upright"]);
   });
 
-  it("creates services from pricing and service selection", async () => {
+  it("creates services from pricing and service selection via createMany", async () => {
     mockGetSession.mockResolvedValue(mockCustomerSession());
     prismaMock.technicianProfile.findUnique.mockResolvedValue(null);
     prismaMock.user.update.mockResolvedValue({});
     prismaMock.technicianProfile.create.mockResolvedValue({ id: "new-profile" });
-    prismaMock.service.create.mockResolvedValue({});
+    prismaMock.service.createMany.mockResolvedValue({ count: 3 });
 
     const fd = makeFormData(validForm);
     await createTechnicianProfile(fd);
 
-    // Should create: Standard Tuning ($175), Pitch Raise ($50), Repair (placeholder)
-    expect(prismaMock.service.create).toHaveBeenCalledTimes(3);
-
-    const serviceNames = prismaMock.service.create.mock.calls.map(
-      (c: Array<{ data: { name: string } }>) => c[0].data.name
-    );
+    expect(prismaMock.service.createMany).toHaveBeenCalledOnce();
+    const serviceData = prismaMock.service.createMany.mock.calls[0][0].data;
+    const serviceNames = serviceData.map((s: { name: string }) => s.name);
     expect(serviceNames).toContain("Standard Tuning");
     expect(serviceNames).toContain("Pitch Raise");
     expect(serviceNames).toContain("Repair");
+    expect(serviceNames).toHaveLength(3);
   });
 
   it("rejects unauthenticated user", async () => {
@@ -127,6 +125,6 @@ describe("createTechnicianProfile", () => {
 
     const result = await createTechnicianProfile(fd);
     expect(result.success).toBe(true);
-    expect(prismaMock.service.create).not.toHaveBeenCalled();
+    expect(prismaMock.service.createMany).not.toHaveBeenCalled();
   });
 });
