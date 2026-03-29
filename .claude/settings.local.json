@@ -12,7 +12,11 @@
       "Read(//Users/abhi/.nvm/versions/**)",
       "Bash(brew list:*)",
       "Bash(curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh)",
-      "Bash(bash)"
+      "Bash(bash)",
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(nvm use:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
