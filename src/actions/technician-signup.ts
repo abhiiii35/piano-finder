@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/utils";
+import { geocode } from "@/lib/geocoding";
 import { ROLES } from "@/lib/constants";
 import { technicianSignupSchema } from "@/lib/validations/technician";
 
@@ -48,6 +49,14 @@ export async function createTechnicianProfile(formData: FormData) {
     },
   });
 
+  let latitude: number | null = null;
+  let longitude: number | null = null;
+  const geo = await geocode(`${data.city}, ${data.state} ${data.zipCode || ""}`);
+  if (geo) {
+    latitude = geo.lat;
+    longitude = geo.lng;
+  }
+
   const profile = await prisma.technicianProfile.create({
     data: {
       userId: session.user.id,
@@ -60,6 +69,8 @@ export async function createTechnicianProfile(formData: FormData) {
       pianoTypes: pianoTypesArray.length > 0 ? JSON.stringify(pianoTypesArray) : null,
       travelFeeCents: data.travelFee ? toCents(data.travelFee) : null,
       ptgMember: data.ptgMember === "true",
+      latitude,
+      longitude,
     },
   });
 

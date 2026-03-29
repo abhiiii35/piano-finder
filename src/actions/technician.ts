@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/utils";
+import { geocode } from "@/lib/geocoding";
 import {
   profileSchema,
   serviceSchema,
@@ -34,6 +35,16 @@ export async function updateProfile(formData: FormData) {
 
   const data = result.data;
 
+  let latitude: number | null = null;
+  let longitude: number | null = null;
+  if (data.city && data.state) {
+    const geo = await geocode(`${data.city}, ${data.state} ${data.zipCode ?? ""}`);
+    if (geo) {
+      latitude = geo.lat;
+      longitude = geo.lng;
+    }
+  }
+
   await prisma.technicianProfile.update({
     where: { id: profile.id },
     data: {
@@ -46,6 +57,8 @@ export async function updateProfile(formData: FormData) {
       city: data.city ?? null,
       state: data.state ?? null,
       zipCode: data.zipCode ?? null,
+      latitude,
+      longitude,
     },
   });
 

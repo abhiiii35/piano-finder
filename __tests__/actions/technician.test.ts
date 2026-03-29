@@ -10,8 +10,10 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("next-auth", () => ({
   getServerSession: vi.fn(),
 }));
+vi.mock("@/lib/geocoding", () => ({ geocode: vi.fn() }));
 
 import { getServerSession } from "next-auth";
+import { geocode } from "@/lib/geocoding";
 import {
   updateProfile,
   createService,
@@ -47,6 +49,25 @@ describe("updateProfile", () => {
     expect(result.success).toBe(true);
     expect(prismaMock.technicianProfile.update).toHaveBeenCalledOnce();
     expect(prismaMock.user.update).toHaveBeenCalledOnce();
+  });
+
+  it("geocodes city/state and stores coordinates", async () => {
+    setupTechSession();
+    prismaMock.technicianProfile.update.mockResolvedValue({});
+    prismaMock.user.update.mockResolvedValue({});
+    vi.mocked(geocode).mockResolvedValue({
+      lat: 42.36,
+      lng: -71.06,
+      displayName: "Boston, MA",
+    });
+
+    const fd = makeFormData({ city: "Boston", state: "MA" });
+    const result = await updateProfile(fd);
+
+    expect(result.success).toBe(true);
+    const updateCall = prismaMock.technicianProfile.update.mock.calls[0][0];
+    expect(updateCall.data.latitude).toBe(42.36);
+    expect(updateCall.data.longitude).toBe(-71.06);
   });
 
   it("rejects non-technician", async () => {
