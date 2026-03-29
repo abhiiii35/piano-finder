@@ -60,6 +60,8 @@ async function main() {
       yearsExperience: 15,
       certifications: JSON.stringify(["RPT", "PTG Member"]),
       serviceRadius: 30,
+      latitude: 42.3601,
+      longitude: -71.0589,
       city: "Boston",
       state: "MA",
       zipCode: "02108",
