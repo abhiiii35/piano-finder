@@ -13,6 +13,7 @@ type Props = {
   minPrice: number;
   services: { name: string }[];
   isVerified: boolean;
+  distanceMiles?: number;
 };
 
 function getInitials(name: string | null, businessName: string | null): string {
@@ -52,6 +53,7 @@ export function TechnicianCard({
   minPrice,
   services,
   isVerified,
+  distanceMiles,
 }: Props) {
   const initials = getInitials(name, businessName);
   const displayName = name || businessName || "Piano Technician";
@@ -87,6 +89,11 @@ export function TechnicianCard({
               )}
               {yearsExperience && (
                 <span>{yearsExperience}yr exp</span>
+              )}
+              {distanceMiles != null && (
+                <span className="text-xs text-amber-600 font-medium">
+                  {distanceMiles} mi away
+                </span>
               )}
             </div>
           </div>

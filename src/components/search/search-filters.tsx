@@ -3,18 +3,21 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { MapPin, ChevronDown } from "lucide-react";
+import { FilterSelect } from "@/components/ui/filter-select";
 
 export function SearchFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [sort, setSort] = useState(searchParams.get("sort") ?? "rating");
+  const [radius, setRadius] = useState(searchParams.get("radius") ?? "25");
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (sort) params.set("sort", sort);
+    if (radius) params.set("radius", radius);
     router.push(`/search?${params.toString()}`);
   }
 
@@ -68,6 +71,25 @@ export function SearchFilters() {
         </select>
         <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
       </div>
+
+      <FilterSelect
+        value={radius}
+        onChange={(v) => {
+          setRadius(v || "25");
+          const params = new URLSearchParams();
+          if (q) params.set("q", q);
+          if (sort) params.set("sort", sort);
+          params.set("radius", v || "25");
+          router.push(`/search?${params.toString()}`);
+        }}
+        options={[
+          { value: "10", label: "Within 10 mi" },
+          { value: "25", label: "Within 25 mi" },
+          { value: "50", label: "Within 50 mi" },
+          { value: "100", label: "Within 100 mi" },
+        ]}
+        placeholder="Within 25 mi"
+      />
     </form>
   );
 }

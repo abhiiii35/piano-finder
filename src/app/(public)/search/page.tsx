@@ -88,7 +88,6 @@ async function SearchResults({
             minPrice={tech.minPrice}
             services={tech.services.map((s) => ({ name: s.name }))}
             isVerified={tech.isVerified}
-            // @ts-expect-error distanceMiles will be added to TechnicianCard in Task 5
             distanceMiles={tech.distanceMiles}
           />
         ))}
