@@ -5,30 +5,12 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUp } from "@/actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState("CUSTOMER");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,7 +18,9 @@ export default function SignUpPage() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    formData.set("role", role);
+    // Default to CUSTOMER — role selection happens after onboarding
+    formData.set("role", "CUSTOMER");
+    formData.set("name", (formData.get("email") as string).split("@")[0]);
 
     const result = await signUp(formData);
 
@@ -46,7 +30,6 @@ export default function SignUpPage() {
       return;
     }
 
-    // Auto sign-in after registration
     const signInResult = await signIn("credentials", {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
@@ -65,78 +48,84 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Create Account</CardTitle>
-        <CardDescription>
-          Sign up as a customer or piano technician
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" placeholder="Jane Doe" required />
+    <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm border border-slate-100">
+      {/* Back link */}
+      <Link
+        href="/sign-in"
+        className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to sign in
+      </Link>
+
+      <h1 className="mt-5 text-center text-xl font-bold text-slate-900">
+        Create your account
+      </h1>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        {error && (
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
+        )}
+
+        <div className="space-y-1.5">
+          <label className="block text-center text-sm font-medium text-slate-700">
+            Email
+          </label>
+          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
+            <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+            <input
               name="email"
               type="email"
               placeholder="you@example.com"
               required
+              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-center text-sm font-medium text-slate-700">
+            Password
+          </label>
+          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
+            <Lock className="h-4 w-4 shrink-0 text-slate-400" />
+            <input
               name="password"
               type="password"
+              placeholder="Min. 8 characters"
               minLength={8}
               required
+              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-center text-sm font-medium text-slate-700">
+            Confirm Password
+          </label>
+          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
+            <Lock className="h-4 w-4 shrink-0 text-slate-400" />
+            <input
               name="confirmPassword"
               type="password"
+              placeholder="Re-enter password"
               required
+              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
-          <div className="space-y-2">
-            <Label>I am a...</Label>
-            <Select value={role} onValueChange={(v) => v && setRole(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CUSTOMER">Customer looking for a tuner</SelectItem>
-                <SelectItem value="TECHNICIAN">Piano technician</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/sign-in" className="text-primary underline">
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+        >
+          {loading ? "Creating account..." : "Create account"}
+        </button>
       </form>
-    </Card>
+    </div>
   );
 }
