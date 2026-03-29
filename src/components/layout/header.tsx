@@ -44,16 +44,26 @@ export function Header() {
             <Briefcase className="h-4 w-4" />
             Job Board
           </Link>
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
-          </Link>
+          {session?.user.role === "TECHNICIAN" && (
+            <Link
+              href="/dashboard/technician"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Link>
+          )}
         </nav>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
+          {session?.user.role === "CUSTOMER" && (
+            <Link
+              href="/sign-up/technician"
+              className="hidden rounded-full border border-slate-200 px-4 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:block"
+            >
+              Join as Technician
+            </Link>
+          )}
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="rounded-full focus:outline-none">
