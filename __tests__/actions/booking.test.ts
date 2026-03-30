@@ -10,8 +10,13 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("next-auth", () => ({
   getServerSession: vi.fn(),
 }));
+vi.mock("@/lib/email", () => ({
+  sendEmail: vi.fn(),
+  buildEmailHtml: vi.fn((heading: string, bodyHtml: string) => `<html>${heading}${bodyHtml}</html>`),
+}));
 
 import { getServerSession } from "next-auth";
+import { sendEmail } from "@/lib/email";
 import { createBooking, updateBookingStatus, getAvailableSlots } from "@/actions/booking";
 
 const mockGetSession = vi.mocked(getServerSession);
@@ -94,6 +99,35 @@ describe("createBooking", () => {
     });
 
     expect(result.error).toContain("No valid services");
+  });
+
+  it("sends confirmation emails to customer and technician", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.service.findMany.mockResolvedValue([fixtures.service]);
+    prismaMock.booking.create.mockResolvedValue({
+      id: "new-booking",
+      scheduledAt: new Date("2026-04-15T10:00:00"),
+      addressLine1: "123 Main",
+      city: "Boston",
+      state: "MA",
+      totalCents: 17500,
+    });
+    prismaMock.technicianProfile.findUnique.mockResolvedValue({
+      ...fixtures.technicianProfile,
+      user: { name: "Mike Tuner", email: "tech@example.com" },
+    });
+
+    await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-15T10:00:00",
+      addressLine1: "123 Main",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(sendEmail).toHaveBeenCalledTimes(2);
   });
 });
 

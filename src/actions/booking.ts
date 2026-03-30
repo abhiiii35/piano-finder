@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { bookingSchema } from "@/lib/validations/booking";
+import { sendEmail } from "@/lib/email";
+import { bookingCreatedEmail, bookingReceivedEmail, bookingStatusEmail, bookingCancelledEmail } from "@/lib/emails/booking";
 
 export async function createBooking(data: {
   technicianId: string;
@@ -68,6 +70,24 @@ export async function createBooking(data: {
     },
   });
 
+  try {
+    const techProfile = await prisma.technicianProfile.findUnique({
+      where: { id: technicianId },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    const serviceNames = services.map((s) => s.name);
+    if (session.user.email) {
+      const email = bookingCreatedEmail(booking, techProfile?.user.name ?? "Your technician", serviceNames);
+      await sendEmail({ to: session.user.email, ...email });
+    }
+    if (techProfile?.user.email) {
+      const email = bookingReceivedEmail(booking, session.user.name ?? "Customer", serviceNames);
+      await sendEmail({ to: techProfile.user.email, ...email });
+    }
+  } catch (error) {
+    console.error("[EMAIL] Failed to send booking confirmation:", error);
+  }
+
   revalidatePath("/dashboard/customer/bookings");
   revalidatePath("/dashboard/technician/bookings");
   return { success: true, bookingId: booking.id };
@@ -113,6 +133,28 @@ export async function updateBookingStatus(
     where: { id: bookingId },
     data: { status: newStatus },
   });
+
+  try {
+    const updatedBooking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        customer: { select: { email: true } },
+        technician: { include: { user: { select: { name: true, email: true } } } },
+      },
+    });
+    if (updatedBooking) {
+      if (newStatus === "CANCELLED") {
+        const email = bookingCancelledEmail(updatedBooking);
+        if (updatedBooking.customer.email) await sendEmail({ to: updatedBooking.customer.email, ...email });
+        if (updatedBooking.technician.user.email) await sendEmail({ to: updatedBooking.technician.user.email, ...email });
+      } else if (updatedBooking.customer.email) {
+        const email = bookingStatusEmail(updatedBooking, newStatus, updatedBooking.technician.user.name ?? "Your technician");
+        await sendEmail({ to: updatedBooking.customer.email, ...email });
+      }
+    }
+  } catch (error) {
+    console.error("[EMAIL] Failed to send status email:", error);
+  }
 
   revalidatePath(`/dashboard/customer/bookings/${bookingId}`);
   revalidatePath(`/dashboard/technician/bookings/${bookingId}`);
