@@ -21,6 +21,16 @@ vi.mock("@/lib/stripe", () => ({
     },
   }),
 }));
+vi.mock("@/lib/email", () => ({
+  sendEmail: vi.fn(),
+  buildEmailHtml: vi.fn((heading: string, bodyHtml: string) => `<html>${heading}${bodyHtml}</html>`),
+}));
+vi.mock("@/lib/emails/payment", () => ({
+  paymentReceiptEmail: vi.fn().mockReturnValue({
+    subject: "Payment Receipt",
+    html: "<html>receipt</html>",
+  }),
+}));
 
 import { getServerSession } from "next-auth";
 import { createCheckoutSession, markCashPayment } from "@/actions/payment";

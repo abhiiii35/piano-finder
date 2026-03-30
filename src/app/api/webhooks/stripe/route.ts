@@ -1,6 +1,8 @@
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { sendEmail } from "@/lib/email";
+import { paymentReceiptEmail } from "@/lib/emails/payment";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -50,6 +52,26 @@ export async function POST(req: Request) {
             method: "CARD",
           },
         });
+      }
+
+      try {
+        const bookingWithDetails = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: {
+            customer: { select: { email: true } },
+            services: { include: { service: { select: { name: true } } } },
+          },
+        });
+        if (bookingWithDetails?.customer.email) {
+          const email = paymentReceiptEmail(
+            bookingWithDetails,
+            { amountCents: session.amount_total ?? 0, method: "CARD" },
+            bookingWithDetails.services.map((s) => s.service.name)
+          );
+          await sendEmail({ to: bookingWithDetails.customer.email, ...email });
+        }
+      } catch (error) {
+        console.error("[EMAIL] Failed to send payment receipt:", error);
       }
     }
   }
