@@ -3,17 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Clock, DollarSign, Star } from "lucide-react";
 import { BookingFilter } from "@/components/dashboard/booking-filter";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import Link from "next/link";
+import { Calendar, type CalendarBooking } from "@/components/dashboard/calendar";
 
 export default async function TechnicianDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; filter?: string }>;
+  searchParams: Promise<{ tab?: string; filter?: string; view?: string; date?: string }>;
 }) {
   const params = await searchParams;
   const session = await getServerSession(authOptions);
@@ -66,28 +66,58 @@ export default async function TechnicianDashboardPage({
   const activeTab = params.tab ?? "bookings";
   const filter = params.filter ?? "upcoming";
 
+  const calendarView = (params.view ?? "week") as "day" | "week" | "month";
+  const calendarDate = params.date ? new Date(params.date) : new Date();
+
   // Bookings for the tab
-  const bookingStatusFilter: Record<string, string[]> = {
-    upcoming: ["CONFIRMED", "PENDING"],
+  let dateStart: Date;
+  let dateEnd: Date;
+  if (calendarView === "day") {
+    dateStart = new Date(calendarDate);
+    dateStart.setHours(0, 0, 0, 0);
+    dateEnd = new Date(calendarDate);
+    dateEnd.setHours(23, 59, 59, 999);
+  } else if (calendarView === "week") {
+    dateStart = startOfWeek(calendarDate, { weekStartsOn: 1 });
+    dateEnd = endOfWeek(calendarDate, { weekStartsOn: 1 });
+  } else {
+    const ms = startOfMonth(calendarDate);
+    dateStart = startOfWeek(ms, { weekStartsOn: 1 });
+    const me = endOfMonth(calendarDate);
+    dateEnd = endOfWeek(me, { weekStartsOn: 1 });
+  }
+
+  const statusFilter: Record<string, string[]> = {
+    upcoming: ["CONFIRMED", "PENDING", "IN_PROGRESS"],
     completed: ["COMPLETED"],
     cancelled: ["CANCELLED"],
     all: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
   };
 
-  const tabBookings =
+  const tabBookings: CalendarBooking[] =
     activeTab === "bookings"
-      ? await prisma.booking.findMany({
-          where: {
-            technicianId: profile.id,
-            status: { in: bookingStatusFilter[filter] ?? bookingStatusFilter.upcoming },
-          },
-          include: {
-            customer: { select: { name: true, email: true } },
-            services: { include: { service: true } },
-          },
-          orderBy: { scheduledAt: filter === "completed" ? "desc" : "asc" },
-          take: 20,
-        })
+      ? (
+          await prisma.booking.findMany({
+            where: {
+              technicianId: profile.id,
+              scheduledAt: { gte: dateStart, lte: dateEnd },
+              status: { in: statusFilter[filter] ?? statusFilter.upcoming },
+            },
+            include: {
+              customer: { select: { name: true, email: true } },
+              services: { include: { service: true } },
+            },
+            orderBy: { scheduledAt: "asc" },
+          })
+        ).map((b) => ({
+          id: b.id,
+          scheduledAt: b.scheduledAt.toISOString(),
+          durationMin: b.durationMin,
+          status: b.status,
+          customerName: b.customer.name ?? b.customer.email ?? "Customer",
+          serviceName: b.services.map((s) => s.service.name).join(", "),
+          totalCents: b.totalCents,
+        }))
       : [];
 
   // Customers for tab
@@ -178,64 +208,12 @@ export default async function TechnicianDashboardPage({
       <div className="mt-6">
         {activeTab === "bookings" && (
           <>
-            {/* Filter dropdown */}
             <BookingFilter currentFilter={filter} />
-
-            {tabBookings.length === 0 ? (
-              <div className="flex flex-col items-center py-16 text-center">
-                <CalendarDays className="h-12 w-12 text-slate-300" />
-                <p className="mt-4 text-sm text-slate-500">
-                  No bookings in this category
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {tabBookings.map((booking) => (
-                  <Link
-                    key={booking.id}
-                    href={`/dashboard/technician/bookings/${booking.id}`}
-                    className="block"
-                  >
-                    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-sm">
-                      <div className="space-y-1">
-                        <p className="font-medium text-slate-900">
-                          {booking.customer.name ?? booking.customer.email}
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          {format(
-                            new Date(booking.scheduledAt),
-                            "MMM d, yyyy 'at' h:mm a"
-                          )}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {booking.services
-                            .map((s) => s.service.name)
-                            .join(", ")}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-slate-900">
-                          {formatCents(booking.totalCents)}
-                        </span>
-                        <Badge
-                          className={
-                            booking.status === "PENDING"
-                              ? "bg-amber-100 text-amber-700"
-                              : booking.status === "CONFIRMED"
-                                ? "bg-blue-100 text-blue-700"
-                                : booking.status === "COMPLETED"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : "bg-slate-100 text-slate-600"
-                          }
-                        >
-                          {booking.status.toLowerCase()}
-                        </Badge>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
+            <Calendar
+              bookings={tabBookings}
+              initialDate={format(calendarDate, "yyyy-MM-dd")}
+              initialView={calendarView}
+            />
           </>
         )}
 
