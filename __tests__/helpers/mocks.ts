@@ -14,6 +14,7 @@ function createMockModel() {
     upsert: vi.fn(),
     count: vi.fn(),
     createMany: vi.fn(),
+    updateMany: vi.fn(),
     aggregate: vi.fn(),
   };
 }
