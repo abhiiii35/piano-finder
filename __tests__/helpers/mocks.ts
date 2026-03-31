@@ -58,6 +58,17 @@ export function mockTechnicianSession() {
   };
 }
 
+export function mockAdminSession() {
+  return {
+    user: {
+      id: "admin-1",
+      name: "Admin User",
+      email: "admin@example.com",
+      role: "ADMIN",
+    },
+  };
+}
+
 // ─── Test Fixtures ───────────────────────────────────────────
 
 export const fixtures = {
@@ -75,9 +86,14 @@ export const fixtures = {
     city: "Boston",
     state: "MA",
     zipCode: "02108",
+    pianoTypes: null,
+    travelFeeCents: null,
+    ptgMember: false,
     stripeAccountId: null,
     isVerified: true,
     isActive: true,
+    onboardingStatus: "APPROVED",
+    rejectionReason: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

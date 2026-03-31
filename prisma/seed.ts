@@ -23,6 +23,18 @@ async function main() {
     },
   });
 
+  // Create an admin
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: {
+      name: "Admin User",
+      email: "admin@example.com",
+      hashedPassword: await hash("password123", 12),
+      role: "ADMIN",
+    },
+  });
+
   // Create a technician user
   const techUser = await prisma.user.upsert({
     where: { email: "tech@example.com" },
@@ -54,6 +66,7 @@ async function main() {
       state: "MA",
       zipCode: "02108",
       isVerified: true,
+      onboardingStatus: "APPROVED",
     },
   });
 
@@ -141,7 +154,7 @@ async function main() {
     },
   });
 
-  console.log("Seeded:", { customer: customer.id, technician: techProfile.id, booking: booking.id });
+  console.log("Seeded:", { customer: customer.id, technician: techProfile.id, booking: booking.id, admin: admin.id });
 }
 
 main()

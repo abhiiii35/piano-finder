@@ -40,3 +40,11 @@ export const PIANO_TYPES = [
   "Digital",
   "Player",
 ] as const;
+
+export const ONBOARDING_STATUS = {
+  WIZARD_PENDING: "WIZARD_PENDING",
+  CHECKLIST_PENDING: "CHECKLIST_PENDING",
+  SUBMITTED: "SUBMITTED",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+} as const;

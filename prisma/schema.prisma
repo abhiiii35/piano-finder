@@ -86,9 +86,11 @@ model TechnicianProfile {
   travelFeeCents  Int?
   ptgMember       Boolean @default(false)
   stripeAccountId String?
-  isVerified      Boolean @default(false)
-  isActive        Boolean @default(true)
-  createdAt       DateTime @default(now())
+  isVerified       Boolean @default(false)
+  isActive         Boolean @default(true)
+  onboardingStatus String  @default("WIZARD_PENDING") // WIZARD_PENDING | CHECKLIST_PENDING | SUBMITTED | APPROVED | REJECTED
+  rejectionReason  String? // Admin's reason when rejecting
+  createdAt        DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
