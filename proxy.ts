@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/onboarding/:path*"],
 };
 
 export async function proxy(request: NextRequest) {
@@ -23,6 +23,16 @@ export async function proxy(request: NextRequest) {
 
   // Redirect customer-only routes for non-customers
   if (pathname.startsWith("/dashboard/customer") && token.role !== "CUSTOMER") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Redirect admin-only routes for non-admins
+  if (pathname.startsWith("/dashboard/admin") && token.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Onboarding routes require TECHNICIAN role
+  if (pathname.startsWith("/onboarding") && token.role !== "TECHNICIAN") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
