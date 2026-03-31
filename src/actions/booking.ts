@@ -163,7 +163,7 @@ export async function updateBookingStatus(
   return { success: true };
 }
 
-export async function getAvailableSlots(technicianId: string, date: string) {
+export async function getAvailableSlots(technicianId: string, date: string, durationMin: number = 30) {
   const dayOfWeek = new Date(date).getDay();
 
   const slot = await prisma.availabilitySlot.findFirst({
@@ -186,7 +186,7 @@ export async function getAvailableSlots(technicianId: string, date: string) {
     },
   });
 
-  // Generate 30-min slots
+  // Generate 30-min slots, checking if the full duration fits
   const [startH, startM] = slot.startTime.split(":").map(Number);
   const [endH, endM] = slot.endTime.split(":").map(Number);
   const startMin = startH * 60 + startM;
@@ -196,17 +196,21 @@ export async function getAvailableSlots(technicianId: string, date: string) {
   for (let m = startMin; m < endMin; m += 30) {
     const h = Math.floor(m / 60);
     const min = m % 60;
+
+    // Check if the full duration fits within availability
+    if (m + durationMin > endMin) continue;
+
     const timeStr = `${h.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
 
-    // Check if this slot overlaps with an existing booking
     const slotTime = new Date(date);
     slotTime.setHours(h, min, 0, 0);
 
+    // Check if the full duration window overlaps with any existing booking
     const isBooked = existingBookings.some((b) => {
       const bookingStart = new Date(b.scheduledAt).getTime();
       const bookingEnd = bookingStart + b.durationMin * 60 * 1000;
       const slotStart = slotTime.getTime();
-      const slotEnd = slotStart + 30 * 60 * 1000;
+      const slotEnd = slotStart + durationMin * 60 * 1000;
       return slotStart < bookingEnd && slotEnd > bookingStart;
     });
 

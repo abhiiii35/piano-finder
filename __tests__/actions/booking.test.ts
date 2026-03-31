@@ -226,4 +226,55 @@ describe("getAvailableSlots", () => {
     expect(slots).not.toContain("10:00");
     expect(slots).toContain("10:30");
   });
+
+  it("filters slots that don't have enough room for the full duration", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "12:00",
+    });
+
+    // Existing booking at 10:30 for 60 min (occupies 10:30-11:30)
+    const bookingDate = new Date("2026-04-14");
+    bookingDate.setHours(10, 30, 0, 0);
+
+    prismaMock.booking.findMany.mockResolvedValue([
+      { scheduledAt: bookingDate, durationMin: 60 },
+    ]);
+
+    // With a 90-min service:
+    const slots = await getAvailableSlots("tech-1", "2026-04-14", 90);
+    expect(slots).toContain("09:00");     // 09:00-10:30 fits before the booking
+    expect(slots).not.toContain("09:30"); // 09:30-11:00 overlaps with 10:30 booking
+    expect(slots).not.toContain("10:00"); // 10:00-11:30 overlaps
+    expect(slots).not.toContain("10:30"); // booked
+    expect(slots).not.toContain("11:00"); // 11:00-12:30 exceeds 12:00 end
+    expect(slots).not.toContain("11:30"); // 11:30-13:00 exceeds 12:00 end
+  });
+
+  it("excludes slots where duration exceeds availability end time", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    // With 90-min duration, only 09:00 and 09:30 fit.
+    // 10:00 + 90 = 11:30, exceeds 11:00 end time.
+    const slots = await getAvailableSlots("tech-1", "2026-04-14", 90);
+    expect(slots).toContain("09:00");
+    expect(slots).toContain("09:30"); // 09:30 + 90 = 11:00 exactly, should fit
+    expect(slots).not.toContain("10:00");
+    expect(slots).not.toContain("10:30");
+  });
+
+  it("defaults to 30-min duration when not provided", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-14");
+    expect(slots).toEqual(["09:00", "09:30", "10:00", "10:30"]);
+  });
 });
