@@ -6,13 +6,23 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "npx eslint --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx eslint --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
+          }
+        ]
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -qE '\\.env$'; then echo 'BLOCK: Do not edit .env files directly - update .env.example instead' && exit 1; fi"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -qE '\\.env$'; then echo 'BLOCK: Do not edit .env files directly - update .env.example instead' && exit 1; fi"
+          }
+        ]
       }
     ]
   }
