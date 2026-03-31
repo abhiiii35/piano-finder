@@ -9,6 +9,8 @@ import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-f
 import { formatCents } from "@/lib/utils";
 import Link from "next/link";
 import { Calendar, type CalendarBooking } from "@/components/dashboard/calendar";
+import { OnboardingBanner } from "@/components/onboarding/banner";
+import { ONBOARDING_STATUS } from "@/lib/constants";
 
 export default async function TechnicianDashboardPage({
   searchParams,
@@ -24,13 +26,15 @@ export default async function TechnicianDashboardPage({
   });
   if (!profile) redirect("/dashboard");
 
+  if (profile.onboardingStatus === ONBOARDING_STATUS.WIZARD_PENDING) redirect("/onboarding");
+
   // Stats queries
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date();
   todayEnd.setHours(23, 59, 59, 999);
 
-  const [todayCount, pendingCount, revenueAgg, reviewAgg] =
+  const [todayCount, pendingCount, revenueAgg, reviewAgg, availabilityCount] =
     await Promise.all([
       prisma.booking.count({
         where: {
@@ -53,6 +57,9 @@ export default async function TechnicianDashboardPage({
         _avg: { rating: true },
         _count: true,
         where: { booking: { technicianId: profile.id } },
+      }),
+      prisma.availabilitySlot.count({
+        where: { technicianId: profile.id },
       }),
     ]);
 
@@ -154,6 +161,13 @@ export default async function TechnicianDashboardPage({
           View Profile
         </Link>
       </div>
+
+      {/* Onboarding Banner */}
+      <OnboardingBanner
+        onboardingStatus={profile.onboardingStatus}
+        hasAvailability={availabilityCount > 0}
+        rejectionReason={profile.rejectionReason}
+      />
 
       {/* Stat Cards */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
