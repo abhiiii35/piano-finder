@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import Link from "next/link";
 import { formatCents } from "@/lib/utils";
+import { MessageSquare } from "lucide-react";
 
 export default async function CustomerBookingsPage() {
   const session = await getServerSession(authOptions);
@@ -22,6 +23,23 @@ export default async function CustomerBookingsPage() {
     },
     orderBy: { scheduledAt: "desc" },
   });
+
+  const bookingIds = bookings.map((b) => b.id);
+  const unreadCounts = bookingIds.length > 0
+    ? await prisma.message.groupBy({
+        by: ["bookingId"],
+        where: {
+          bookingId: { in: bookingIds },
+          senderId: { not: session.user.id },
+          isRead: false,
+        },
+        _count: true,
+      })
+    : [];
+
+  const unreadMap = new Map(
+    unreadCounts.map((u) => [u.bookingId, u._count])
+  );
 
   return (
     <div>
@@ -61,6 +79,12 @@ export default async function CustomerBookingsPage() {
                     <span className="font-semibold">
                       {formatCents(booking.totalCents)}
                     </span>
+                    {unreadMap.get(booking.id) ? (
+                      <span className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                        <MessageSquare className="h-3 w-3" />
+                        {unreadMap.get(booking.id)}
+                      </span>
+                    ) : null}
                     <Badge>{booking.status}</Badge>
                   </div>
                 </CardContent>
