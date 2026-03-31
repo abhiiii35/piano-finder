@@ -48,6 +48,11 @@ export default function BookingPage() {
     notes: "",
   });
   const [loading, setLoading] = useState(false);
+  const [conflictSlots, setConflictSlots] = useState<string[] | null>(null);
+
+  const totalDuration = (technician?.services ?? [])
+    .filter((s) => selectedServices.includes(s.id))
+    .reduce((sum, s) => sum + s.durationMin, 0);
 
   useEffect(() => {
     fetch(`/api/technicians/${params.id}`)
@@ -57,9 +62,9 @@ export default function BookingPage() {
 
   useEffect(() => {
     if (selectedDate && params.id) {
-      getAvailableSlots(params.id as string, selectedDate).then(setAvailableSlots);
+      getAvailableSlots(params.id as string, selectedDate, totalDuration || 30).then(setAvailableSlots);
     }
-  }, [selectedDate, params.id]);
+  }, [selectedDate, params.id, totalDuration]);
 
   if (!session) {
     return (
@@ -81,13 +86,10 @@ export default function BookingPage() {
     (sum, s) => sum + s.priceCents,
     0
   );
-  const totalDuration = selectedServiceDetails.reduce(
-    (sum, s) => sum + s.durationMin,
-    0
-  );
 
   async function handleConfirm() {
     setLoading(true);
+    setConflictSlots(null);
     const result = await createBooking({
       technicianId: params.id as string,
       serviceIds: selectedServices,
@@ -98,6 +100,9 @@ export default function BookingPage() {
 
     if (result.error) {
       toast.error(result.error);
+      if (result.availableSlots) {
+        setConflictSlots(result.availableSlots);
+      }
     } else {
       toast.success("Booking created!");
       router.push(`/dashboard/customer/bookings/${result.bookingId}`);
@@ -390,13 +395,40 @@ export default function BookingPage() {
                 </div>
               )}
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(3)}>
+                <Button variant="outline" onClick={() => { setConflictSlots(null); setStep(3); }}>
                   Back
                 </Button>
                 <Button onClick={handleConfirm} disabled={loading}>
                   {loading ? "Booking..." : "Confirm Booking"}
                 </Button>
               </div>
+              {conflictSlots && (
+                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-sm font-medium text-amber-900 mb-2">
+                    Pick a different time:
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {conflictSlots.map((slot) => (
+                      <Button
+                        key={slot}
+                        variant={selectedTime === slot ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTime(slot);
+                          setConflictSlots(null);
+                        }}
+                      >
+                        {slot}
+                      </Button>
+                    ))}
+                  </div>
+                  {conflictSlots.length === 0 && (
+                    <p className="text-sm text-amber-700 mt-2">
+                      No more slots available on this day. Please go back and pick a different date.
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
