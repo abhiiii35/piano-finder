@@ -28,6 +28,8 @@ model User {
   reviews    Review[]
   jobs       Job[]
   jobApplications JobApplication[]
+  sentMessages    Message[] @relation("SentMessages")
+  customerMessages Message[] @relation("CustomerMessages")
 }
 
 model Account {
@@ -98,6 +100,7 @@ model TechnicianProfile {
   availabilitySlots AvailabilitySlot[]
   bookings         Booking[]         @relation("TechnicianBookings")
   customerRecords  CustomerRecord[]
+  messages         Message[]
 }
 
 model Service {
@@ -150,6 +153,7 @@ model Booking {
   services   BookingService[]
   payment    Payment?
   review     Review?
+  messages   Message[]
 }
 
 model BookingService {
@@ -239,4 +243,25 @@ model CustomerRecord {
   updatedAt      DateTime @updatedAt
 
   technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+}
+
+// ─── Messages ────────────────────────────────────────────────
+
+model Message {
+  id            String   @id @default(cuid())
+  threadId      String
+  senderId      String
+  bookingId     String?
+  technicianId  String
+  customerId    String
+  content       String
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  sender     User              @relation("SentMessages", fields: [senderId], references: [id])
+  booking    Booking?          @relation(fields: [bookingId], references: [id])
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id])
+  customer   User              @relation("CustomerMessages", fields: [customerId], references: [id])
+
+  @@index([threadId, createdAt])
 }

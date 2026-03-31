@@ -32,6 +32,7 @@ export const prismaMock = {
   customerRecord: createMockModel(),
   job: createMockModel(),
   jobApplication: createMockModel(),
+  message: createMockModel(),
 };
 
 // ─── Session Helpers ─────────────────────────────────────────
@@ -215,6 +216,18 @@ export const fixtures = {
     jobId: "job-1",
     techId: "tech-user-1",
     message: "I have 15 years of experience with Steinway grands.",
+    createdAt: new Date(),
+  },
+
+  message: {
+    id: "msg-1",
+    threadId: "customer-1:tech-profile-1:booking-1",
+    senderId: "customer-1",
+    bookingId: "booking-1",
+    technicianId: "tech-profile-1",
+    customerId: "customer-1",
+    content: "Hi, I wanted to confirm the appointment time.",
+    isRead: false,
     createdAt: new Date(),
   },
 };

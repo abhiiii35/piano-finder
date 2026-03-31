@@ -155,6 +155,30 @@ async function main() {
   });
 
   console.log("Seeded:", { customer: customer.id, technician: techProfile.id, booking: booking.id, admin: admin.id });
+
+  // Create sample messages
+  const threadId = `${customer.id}:${techProfile.id}:${booking.id}`;
+  await prisma.message.create({
+    data: {
+      threadId,
+      senderId: customer.id,
+      bookingId: booking.id,
+      technicianId: techProfile.id,
+      customerId: customer.id,
+      content: "Hi! Just wanted to confirm the appointment. Is there parking available?",
+    },
+  });
+  await prisma.message.create({
+    data: {
+      threadId,
+      senderId: techUser.id,
+      bookingId: booking.id,
+      technicianId: techProfile.id,
+      customerId: customer.id,
+      content: "Yes, there's street parking right out front. See you then!",
+      isRead: true,
+    },
+  });
 }
 
 main()
