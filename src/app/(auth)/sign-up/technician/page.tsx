@@ -52,7 +52,7 @@ export default function TechnicianSignupPage() {
     } else {
       toast.success("Technician profile created!");
       // Force session refresh to pick up new role
-      window.location.href = "/dashboard/technician";
+      window.location.href = "/onboarding";
     }
   }
 
