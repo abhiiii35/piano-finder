@@ -11,6 +11,7 @@ import { ReviewCard } from "@/components/reviews/review-card";
 import { ReviewSummary } from "@/components/reviews/review-summary";
 import { formatCents } from "@/lib/utils";
 import { MapPin, Award, Clock, Calendar } from "lucide-react";
+import { MessageButton } from "@/components/messages/message-button";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -197,6 +198,8 @@ export default async function TechnicianProfilePage({
             })}
           </CardContent>
         </Card>
+
+        <MessageButton technicianId={id} />
 
         <Link href={`/technicians/${id}/book`} className="block">
           <Button className="w-full" size="lg">
