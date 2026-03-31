@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
 import { PayButton } from "@/components/booking/payment-actions";
+import { MessageThread } from "@/components/messages/message-thread";
 import Link from "next/link";
 
 export default async function CustomerBookingDetailPage({
@@ -112,6 +113,21 @@ export default async function CustomerBookingDetailPage({
           </Link>
         )}
       </div>
+
+      {/* Messages */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Messages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MessageThread
+            threadId={`${session.user.id}:${booking.technicianId}:${booking.id}`}
+            bookingId={booking.id}
+            technicianId={booking.technicianId}
+            currentUserId={session.user.id}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

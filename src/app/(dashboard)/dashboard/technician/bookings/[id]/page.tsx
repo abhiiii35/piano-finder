@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
 import { MarkCashButton } from "@/components/booking/payment-actions";
+import { MessageThread } from "@/components/messages/message-thread";
 import Link from "next/link";
 
 export default async function TechnicianBookingDetailPage({
@@ -126,6 +127,21 @@ export default async function TechnicianBookingDetailPage({
           Payment: {booking.payment.status} ({booking.payment.method ?? "pending"})
         </Badge>
       )}
+
+      {/* Messages */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Messages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MessageThread
+            threadId={`${booking.customerId}:${profile.id}:${booking.id}`}
+            bookingId={booking.id}
+            technicianId={profile.id}
+            currentUserId={session.user.id}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
