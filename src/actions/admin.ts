@@ -53,7 +53,7 @@ export async function approveSubmission(profileId: string) {
   });
 
   const email = profileApprovedEmail(profile.user.name ?? "Technician");
-  await sendEmail({ to: profile.user.email!, subject: email.subject, html: email.html });
+  await sendEmail({ to: profile.user.email, subject: email.subject, html: email.html });
 
   revalidatePath("/dashboard/admin/submissions");
   return { success: true };
@@ -84,7 +84,7 @@ export async function rejectSubmission(profileId: string, reason: string) {
   });
 
   const email = profileRejectedEmail(profile.user.name ?? "Technician", reason);
-  await sendEmail({ to: profile.user.email!, subject: email.subject, html: email.html });
+  await sendEmail({ to: profile.user.email, subject: email.subject, html: email.html });
 
   revalidatePath("/dashboard/admin/submissions");
   return { success: true };

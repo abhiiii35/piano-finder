@@ -34,6 +34,13 @@ export async function completeWizard(formData: FormData) {
     return { error: parsed.error.issues[0].message };
   }
 
+  const serviceCount = await prisma.service.count({
+    where: { technicianId: profile.id, isActive: true },
+  });
+  if (serviceCount === 0) {
+    return { error: "At least one service is required" };
+  }
+
   await prisma.technicianProfile.update({
     where: { id: profile.id },
     data: {

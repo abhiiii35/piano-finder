@@ -26,6 +26,7 @@ describe("completeWizard", () => {
       onboardingStatus: "WIZARD_PENDING",
     });
     prismaMock.technicianProfile.update.mockResolvedValue({});
+    prismaMock.service.count.mockResolvedValue(3);
 
     const fd = makeFormData({
       bio: "I have been tuning pianos for over 10 years.",
@@ -77,6 +78,24 @@ describe("completeWizard", () => {
     const fd = makeFormData({ bio: "short", yearsExperience: "5" });
     const result = await completeWizard(fd);
     expect(result.error).toBeDefined();
+  });
+
+  it("rejects if no active services exist", async () => {
+    mockGetSession.mockResolvedValue(mockTechnicianSession());
+    prismaMock.technicianProfile.findUnique.mockResolvedValue({
+      id: "tech-profile-1",
+      userId: "tech-user-1",
+      onboardingStatus: "WIZARD_PENDING",
+    });
+    prismaMock.service.count.mockResolvedValue(0);
+
+    const fd = makeFormData({
+      bio: "I have been tuning pianos for over 10 years.",
+      businessName: "Test",
+      yearsExperience: "5",
+    });
+    const result = await completeWizard(fd);
+    expect(result.error).toContain("service");
   });
 });
 
