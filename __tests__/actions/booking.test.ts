@@ -22,11 +22,17 @@ import { createBooking, updateBookingStatus, getAvailableSlots } from "@/actions
 const mockGetSession = vi.mocked(getServerSession);
 
 describe("createBooking", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
+      return cb(prismaMock);
+    });
+  });
 
   it("creates a booking with selected services", async () => {
     mockGetSession.mockResolvedValue(mockCustomerSession());
     prismaMock.service.findMany.mockResolvedValue([fixtures.service]);
+    prismaMock.booking.findFirst.mockResolvedValue(null);
     prismaMock.booking.create.mockResolvedValue({ id: "new-booking" });
 
     const result = await createBooking({
@@ -50,6 +56,7 @@ describe("createBooking", () => {
   it("sums multiple services correctly", async () => {
     mockGetSession.mockResolvedValue(mockCustomerSession());
     prismaMock.service.findMany.mockResolvedValue([fixtures.service, fixtures.service2]);
+    prismaMock.booking.findFirst.mockResolvedValue(null);
     prismaMock.booking.create.mockResolvedValue({ id: "new-booking" });
 
     const result = await createBooking({
@@ -104,6 +111,7 @@ describe("createBooking", () => {
   it("sends confirmation emails to customer and technician", async () => {
     mockGetSession.mockResolvedValue(mockCustomerSession());
     prismaMock.service.findMany.mockResolvedValue([fixtures.service]);
+    prismaMock.booking.findFirst.mockResolvedValue(null);
     prismaMock.booking.create.mockResolvedValue({
       id: "new-booking",
       scheduledAt: new Date("2026-04-15T10:00:00"),
@@ -128,6 +136,74 @@ describe("createBooking", () => {
     });
 
     expect(sendEmail).toHaveBeenCalledTimes(2);
+  });
+
+  it("rejects booking when time slot conflicts with existing booking", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.service.findMany.mockResolvedValue([fixtures.service]); // 90 min
+
+    // Simulate transaction by making $transaction call the callback with prismaMock
+    prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
+      return cb(prismaMock);
+    });
+
+    // Existing booking overlaps: 09:30-11:00 overlaps with requested 10:00-11:30
+    const existingBookingDate = new Date("2026-04-15T00:00:00");
+    existingBookingDate.setHours(9, 30, 0, 0);
+    prismaMock.booking.findFirst.mockResolvedValue({
+      id: "existing-booking",
+      scheduledAt: existingBookingDate,
+      durationMin: 90,
+    });
+
+    // Return available slots for the conflict response
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([
+      { scheduledAt: existingBookingDate, durationMin: 90 },
+    ]);
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-15T10:00:00",
+      addressLine1: "123 Main St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.error).toContain("no longer available");
+    expect(result.availableSlots).toBeDefined();
+    expect(Array.isArray(result.availableSlots)).toBe(true);
+  });
+
+  it("creates booking inside a transaction when no conflict", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.service.findMany.mockResolvedValue([fixtures.service]);
+
+    prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
+      return cb(prismaMock);
+    });
+
+    // No conflicts
+    prismaMock.booking.findFirst.mockResolvedValue(null);
+    prismaMock.booking.create.mockResolvedValue({ id: "new-booking" });
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-15T10:00:00",
+      addressLine1: "123 Main St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.success).toBe(true);
+    expect(prismaMock.$transaction).toHaveBeenCalledOnce();
   });
 });
 

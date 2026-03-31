@@ -44,31 +44,74 @@ export async function createBooking(data: {
   const totalCents = services.reduce((sum, s) => sum + s.priceCents, 0);
   const durationMin = services.reduce((sum, s) => sum + s.durationMin, 0);
 
-  const booking = await prisma.booking.create({
-    data: {
-      customerId: session.user.id,
-      technicianId,
-      status: "PENDING",
-      scheduledAt: new Date(scheduledAt),
-      durationMin,
-      totalCents,
-      addressLine1: address.addressLine1,
-      addressLine2: address.addressLine2 ?? null,
-      city: address.city,
-      state: address.state,
-      zipCode: address.zipCode,
-      pianoType: address.pianoType ?? null,
-      pianoMake: address.pianoMake ?? null,
-      pianoModel: address.pianoModel ?? null,
-      notes: address.notes ?? null,
-      services: {
-        create: services.map((s) => ({
-          serviceId: s.id,
-          priceCents: s.priceCents,
-        })),
-      },
-    },
-  });
+  const newStart = new Date(scheduledAt);
+  const newEnd = new Date(newStart.getTime() + durationMin * 60 * 1000);
+
+  // Conflict check + create inside a transaction
+  let booking;
+  try {
+    booking = await prisma.$transaction(async (tx) => {
+      // Check for overlapping bookings on the same day
+      const dayStart = new Date(newStart);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(newStart);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const conflict = await tx.booking.findFirst({
+        where: {
+          technicianId,
+          status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
+          scheduledAt: { gte: dayStart, lte: dayEnd },
+        },
+      });
+
+      // Precise overlap check: newStart < existingEnd AND newEnd > existingStart
+      if (conflict) {
+        const conflictStart = new Date(conflict.scheduledAt).getTime();
+        const conflictEnd = conflictStart + conflict.durationMin * 60 * 1000;
+        if (newStart.getTime() < conflictEnd && newEnd.getTime() > conflictStart) {
+          throw new Error("CONFLICT");
+        }
+      }
+
+      return tx.booking.create({
+        data: {
+          customerId: session.user.id,
+          technicianId,
+          status: "PENDING",
+          scheduledAt: newStart,
+          durationMin,
+          totalCents,
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2 ?? null,
+          city: address.city,
+          state: address.state,
+          zipCode: address.zipCode,
+          pianoType: address.pianoType ?? null,
+          pianoMake: address.pianoMake ?? null,
+          pianoModel: address.pianoModel ?? null,
+          notes: address.notes ?? null,
+          services: {
+            create: services.map((s) => ({
+              serviceId: s.id,
+              priceCents: s.priceCents,
+            })),
+          },
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "CONFLICT") {
+      // Fetch alternative slots for the same day
+      const dateStr = scheduledAt.split("T")[0];
+      const availableSlots = await getAvailableSlots(technicianId, dateStr, durationMin);
+      return {
+        error: "This time slot is no longer available",
+        availableSlots,
+      };
+    }
+    throw error;
+  }
 
   try {
     const techProfile = await prisma.technicianProfile.findUnique({
