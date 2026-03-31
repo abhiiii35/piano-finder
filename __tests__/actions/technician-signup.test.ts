@@ -107,6 +107,22 @@ describe("createTechnicianProfile", () => {
     expect(result.error).toBeDefined();
   });
 
+  it("creates profile with WIZARD_PENDING status and isActive=false", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.technicianProfile.findUnique.mockResolvedValue(null);
+    prismaMock.user.update.mockResolvedValue({});
+    prismaMock.technicianProfile.create.mockResolvedValue({ id: "new-profile" });
+    prismaMock.service.createMany.mockResolvedValue({ count: 3 });
+
+    const fd = makeFormData(validForm);
+    const result = await createTechnicianProfile(fd);
+
+    expect(result.success).toBe(true);
+    const profileData = prismaMock.technicianProfile.create.mock.calls[0][0].data;
+    expect(profileData.isActive).toBe(false);
+    expect(profileData.onboardingStatus).toBe("WIZARD_PENDING");
+  });
+
   it("handles form with no optional fields", async () => {
     mockGetSession.mockResolvedValue(mockCustomerSession());
     prismaMock.technicianProfile.findUnique.mockResolvedValue(null);

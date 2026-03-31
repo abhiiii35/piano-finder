@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/utils";
 import { geocode } from "@/lib/geocoding";
-import { ROLES } from "@/lib/constants";
+import { ROLES, ONBOARDING_STATUS } from "@/lib/constants";
 import { technicianSignupSchema } from "@/lib/validations/technician";
 
 const SERVICE_DEFAULTS: Record<string, { desc: string; dur: number }> = {
@@ -71,6 +71,8 @@ export async function createTechnicianProfile(formData: FormData) {
       ptgMember: data.ptgMember === "true",
       latitude,
       longitude,
+      isActive: false,
+      onboardingStatus: ONBOARDING_STATUS.WIZARD_PENDING,
     },
   });
 
@@ -122,5 +124,5 @@ export async function createTechnicianProfile(formData: FormData) {
   }
 
   revalidatePath("/search");
-  return { success: true };
+  return { success: true, redirect: "/onboarding" };
 }
