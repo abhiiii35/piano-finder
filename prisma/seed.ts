@@ -10,6 +10,17 @@ const adapter = new PrismaBetterSqlite3({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  // Clean up existing seed data so the script is re-runnable
+  await prisma.message.deleteMany({});
+  await prisma.review.deleteMany({});
+  await prisma.bookingService.deleteMany({});
+  await prisma.payment.deleteMany({});
+  await prisma.booking.deleteMany({});
+  await prisma.availabilitySlot.deleteMany({});
+  await prisma.service.deleteMany({});
+  await prisma.technicianProfile.deleteMany({});
+  await prisma.user.deleteMany({});
+
   // Create a customer
   const customer = await prisma.user.upsert({
     where: { email: "customer@example.com" },

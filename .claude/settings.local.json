@@ -21,7 +21,8 @@
       "Bash(xargs kill:*)",
       "Bash(lsof -ti:3001)",
       "Bash(npm install:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Skill(update-config)"
     ]
   }
 }
