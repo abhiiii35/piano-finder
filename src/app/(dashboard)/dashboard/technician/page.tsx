@@ -149,14 +149,14 @@ export default async function TechnicianDashboardPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Welcome back, {session.user.name}
           </p>
         </div>
         <Link
           href="/dashboard/technician/profile"
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
         >
           View Profile
         </Link>
@@ -176,7 +176,7 @@ export default async function TechnicianDashboardPage({
           value={todayCount}
           subtitle="appointments"
           icon={CalendarDays}
-          iconClassName="bg-amber-50 text-amber-600"
+          iconClassName="bg-secondary text-muted-foreground"
         />
         <StatCard
           label="Pending"
@@ -197,20 +197,20 @@ export default async function TechnicianDashboardPage({
           value={avgRating}
           subtitle={`${reviewCount} reviews`}
           icon={Star}
-          iconClassName="bg-amber-50 text-amber-500"
+          iconClassName="bg-secondary text-muted-foreground"
         />
       </div>
 
       {/* Tabs */}
-      <div className="mt-8 flex items-center gap-1 border-b border-slate-200">
+      <div className="mt-8 flex items-center gap-1 border-b border-border">
         {tabs.map((tab) => (
           <Link
             key={tab.key}
             href={`/dashboard/technician?tab=${tab.key}`}
             className={`px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? "border-b-2 border-slate-900 text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
+                ? "border-b-2 border-primary text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -235,8 +235,8 @@ export default async function TechnicianDashboardPage({
           <>
             {tabCustomers.length === 0 ? (
               <div className="flex flex-col items-center py-16 text-center">
-                <CalendarDays className="h-12 w-12 text-slate-300" />
-                <p className="mt-4 text-sm text-slate-500">
+                <CalendarDays className="h-12 w-12 text-muted-foreground" />
+                <p className="mt-4 text-sm text-muted-foreground">
                   No customer records yet
                 </p>
               </div>
@@ -248,12 +248,12 @@ export default async function TechnicianDashboardPage({
                     href={`/dashboard/technician/customers/${c.id}`}
                     className="block"
                   >
-                    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-sm">
+                    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-sm">
                       <div>
-                        <p className="font-medium text-slate-900">
+                        <p className="font-medium text-foreground">
                           {c.customerName}
                         </p>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-muted-foreground">
                           {[c.customerEmail, c.pianoMake]
                             .filter(Boolean)
                             .join(" - ")}
@@ -269,8 +269,8 @@ export default async function TechnicianDashboardPage({
 
         {activeTab === "invoices" && (
           <div className="flex flex-col items-center py-16 text-center">
-            <DollarSign className="h-12 w-12 text-slate-300" />
-            <p className="mt-4 text-sm text-slate-500">
+            <DollarSign className="h-12 w-12 text-muted-foreground" />
+            <p className="mt-4 text-sm text-muted-foreground">
               Invoices are available on individual booking pages
             </p>
           </div>
@@ -278,12 +278,12 @@ export default async function TechnicianDashboardPage({
 
         {activeTab === "revenue" && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
-              <h3 className="font-semibold text-slate-900">Revenue Summary</h3>
-              <p className="mt-4 text-3xl font-bold text-slate-900">
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="font-semibold text-foreground">Revenue Summary</h3>
+              <p className="mt-4 text-3xl font-bold text-foreground">
                 {formatCents(totalRevenue)}
               </p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 total earned
               </p>
             </div>

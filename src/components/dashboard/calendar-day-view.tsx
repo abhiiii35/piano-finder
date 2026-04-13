@@ -47,15 +47,15 @@ export function CalendarDayView({
   });
 
   return (
-    <div className="relative border border-slate-200 rounded-lg bg-white overflow-hidden">
+    <div className="relative border border-border rounded-lg bg-card overflow-hidden">
       <div className="relative" style={{ height: `${hours.length * HOUR_HEIGHT}px` }}>
         {hours.map((hour) => (
           <div
             key={hour}
-            className="absolute w-full border-t border-slate-100 flex"
+            className="absolute w-full border-t border-border flex"
             style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
           >
-            <span className="w-16 shrink-0 px-2 py-1 text-xs text-slate-400">
+            <span className="w-16 shrink-0 px-2 py-1 text-xs text-muted-foreground">
               {format(new Date(2026, 0, 1, hour, 0), "h a")}
             </span>
             <div className="flex-1" />

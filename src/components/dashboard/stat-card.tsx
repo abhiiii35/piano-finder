@@ -14,17 +14,17 @@ export function StatCard({
   iconClassName?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center gap-2.5">
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconClassName ?? "bg-slate-100"}`}
+          className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconClassName ?? "bg-secondary"}`}
         >
           <Icon className="h-5 w-5" />
         </div>
-        <span className="text-sm font-medium text-slate-500">{label}</span>
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
       </div>
-      <p className="mt-4 text-3xl font-bold text-slate-900">{value}</p>
-      <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
+      <p className="mt-4 text-3xl font-bold text-foreground">{value}</p>
+      <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
     </div>
   );
 }

@@ -44,18 +44,18 @@ export function CalendarWeekView({
   }
 
   return (
-    <div className="border border-slate-200 rounded-lg bg-white overflow-hidden">
-      <div className="grid grid-cols-[4rem_repeat(7,1fr)] border-b border-slate-200">
+    <div className="border border-border rounded-lg bg-card overflow-hidden">
+      <div className="grid grid-cols-[4rem_repeat(7,1fr)] border-b border-border">
         <div />
         {days.map((day) => (
           <div
             key={day.toISOString()}
             className={`px-2 py-2 text-center text-xs font-medium ${
-              isToday(day) ? "bg-amber-50 text-amber-700" : "text-slate-600"
+              isToday(day) ? "bg-accent/10 text-accent" : "text-muted-foreground"
             }`}
           >
             <div>{format(day, "EEE")}</div>
-            <div className={`text-lg font-semibold ${isToday(day) ? "text-amber-700" : "text-slate-900"}`}>
+            <div className={`text-lg font-semibold ${isToday(day) ? "text-accent" : "text-foreground"}`}>
               {format(day, "d")}
             </div>
           </div>
@@ -67,7 +67,7 @@ export function CalendarWeekView({
           {hours.map((hour) => (
             <div
               key={hour}
-              className="absolute w-full border-t border-slate-100 px-1 py-0.5 text-[10px] text-slate-400"
+              className="absolute w-full border-t border-border px-1 py-0.5 text-[10px] text-muted-foreground"
               style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT}px` }}
             >
               {format(new Date(2026, 0, 1, hour, 0), "h a")}
@@ -78,11 +78,11 @@ export function CalendarWeekView({
         {days.map((day) => {
           const dayBookings = getBookingsForDay(day);
           return (
-            <div key={day.toISOString()} className="relative border-l border-slate-100">
+            <div key={day.toISOString()} className="relative border-l border-border">
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="absolute w-full border-t border-slate-50"
+                  className="absolute w-full border-t border-border"
                   style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
                 />
               ))}

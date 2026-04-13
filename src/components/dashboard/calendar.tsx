@@ -91,36 +91,36 @@ export function Calendar({
         <div className="flex items-center gap-2">
           <button
             onClick={goToday}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-secondary"
           >
             Today
           </button>
           <button
             onClick={() => navigate(-1)}
-            className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-secondary"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={() => navigate(1)}
-            className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-secondary"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
-          <h2 className="text-sm font-semibold text-slate-900 ml-2">
+          <h2 className="text-sm font-semibold text-foreground ml-2">
             {getDateLabel()}
           </h2>
         </div>
 
-        <div className="flex rounded-lg border border-slate-200 p-0.5">
+        <div className="flex rounded-lg border border-border p-0.5">
           {(["day", "week", "month"] as const).map((v) => (
             <button
               key={v}
               onClick={() => changeView(v)}
               className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
                 view === v
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {v.charAt(0).toUpperCase() + v.slice(1)}

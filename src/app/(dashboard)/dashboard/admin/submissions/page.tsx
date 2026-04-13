@@ -18,8 +18,8 @@ export default async function AdminSubmissionsPage() {
   return (
     <div>
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Technician Submissions</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-foreground">Technician Submissions</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Review and approve technician profiles
         </p>
       </div>
@@ -27,8 +27,8 @@ export default async function AdminSubmissionsPage() {
       <div className="mt-8">
         {submissions.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
-            <ClipboardCheck className="h-12 w-12 text-slate-300" />
-            <p className="mt-4 text-sm text-slate-500">No pending submissions</p>
+            <ClipboardCheck className="h-12 w-12 text-muted-foreground" />
+            <p className="mt-4 text-sm text-muted-foreground">No pending submissions</p>
           </div>
         ) : (
           <div className="space-y-4">

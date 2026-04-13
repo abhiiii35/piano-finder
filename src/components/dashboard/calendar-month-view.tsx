@@ -48,12 +48,12 @@ export function CalendarMonthView({
   }
 
   return (
-    <div className="border border-slate-200 rounded-lg bg-white overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-slate-200">
+    <div className="border border-border rounded-lg bg-card overflow-hidden">
+      <div className="grid grid-cols-7 border-b border-border">
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
           <div
             key={d}
-            className="px-2 py-2 text-center text-xs font-medium text-slate-500"
+            className="px-2 py-2 text-center text-xs font-medium text-muted-foreground"
           >
             {d}
           </div>
@@ -70,17 +70,17 @@ export function CalendarMonthView({
             <button
               key={day.toISOString()}
               onClick={() => onDayClick(day)}
-              className={`h-20 border-b border-r border-slate-100 p-1.5 text-left transition-colors hover:bg-slate-50 ${
-                !inMonth ? "bg-slate-50/50" : ""
+              className={`h-20 border-b border-r border-border p-1.5 text-left transition-colors hover:bg-secondary ${
+                !inMonth ? "bg-secondary/50" : ""
               }`}
             >
               <span
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                   today
-                    ? "bg-amber-500 text-white"
+                    ? "bg-accent text-accent-foreground"
                     : inMonth
-                      ? "text-slate-900"
-                      : "text-slate-400"
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                 }`}
               >
                 {format(day, "d")}
