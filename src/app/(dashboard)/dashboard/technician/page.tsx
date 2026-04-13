@@ -101,31 +101,28 @@ export default async function TechnicianDashboardPage({
     all: ["PENDING", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"],
   };
 
-  const tabBookings: CalendarBooking[] =
-    activeTab === "bookings"
-      ? (
-          await prisma.booking.findMany({
-            where: {
-              technicianId: profile.id,
-              scheduledAt: { gte: dateStart, lte: dateEnd },
-              status: { in: statusFilter[filter] ?? statusFilter.upcoming },
-            },
-            include: {
-              customer: { select: { name: true, email: true } },
-              services: { include: { service: true } },
-            },
-            orderBy: { scheduledAt: "asc" },
-          })
-        ).map((b) => ({
-          id: b.id,
-          scheduledAt: b.scheduledAt.toISOString(),
-          durationMin: b.durationMin,
-          status: b.status,
-          customerName: b.customer.name ?? b.customer.email ?? "Customer",
-          serviceName: b.services.map((s) => s.service.name).join(", "),
-          totalCents: b.totalCents,
-        }))
-      : [];
+  const calendarBookings: CalendarBooking[] = (
+    await prisma.booking.findMany({
+      where: {
+        technicianId: profile.id,
+        scheduledAt: { gte: dateStart, lte: dateEnd },
+        status: { in: statusFilter[filter] ?? statusFilter.upcoming },
+      },
+      include: {
+        customer: { select: { name: true, email: true } },
+        services: { include: { service: true } },
+      },
+      orderBy: { scheduledAt: "asc" },
+    })
+  ).map((b) => ({
+    id: b.id,
+    scheduledAt: b.scheduledAt.toISOString(),
+    durationMin: b.durationMin,
+    status: b.status,
+    customerName: b.customer.name ?? b.customer.email ?? "Customer",
+    serviceName: b.services.map((s) => s.service.name).join(", "),
+    totalCents: b.totalCents,
+  }));
 
   // Customers for tab
   const tabCustomers =
@@ -201,6 +198,15 @@ export default async function TechnicianDashboardPage({
         />
       </div>
 
+      {/* Hero Calendar */}
+      <div className="mt-8">
+        <Calendar
+          bookings={calendarBookings}
+          initialDate={format(calendarDate, "yyyy-MM-dd")}
+          initialView={calendarView}
+        />
+      </div>
+
       {/* Tabs */}
       <div className="mt-8 flex items-center gap-1 border-b border-border">
         {tabs.map((tab) => (
@@ -221,14 +227,7 @@ export default async function TechnicianDashboardPage({
       {/* Tab content */}
       <div className="mt-6">
         {activeTab === "bookings" && (
-          <>
-            <BookingFilter currentFilter={filter} />
-            <Calendar
-              bookings={tabBookings}
-              initialDate={format(calendarDate, "yyyy-MM-dd")}
-              initialView={calendarView}
-            />
-          </>
+          <BookingFilter currentFilter={filter} />
         )}
 
         {activeTab === "customers" && (
