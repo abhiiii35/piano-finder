@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Music, Search, LayoutDashboard, LogOut, User, Briefcase } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,7 +56,8 @@ export function Header() {
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           {session?.user.role === "CUSTOMER" && (
             <Link
               href="/sign-up/technician"
