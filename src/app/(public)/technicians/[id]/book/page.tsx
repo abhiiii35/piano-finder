@@ -507,6 +507,26 @@ export default function BookingPage() {
                   </p>
                 </div>
               )}
+              {/* What to Expect */}
+              <div className="rounded-lg border border-border bg-secondary p-4">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-medium text-foreground">What to Expect</h3>
+                </div>
+                <ul className="mt-3 space-y-2">
+                  {[
+                    "Tuning typically takes 1-2 hours",
+                    "Please ensure clear access to your piano",
+                    "Your technician will confirm the appointment",
+                    "You can message your technician after booking",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => { setConflictSlots(null); setStep(3); }}>
                   Back
