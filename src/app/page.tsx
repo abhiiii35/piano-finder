@@ -31,18 +31,18 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-gradient-to-b from-secondary to-background px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
+        <section className="relative overflow-hidden bg-gradient-to-b from-secondary to-background px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3.5 py-1 text-sm font-medium text-accent">
+            <div className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3.5 py-1 text-sm font-medium text-accent">
               <span>The #1 Piano Technician Platform</span>
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            <h1 className="animate-fade-up animation-delay-100 mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               Your piano deserves{" "}
               <span className="text-accent">expert care</span>
             </h1>
 
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+            <p className="animate-fade-up animation-delay-200 mt-6 text-lg leading-relaxed text-muted-foreground">
               Find certified piano tuners and technicians near you. Book online,
               pay securely, and keep your piano sounding its best.
             </p>
@@ -50,7 +50,7 @@ export default function HomePage() {
             {/* Search Bar */}
             <form
               onSubmit={handleSearch}
-              className="mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-border"
+              className="animate-fade-up animation-delay-300 mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-border"
             >
               <div className="flex flex-1 items-center gap-2 pl-3">
                 <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -70,25 +70,67 @@ export default function HomePage() {
                 Find Tuners
               </button>
             </form>
+
+            {/* Benefit pills */}
+            <div className="animate-fade-up animation-delay-400 mx-auto mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              {[
+                { icon: CalendarCheck, label: "Instant booking" },
+                { icon: ShieldCheck, label: "Verified credentials" },
+                { icon: CheckCircle2, label: "No phone calls" },
+              ].map((item) => (
+                <span
+                  key={item.label}
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                >
+                  <item.icon className="h-4 w-4 text-accent" />
+                  {item.label}
+                </span>
+              ))}
+            </div>
           </div>
 
-          {/* Stats */}
-          <div className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-8 sm:grid-cols-4">
-            {[
-              { value: "500+", label: "Verified Technicians" },
-              { value: "50K+", label: "Pianos Serviced" },
-              { value: "4.9", label: "Average Rating" },
-              { value: "48hrs", label: "Avg. Booking Time" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-2xl font-bold text-foreground sm:text-3xl">
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-xs font-medium text-muted-foreground sm:text-sm">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
+          {/* Piano key motif */}
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-20 opacity-[0.06]"
+            style={{
+              maskImage: "linear-gradient(to bottom, transparent, black 40%)",
+              WebkitMaskImage: "linear-gradient(to bottom, transparent, black 40%)",
+            }}
+          >
+            <svg
+              className="h-full w-full"
+              viewBox="0 0 1400 80"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* White keys */}
+              {Array.from({ length: 28 }, (_, i) => (
+                <rect
+                  key={`w${i}`}
+                  x={i * 50}
+                  y="0"
+                  width="48"
+                  height="80"
+                  fill="currentColor"
+                  className="text-foreground"
+                />
+              ))}
+              {/* Black keys */}
+              {[1, 2, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16, 18, 19, 20, 22, 23, 25, 26, 27].map(
+                (i) => (
+                  <rect
+                    key={`b${i}`}
+                    x={i * 50 - 15}
+                    y="0"
+                    width="30"
+                    height="50"
+                    fill="currentColor"
+                    className="text-foreground"
+                    opacity="0.6"
+                  />
+                )
+              )}
+            </svg>
           </div>
         </section>
 
