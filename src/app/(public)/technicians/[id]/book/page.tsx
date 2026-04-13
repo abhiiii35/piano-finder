@@ -24,6 +24,9 @@ type TechnicianData = {
   businessName: string | null;
   user: { name: string | null };
   services: Service[];
+  avgRating: number;
+  reviewCount: number;
+  isVerified: boolean;
 };
 
 export default function BookingPage() {
