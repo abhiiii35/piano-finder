@@ -19,13 +19,13 @@ export function Header() {
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800">
-            <Music className="h-5 w-5 text-white" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <Music className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-slate-900">
+          <span className="text-lg font-bold tracking-tight text-foreground">
             PianoTune
           </span>
         </Link>
@@ -33,14 +33,14 @@ export function Header() {
         <nav className="hidden items-center gap-8 sm:flex">
           <Link
             href="/search"
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <Search className="h-4 w-4" />
             Find a Tuner
           </Link>
           <Link
             href="/jobs"
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <Briefcase className="h-4 w-4" />
             Job Board
@@ -48,7 +48,7 @@ export function Header() {
           {session?.user.role === "TECHNICIAN" && (
             <Link
               href="/dashboard/technician"
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
@@ -61,7 +61,7 @@ export function Header() {
           {session?.user.role === "CUSTOMER" && (
             <Link
               href="/sign-up/technician"
-              className="hidden rounded-full border border-slate-200 px-4 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:block"
+              className="hidden rounded-full border border-border px-4 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary sm:block"
             >
               Join as Technician
             </Link>
@@ -70,15 +70,15 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger className="rounded-full focus:outline-none">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-slate-100 text-slate-700 text-sm">
+                  <AvatarFallback className="bg-secondary text-foreground text-sm">
                     {session.user.name?.[0]?.toUpperCase() ?? "U"}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={8} className="w-56">
                 <div className="px-3 py-2.5">
-                  <p className="font-semibold text-slate-900">{session.user.name}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="font-semibold text-foreground">{session.user.name}</p>
+                  <p className="text-sm text-muted-foreground">
                     {session.user.email}
                   </p>
                 </div>
@@ -115,7 +115,7 @@ export function Header() {
             </DropdownMenu>
           ) : (
             <Link href="/sign-in">
-              <User className="h-5 w-5 text-slate-600 hover:text-slate-900 transition-colors" />
+              <User className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             </Link>
           )}
         </div>

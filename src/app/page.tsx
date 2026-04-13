@@ -31,18 +31,18 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         {/* Hero */}
-        <section className="bg-gradient-to-b from-amber-50/60 to-white px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
+        <section className="bg-gradient-to-b from-secondary to-background px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-sm font-medium text-amber-700">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3.5 py-1 text-sm font-medium text-accent">
               <span>The #1 Piano Technician Platform</span>
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               Your piano deserves{" "}
-              <span className="text-amber-600">expert care</span>
+              <span className="text-accent">expert care</span>
             </h1>
 
-            <p className="mt-6 text-lg leading-relaxed text-slate-600">
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
               Find certified piano tuners and technicians near you. Book online,
               pay securely, and keep your piano sounding its best.
             </p>
@@ -50,21 +50,21 @@ export default function HomePage() {
             {/* Search Bar */}
             <form
               onSubmit={handleSearch}
-              className="mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-slate-200 bg-white p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-slate-300"
+              className="mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-border"
             >
               <div className="flex flex-1 items-center gap-2 pl-3">
-                <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+                <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Enter your city or zip code"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
               <button
                 type="submit"
-                className="flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+                className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <Search className="h-4 w-4" />
                 Find Tuners
@@ -81,10 +81,10 @@ export default function HomePage() {
               { value: "48hrs", label: "Avg. Booking Time" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-2xl font-bold text-amber-600 sm:text-3xl">
+                <p className="text-2xl font-bold text-foreground sm:text-3xl">
                   {stat.value}
                 </p>
-                <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+                <p className="mt-1 text-xs font-medium text-muted-foreground sm:text-sm">
                   {stat.label}
                 </p>
               </div>
@@ -95,10 +95,10 @@ export default function HomePage() {
         {/* How It Works */}
         <section className="px-4 py-20">
           <div className="mx-auto max-w-5xl">
-            <h2 className="text-center text-3xl font-bold text-slate-900">
+            <h2 className="text-center text-3xl font-bold text-foreground">
               How it works
             </h2>
-            <p className="mt-3 text-center text-slate-500">
+            <p className="mt-3 text-center text-muted-foreground">
               Book a piano tuner in three simple steps
             </p>
 
@@ -131,15 +131,15 @@ export default function HomePage() {
               ].map((step, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm"
+                  className="rounded-xl border border-border bg-card p-6 shadow-sm"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
-                    <step.icon className="h-5 w-5 text-amber-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                    <step.icon className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <h3 className="mt-4 font-semibold text-slate-900">
+                  <h3 className="mt-4 font-semibold text-foreground">
                     {step.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
                 </div>
@@ -149,19 +149,19 @@ export default function HomePage() {
         </section>
 
         {/* For Technicians — dark section */}
-        <section className="bg-slate-900 px-4 py-20">
+        <section className="bg-[#0f1729] px-4 py-20">
           <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center">
             {/* Left: copy */}
             <div>
-              <div className="inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400">
+              <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-medium text-accent">
                 For Piano Technicians
               </div>
 
-              <h2 className="mt-6 text-3xl font-bold text-white sm:text-4xl">
+              <h2 className="mt-6 text-3xl font-bold text-[#f5f0e8] sm:text-4xl">
                 Replace your entire tool stack
               </h2>
 
-              <p className="mt-4 text-slate-400 leading-relaxed">
+              <p className="mt-4 text-[#8a94a8] leading-relaxed">
                 PianoTune replaces Square, QuickBooks, Google Calendar, and paper
                 logs. Everything you need to run your business in one platform.
               </p>
@@ -174,15 +174,15 @@ export default function HomePage() {
                   "Route optimization for daily scheduling",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-                    <span className="text-sm text-slate-300">{item}</span>
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+                    <span className="text-sm text-[#c5c9d4]">{item}</span>
                   </li>
                 ))}
               </ul>
 
               <Link
                 href="/sign-up"
-                className="mt-10 inline-flex items-center gap-2 rounded-full bg-amber-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+                className="mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
               >
                 Join as a Technician
                 <ArrowRight className="h-4 w-4" />
@@ -190,12 +190,12 @@ export default function HomePage() {
             </div>
 
             {/* Right: schedule mockup */}
-            <div className="rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-lg">
+            <div className="rounded-xl border border-[#1e2d4a] bg-[#162040] p-6 shadow-lg">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-white">
+                <h3 className="font-semibold text-[#f5f0e8]">
                   Today&apos;s Schedule
                 </h3>
-                <span className="text-sm text-slate-400">March 29</span>
+                <span className="text-sm text-[#8a94a8]">March 29</span>
               </div>
 
               <div className="mt-6 space-y-3">
@@ -218,16 +218,16 @@ export default function HomePage() {
                 ].map((appointment) => (
                   <div
                     key={appointment.time}
-                    className="flex items-center gap-4 rounded-lg border border-slate-700 bg-slate-800/50 p-4"
+                    className="flex items-center gap-4 rounded-lg border border-[#1e2d4a] bg-[#162040]/50 p-4"
                   >
-                    <span className="text-sm font-semibold text-amber-400 w-20 shrink-0">
+                    <span className="text-sm font-semibold text-accent w-20 shrink-0">
                       {appointment.time}
                     </span>
                     <div>
-                      <p className="font-medium text-white text-sm">
+                      <p className="font-medium text-[#f5f0e8] text-sm">
                         {appointment.name}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-[#8a94a8]">
                         {appointment.service}
                       </p>
                     </div>
