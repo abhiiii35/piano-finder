@@ -14,12 +14,15 @@ import {
   Star,
   CheckCircle2,
   ArrowRight,
+  Quote,
 } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const emotionalSection = useAnimateOnScroll();
   const howItWorks = useAnimateOnScroll();
+  const testimonials = useAnimateOnScroll();
   const forTechnicians = useAnimateOnScroll();
 
   function handleSearch(e: React.FormEvent) {
@@ -137,6 +140,47 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Emotional statement */}
+        <section className="relative px-4 py-24 sm:py-32" ref={emotionalSection.ref}>
+          {/* Staff lines motif */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col justify-center gap-[18px] opacity-[0.04]">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="h-px w-full bg-foreground" />
+            ))}
+          </div>
+
+          <div className="relative mx-auto max-w-3xl text-center">
+            <div
+              className={`mx-auto mb-6 h-px w-16 bg-accent ${
+                emotionalSection.isVisible ? "animate-fade-in" : "opacity-0"
+              }`}
+            />
+            <blockquote
+              className={`text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl ${
+                emotionalSection.isVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
+              }`}
+            >
+              Every piano tells a story.
+              <br />
+              <span className="text-accent">We connect you with technicians who listen.</span>
+            </blockquote>
+            <p
+              className={`mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground ${
+                emotionalSection.isVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
+              }`}
+            >
+              Whether it&apos;s a family heirloom or a concert grand, your piano
+              deserves someone who understands its voice. Our technicians bring
+              decades of experience and genuine care to every instrument.
+            </p>
+            <div
+              className={`mx-auto mt-6 h-px w-16 bg-accent ${
+                emotionalSection.isVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
+              }`}
+            />
+          </div>
+        </section>
+
         {/* How It Works */}
         <section className="px-4 py-20" ref={howItWorks.ref}>
           <div className="mx-auto max-w-5xl">
@@ -201,6 +245,107 @@ export default function HomePage() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="border-y border-border bg-secondary/50 px-4 py-20" ref={testimonials.ref}>
+          <div className="mx-auto max-w-5xl">
+            <p
+              className={`text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground ${
+                testimonials.isVisible ? "animate-fade-in" : "opacity-0"
+              }`}
+            >
+              Trusted by piano owners
+            </p>
+
+            <div className="mt-12 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+              {/* Featured testimonial — large */}
+              <div
+                className={`relative rounded-2xl border border-border bg-card p-8 shadow-sm ${
+                  testimonials.isVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
+                }`}
+              >
+                <Quote className="absolute right-6 top-6 h-8 w-8 text-accent/20" />
+                <p className="text-lg leading-relaxed text-foreground">
+                  &ldquo;I&apos;ve been searching for a reliable tuner for years.
+                  Within 10 minutes I found someone with 20 years of experience,
+                  read their reviews, and booked for the same week. My Steinway
+                  has never sounded better.&rdquo;
+                </p>
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                    SM
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Sarah Mitchell
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Steinway owner &middot; Boston, MA
+                    </p>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-accent text-accent" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stacked smaller testimonials */}
+              <div className="flex flex-col gap-6">
+                <div
+                  className={`rounded-2xl border border-border bg-card p-6 shadow-sm ${
+                    testimonials.isVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed text-foreground">
+                    &ldquo;The booking process was incredibly smooth. Our technician
+                    was punctual, professional, and took the time to explain
+                    everything about our piano&apos;s condition.&rdquo;
+                  </p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-xs font-bold text-accent-foreground">
+                      TW
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        Tom Williams
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Yamaha owner &middot; Chicago, IL
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={`rounded-2xl border border-border bg-card p-6 shadow-sm ${
+                    testimonials.isVisible ? "animate-fade-up animation-delay-300" : "opacity-0"
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed text-foreground">
+                    &ldquo;As a piano teacher, I need my instruments in top shape.
+                    PianoTune makes it easy to schedule regular tunings and keep
+                    track of my service history.&rdquo;
+                  </p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                      ML
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        Maria Lopez
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Piano teacher &middot; Austin, TX
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
