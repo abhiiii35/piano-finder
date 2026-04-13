@@ -18,8 +18,8 @@ export default async function OnboardingPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-bold text-slate-900">Complete Your Profile</h1>
-      <p className="mb-8 text-sm text-slate-500">
+      <h1 className="mb-2 text-2xl font-bold text-foreground">Complete Your Profile</h1>
+      <p className="mb-8 text-sm text-muted-foreground">
         Just a few more details before you can start receiving bookings.
       </p>
       <OnboardingWizard

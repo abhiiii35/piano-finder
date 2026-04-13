@@ -27,8 +27,8 @@ export default async function SubmitPage() {
 
   return (
     <div className="w-full max-w-lg">
-      <h1 className="mb-2 text-2xl font-bold text-slate-900">Review & Submit</h1>
-      <p className="mb-8 text-sm text-slate-500">
+      <h1 className="mb-2 text-2xl font-bold text-foreground">Review & Submit</h1>
+      <p className="mb-8 text-sm text-muted-foreground">
         Review your profile below. Once submitted, an admin will review it.
       </p>
 
@@ -40,66 +40,66 @@ export default async function SubmitPage() {
       )}
 
       <div className="space-y-6">
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h3 className="font-semibold text-slate-900 mb-3">Profile</h3>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="font-semibold text-foreground mb-3">Profile</h3>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <dt className="text-slate-500">Name</dt>
-              <dd className="text-slate-900">{profile.user.name}</dd>
+              <dt className="text-muted-foreground">Name</dt>
+              <dd className="text-foreground">{profile.user.name}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Location</dt>
-              <dd className="text-slate-900">{profile.city}, {profile.state}</dd>
+              <dt className="text-muted-foreground">Location</dt>
+              <dd className="text-foreground">{profile.city}, {profile.state}</dd>
             </div>
             {profile.businessName && (
               <div className="flex justify-between">
-                <dt className="text-slate-500">Business</dt>
-                <dd className="text-slate-900">{profile.businessName}</dd>
+                <dt className="text-muted-foreground">Business</dt>
+                <dd className="text-foreground">{profile.businessName}</dd>
               </div>
             )}
             {profile.yearsExperience != null && (
               <div className="flex justify-between">
-                <dt className="text-slate-500">Experience</dt>
-                <dd className="text-slate-900">{profile.yearsExperience} years</dd>
+                <dt className="text-muted-foreground">Experience</dt>
+                <dd className="text-foreground">{profile.yearsExperience} years</dd>
               </div>
             )}
             {profile.bio && (
               <div>
-                <dt className="text-slate-500 mb-1">Bio</dt>
-                <dd className="text-slate-900">{profile.bio}</dd>
+                <dt className="text-muted-foreground mb-1">Bio</dt>
+                <dd className="text-foreground">{profile.bio}</dd>
               </div>
             )}
           </dl>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h3 className="font-semibold text-slate-900 mb-3">Services ({profile.services.length})</h3>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="font-semibold text-foreground mb-3">Services ({profile.services.length})</h3>
           {profile.services.length === 0 ? (
-            <p className="text-sm text-slate-500">No services added yet.</p>
+            <p className="text-sm text-muted-foreground">No services added yet.</p>
           ) : (
             <ul className="space-y-2">
               {profile.services.map((svc) => (
                 <li key={svc.id} className="flex justify-between text-sm">
-                  <span className="text-slate-900">{svc.name}</span>
-                  <span className="text-slate-500">${(svc.priceCents / 100).toFixed(2)}</span>
+                  <span className="text-foreground">{svc.name}</span>
+                  <span className="text-muted-foreground">${(svc.priceCents / 100).toFixed(2)}</span>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h3 className="font-semibold text-slate-900 mb-3">Availability</h3>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="font-semibold text-foreground mb-3">Availability</h3>
           {profile.availabilitySlots.length === 0 ? (
-            <p className="text-sm text-slate-500">No availability set (you can add this later).</p>
+            <p className="text-sm text-muted-foreground">No availability set (you can add this later).</p>
           ) : (
             <ul className="space-y-1">
               {profile.availabilitySlots
                 .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
                 .map((slot) => (
                   <li key={slot.id} className="flex justify-between text-sm">
-                    <span className="text-slate-900">{dayNames[slot.dayOfWeek]}</span>
-                    <span className="text-slate-500">{slot.startTime} - {slot.endTime}</span>
+                    <span className="text-foreground">{dayNames[slot.dayOfWeek]}</span>
+                    <span className="text-muted-foreground">{slot.startTime} - {slot.endTime}</span>
                   </li>
                 ))}
             </ul>

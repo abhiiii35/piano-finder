@@ -48,17 +48,17 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm border border-slate-100">
+    <div className="w-full max-w-sm rounded-2xl bg-card p-8 shadow-sm border border-border">
       {/* Back link */}
       <Link
         href="/sign-in"
-        className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to sign in
       </Link>
 
-      <h1 className="mt-5 text-center text-xl font-bold text-slate-900">
+      <h1 className="mt-5 text-center text-xl font-bold text-foreground">
         Create your account
       </h1>
 
@@ -70,50 +70,50 @@ export default function SignUpPage() {
         )}
 
         <div className="space-y-1.5">
-          <label className="block text-center text-sm font-medium text-slate-700">
+          <label className="block text-center text-sm font-medium text-foreground">
             Email
           </label>
-          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
-            <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2.5 rounded-xl border border-border px-3.5 py-2.5 focus-within:border-border focus-within:ring-1 focus-within:ring-ring">
+            <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               name="email"
               type="email"
               placeholder="you@example.com"
               required
-              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-center text-sm font-medium text-slate-700">
+          <label className="block text-center text-sm font-medium text-foreground">
             Password
           </label>
-          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
-            <Lock className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2.5 rounded-xl border border-border px-3.5 py-2.5 focus-within:border-border focus-within:ring-1 focus-within:ring-ring">
+            <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               name="password"
               type="password"
               placeholder="Min. 8 characters"
               minLength={8}
               required
-              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-center text-sm font-medium text-slate-700">
+          <label className="block text-center text-sm font-medium text-foreground">
             Confirm Password
           </label>
-          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
-            <Lock className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2.5 rounded-xl border border-border px-3.5 py-2.5 focus-within:border-border focus-within:ring-1 focus-within:ring-ring">
+            <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               name="confirmPassword"
               type="password"
               placeholder="Re-enter password"
               required
-              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function SignUpPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? "Creating account..." : "Create account"}
         </button>

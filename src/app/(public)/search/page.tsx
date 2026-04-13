@@ -14,7 +14,7 @@ export default async function SearchPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Find Piano Tuners</h1>
+      <h1 className="text-2xl font-bold text-foreground">Find Piano Tuners</h1>
 
       <div className="mt-6">
         <Suspense fallback={null}>
@@ -56,10 +56,10 @@ async function SearchResults({
   if (technicians.length === 0) {
     return (
       <div className="mt-16 text-center">
-        <p className="text-lg font-medium text-slate-900">
+        <p className="text-lg font-medium text-foreground">
           No technicians found
         </p>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Try adjusting your search filters or broadening your location
         </p>
       </div>
@@ -68,7 +68,7 @@ async function SearchResults({
 
   return (
     <>
-      <p className="mt-4 text-sm text-slate-500">
+      <p className="mt-4 text-sm text-muted-foreground">
         {technicians.length} technician{technicians.length !== 1 ? "s" : ""}{" "}
         available
       </p>
@@ -100,7 +100,7 @@ function SearchSkeleton() {
   return (
     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }, (_, i) => (
-        <div key={i} className="rounded-xl border border-slate-200 p-5">
+        <div key={i} className="rounded-xl border border-border p-5">
           <div className="flex gap-3">
             <Skeleton className="h-11 w-11 rounded-lg" />
             <div className="flex-1 space-y-2">

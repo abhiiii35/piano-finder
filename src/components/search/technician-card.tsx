@@ -27,12 +27,12 @@ function getInitials(name: string | null, businessName: string | null): string {
 }
 
 const avatarColors = [
-  "bg-slate-800 text-white",
-  "bg-amber-100 text-amber-800",
-  "bg-blue-100 text-blue-800",
-  "bg-emerald-100 text-emerald-800",
-  "bg-purple-100 text-purple-800",
-  "bg-rose-100 text-rose-800",
+  "bg-primary text-primary-foreground",
+  "bg-accent/20 text-accent-foreground",
+  "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+  "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+  "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
 ];
 
 function colorFromId(id: string): string {
@@ -63,7 +63,7 @@ export function TechnicianCard({
 
   return (
     <Link href={`/technicians/${id}`} className="block">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md">
+      <div className="rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
         {/* Header row */}
         <div className="flex items-start gap-3">
           <div
@@ -73,14 +73,14 @@ export function TechnicianCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <h3 className="truncate font-semibold text-slate-900">
+              <h3 className="truncate font-semibold text-foreground">
                 {displayName}
               </h3>
               {isVerified && (
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {city && state && (
                 <span className="flex items-center gap-0.5">
                   <MapPin className="h-3 w-3" />
@@ -91,7 +91,7 @@ export function TechnicianCard({
                 <span>{yearsExperience}yr exp</span>
               )}
               {distanceMiles != null && (
-                <span className="text-xs text-amber-600 font-medium">
+                <span className="text-xs text-accent font-medium">
                   {distanceMiles} mi away
                 </span>
               )}
@@ -103,14 +103,14 @@ export function TechnicianCard({
         <div className="mt-3 flex items-center gap-3">
           {reviewCount > 0 && (
             <div className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-semibold text-slate-900">
+              <Star className="h-3.5 w-3.5 fill-accent text-accent" />
+              <span className="text-sm font-semibold text-foreground">
                 {avgRating.toFixed(1)}
               </span>
-              <span className="text-xs text-slate-400">({reviewCount})</span>
+              <span className="text-xs text-muted-foreground">({reviewCount})</span>
             </div>
           )}
-          <span className="flex items-center gap-1 text-xs font-medium text-amber-600">
+          <span className="flex items-center gap-1 text-xs font-medium text-accent">
             <Zap className="h-3 w-3" />
             Instant Book
           </span>
@@ -121,13 +121,13 @@ export function TechnicianCard({
           {visibleServices.map((svc) => (
             <span
               key={svc.name}
-              className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
+              className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
             >
               {svc.name}
             </span>
           ))}
           {overflow > 0 && (
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-400">
+            <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground">
               +{overflow}
             </span>
           )}
@@ -137,8 +137,8 @@ export function TechnicianCard({
         {minPrice > 0 && (
           <div className="mt-4 flex items-baseline justify-between">
             <div>
-              <span className="text-xs text-slate-400">Starting at</span>
-              <p className="text-xl font-bold text-slate-900">
+              <span className="text-xs text-muted-foreground">Starting at</span>
+              <p className="text-xl font-bold text-foreground">
                 ${(minPrice / 100).toFixed(0)}
               </p>
             </div>

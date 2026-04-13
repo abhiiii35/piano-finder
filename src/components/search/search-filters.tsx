@@ -34,20 +34,20 @@ export function SearchFilters() {
       onSubmit={handleSearch}
       className="flex flex-col gap-3 sm:flex-row sm:items-center"
     >
-      <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
-        <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+      <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5 focus-within:border-border focus-within:ring-1 focus-within:ring-ring">
+        <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
         <input
           type="text"
           placeholder="City or zip code"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
       </div>
 
       <div className="relative">
         <select
-          className="appearance-none rounded-lg border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+          className="appearance-none rounded-lg border border-border bg-card py-2.5 pl-3 pr-8 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
           defaultValue=""
         >
           <option value="">All Services</option>
@@ -56,20 +56,20 @@ export function SearchFilters() {
           <option value="regulation">Regulation</option>
           <option value="voicing">Voicing</option>
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       </div>
 
       <div className="relative">
         <select
           value={sort}
           onChange={handleSortChange}
-          className="appearance-none rounded-lg border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+          className="appearance-none rounded-lg border border-border bg-card py-2.5 pl-3 pr-8 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="rating">Top Rated</option>
           <option value="price">Lowest Price</option>
           <option value="experience">Most Experienced</option>
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       </div>
 
       <FilterSelect

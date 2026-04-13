@@ -19,11 +19,11 @@ export default function TechnicianSignupPage() {
 
   if (!session) {
     return (
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm border border-slate-100 text-center">
-        <p className="text-slate-600">Please sign in first to join as a technician.</p>
+      <div className="w-full max-w-2xl rounded-2xl bg-card p-8 shadow-sm border border-border text-center">
+        <p className="text-muted-foreground">Please sign in first to join as a technician.</p>
         <Link
           href="/sign-in"
-          className="mt-4 inline-block rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white"
+          className="mt-4 inline-block rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground"
         >
           Sign In
         </Link>
@@ -60,11 +60,11 @@ export default function TechnicianSignupPage() {
   const nameParts = defaultName.split(" ");
 
   return (
-    <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-sm border border-slate-100">
+    <div className="w-full max-w-2xl rounded-2xl bg-card p-8 shadow-sm border border-border">
       {/* Back */}
       <Link
         href="/"
-        className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back
@@ -72,13 +72,13 @@ export default function TechnicianSignupPage() {
 
       {/* Header */}
       <div className="mt-6 flex flex-col items-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50">
-          <Music className="h-6 w-6 text-amber-600" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
+          <Music className="h-6 w-6 text-muted-foreground" />
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-slate-900">
+        <h1 className="mt-4 text-2xl font-bold text-foreground">
           Join as a Technician
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Set up your profile and start accepting bookings
         </p>
       </div>
@@ -86,98 +86,98 @@ export default function TechnicianSignupPage() {
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
         {/* Personal Info */}
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Personal Info</h2>
+          <h2 className="text-lg font-semibold text-foreground">Personal Info</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 First Name <span className="text-red-500">*</span>
               </label>
               <input
                 name="firstName"
                 required
                 defaultValue={nameParts[0] ?? ""}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 Last Name <span className="text-red-500">*</span>
               </label>
               <input
                 name="lastName"
                 required
                 defaultValue={nameParts.slice(1).join(" ")}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">Phone</label>
+              <label className="text-sm font-medium text-foreground">Phone</label>
               <input
                 name="phone"
                 type="tel"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 Years of Experience
               </label>
               <input
                 name="yearsExperience"
                 type="number"
                 min="0"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
           </div>
           <div className="mt-4 space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Bio</label>
+            <label className="text-sm font-medium text-foreground">Bio</label>
             <textarea
               name="bio"
               rows={3}
               placeholder="Tell customers about yourself..."
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+              className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
         </section>
 
         {/* Service Area */}
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Service Area</h2>
+          <h2 className="text-lg font-semibold text-foreground">Service Area</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 City <span className="text-red-500">*</span>
               </label>
               <input
                 name="city"
                 required
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 State <span className="text-red-500">*</span>
               </label>
               <input
                 name="state"
                 required
                 maxLength={2}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">Zip Code</label>
+              <label className="text-sm font-medium text-foreground">Zip Code</label>
               <input
                 name="zipCode"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
           </div>
           <div className="mt-4 space-y-1.5 sm:w-1/2">
-            <label className="text-sm font-medium text-slate-700">
+            <label className="text-sm font-medium text-foreground">
               Service Radius (miles)
             </label>
             <input
@@ -185,29 +185,29 @@ export default function TechnicianSignupPage() {
               type="number"
               min="1"
               defaultValue="25"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+              className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
         </section>
 
         {/* Services Offered */}
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Services Offered</h2>
+          <h2 className="text-lg font-semibold text-foreground">Services Offered</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SERVICE_TYPES.map((svc) => (
               <label
                 key={svc}
                 className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-4 py-3 text-sm transition-colors ${
                   selectedServices.includes(svc)
-                    ? "border-slate-900 bg-slate-50 font-medium text-slate-900"
-                    : "border-slate-200 text-slate-600 hover:border-slate-300"
+                    ? "border-primary bg-secondary font-medium text-foreground"
+                    : "border-border text-muted-foreground hover:border-border"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={selectedServices.includes(svc)}
                   onChange={() => toggleItem(selectedServices, setSelectedServices, svc)}
-                  className="h-4 w-4 rounded border-slate-300"
+                  className="h-4 w-4 rounded border-border"
                 />
                 {svc}
               </label>
@@ -217,22 +217,22 @@ export default function TechnicianSignupPage() {
 
         {/* Piano Types */}
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Piano Types</h2>
+          <h2 className="text-lg font-semibold text-foreground">Piano Types</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {PIANO_TYPES.map((type) => (
               <label
                 key={type}
                 className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-4 py-3 text-sm transition-colors ${
                   selectedPianoTypes.includes(type)
-                    ? "border-slate-900 bg-slate-50 font-medium text-slate-900"
-                    : "border-slate-200 text-slate-600 hover:border-slate-300"
+                    ? "border-primary bg-secondary font-medium text-foreground"
+                    : "border-border text-muted-foreground hover:border-border"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={selectedPianoTypes.includes(type)}
                   onChange={() => toggleItem(selectedPianoTypes, setSelectedPianoTypes, type)}
-                  className="h-4 w-4 rounded border-slate-300"
+                  className="h-4 w-4 rounded border-border"
                 />
                 {type}
               </label>
@@ -242,10 +242,10 @@ export default function TechnicianSignupPage() {
 
         {/* Pricing */}
         <section>
-          <h2 className="text-lg font-semibold text-slate-900">Pricing</h2>
+          <h2 className="text-lg font-semibold text-foreground">Pricing</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 Base Tuning Price ($)
               </label>
               <input
@@ -254,11 +254,11 @@ export default function TechnicianSignupPage() {
                 min="0"
                 step="1"
                 placeholder="150"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 Travel Fee ($)
               </label>
               <input
@@ -267,11 +267,11 @@ export default function TechnicianSignupPage() {
                 min="0"
                 step="1"
                 placeholder="25"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-foreground">
                 Pitch Raise Fee ($)
               </label>
               <input
@@ -280,25 +280,25 @@ export default function TechnicianSignupPage() {
                 min="0"
                 step="1"
                 placeholder="50"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-900 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
           </div>
         </section>
 
         {/* PTG Member */}
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-4 transition-colors hover:border-slate-300">
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-4 py-4 transition-colors hover:border-border">
           <input
             type="checkbox"
             checked={ptgMember}
             onChange={() => setPtgMember(!ptgMember)}
-            className="h-4 w-4 rounded border-slate-300"
+            className="h-4 w-4 rounded border-border"
           />
           <div>
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-foreground">
               Piano Technician Guild Member
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Check if you&apos;re a registered PTG member
             </p>
           </div>
@@ -308,7 +308,7 @@ export default function TechnicianSignupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-amber-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+          className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? "Creating profile..." : "Create Technician Profile"}
         </button>

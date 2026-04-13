@@ -36,26 +36,26 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm border border-slate-100">
+    <div className="w-full max-w-sm rounded-2xl bg-card p-8 shadow-sm border border-border">
       {/* Logo */}
       <div className="flex flex-col items-center">
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-slate-800">
-          <Music className="h-7 w-7 text-white" />
-          <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500">
-            <Key className="h-3.5 w-3.5 text-white" />
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary">
+          <Music className="h-7 w-7 text-primary-foreground" />
+          <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary">
+            <Key className="h-3.5 w-3.5 text-primary-foreground" />
           </div>
         </div>
-        <h1 className="mt-5 text-xl font-bold text-slate-900">
+        <h1 className="mt-5 text-xl font-bold text-foreground">
           Welcome to PianoTune
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Sign in to continue</p>
+        <p className="mt-1 text-sm text-muted-foreground">Sign in to continue</p>
       </div>
 
       {/* Google Sign In */}
       <button
         type="button"
         onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-        className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+        className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -68,9 +68,9 @@ export default function SignInPage() {
 
       {/* Divider */}
       <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs font-medium text-slate-400">OR</span>
-        <div className="h-px flex-1 bg-slate-200" />
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs font-medium text-muted-foreground">OR</span>
+        <div className="h-px flex-1 bg-border" />
       </div>
 
       {/* Form */}
@@ -82,33 +82,33 @@ export default function SignInPage() {
         )}
 
         <div className="space-y-1.5">
-          <label className="block text-center text-sm font-medium text-slate-700">
+          <label className="block text-center text-sm font-medium text-foreground">
             Email
           </label>
-          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
-            <Mail className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2.5 rounded-xl border border-border px-3.5 py-2.5 focus-within:border-border focus-within:ring-1 focus-within:ring-ring">
+            <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               name="email"
               type="email"
               placeholder="you@example.com"
               required
-              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-center text-sm font-medium text-slate-700">
+          <label className="block text-center text-sm font-medium text-foreground">
             Password
           </label>
-          <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2.5 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-300">
-            <Lock className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2.5 rounded-xl border border-border px-3.5 py-2.5 focus-within:border-border focus-within:ring-1 focus-within:ring-ring">
+            <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               name="password"
               type="password"
               placeholder="••••••••"
               required
-              className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
@@ -124,12 +124,12 @@ export default function SignInPage() {
 
       {/* Footer */}
       <div className="mt-6 flex items-center justify-between text-sm">
-        <button type="button" className="text-slate-500 hover:text-slate-700">
+        <button type="button" className="text-muted-foreground hover:text-foreground">
           Forgot password?
         </button>
-        <span className="text-slate-500">
+        <span className="text-muted-foreground">
           Need an account?{" "}
-          <Link href="/sign-up" className="font-medium text-slate-900 hover:underline">
+          <Link href="/sign-up" className="font-medium text-foreground hover:underline">
             Sign up
           </Link>
         </span>
