@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Star, ShieldCheck, Info } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -28,6 +29,80 @@ type TechnicianData = {
   reviewCount: number;
   isVerified: boolean;
 };
+
+function TechnicianSidebar({
+  technician,
+  selectedServiceDetails,
+  totalCents,
+}: {
+  technician: TechnicianData;
+  selectedServiceDetails: Service[];
+  totalCents: number;
+}) {
+  const displayName =
+    technician.businessName || technician.user.name || "Technician";
+  const initials = displayName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      {/* Technician info */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-foreground truncate">
+              {displayName}
+            </p>
+            {technician.isVerified && (
+              <ShieldCheck className="h-4 w-4 shrink-0 text-accent" />
+            )}
+          </div>
+          {technician.reviewCount > 0 && (
+            <div className="mt-0.5 flex items-center gap-1">
+              <Star className="h-3.5 w-3.5 fill-accent text-accent" />
+              <span className="text-sm font-semibold text-foreground">
+                {technician.avgRating.toFixed(1)}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({technician.reviewCount})
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Running total */}
+      {selectedServiceDetails.length > 0 && (
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Selected Services
+          </p>
+          <div className="mt-2 space-y-1.5">
+            {selectedServiceDetails.map((s) => (
+              <div key={s.id} className="flex justify-between text-sm">
+                <span className="text-foreground">{s.name}</span>
+                <span className="text-muted-foreground">
+                  ${(s.priceCents / 100).toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex justify-between border-t border-border pt-2 font-semibold text-foreground">
+            <span>Total</span>
+            <span>${(totalCents / 100).toFixed(2)}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BookingPage() {
   const params = useParams();
@@ -113,7 +188,7 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl lg:max-w-5xl">
       <h1 className="text-2xl font-bold">
         Book {technician.businessName || technician.user.name}
       </h1>
@@ -130,7 +205,42 @@ export default function BookingPage() {
         ))}
       </div>
 
-      <div className="mt-8">
+      {/* Mobile tech bar */}
+      <div className="mt-4 flex items-center gap-3 rounded-lg border border-border bg-card p-3 lg:hidden">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
+          {(technician.businessName || technician.user.name || "PT")
+            .split(" ")
+            .map((w) => w[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground truncate">
+            {technician.businessName || technician.user.name}
+          </p>
+          {technician.reviewCount > 0 && (
+            <div className="flex items-center gap-1">
+              <Star className="h-3 w-3 fill-accent text-accent" />
+              <span className="text-xs font-semibold text-foreground">
+                {technician.avgRating.toFixed(1)}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({technician.reviewCount})
+              </span>
+            </div>
+          )}
+        </div>
+        {totalCents > 0 && (
+          <span className="text-sm font-semibold text-foreground">
+            ${(totalCents / 100).toFixed(2)}
+          </span>
+        )}
+      </div>
+
+      {/* Grid: steps (left) + sidebar (right) */}
+      <div className="mt-6 lg:mt-8 lg:grid lg:grid-cols-[1fr_280px] lg:gap-8">
+      <div>
         {/* Step 1: Services */}
         {step === 1 && (
           <Card>
@@ -435,6 +545,16 @@ export default function BookingPage() {
             </CardContent>
           </Card>
         )}
+      </div>
+      <div className="hidden lg:block">
+        <div className="sticky top-24">
+          <TechnicianSidebar
+            technician={technician}
+            selectedServiceDetails={selectedServiceDetails}
+            totalCents={totalCents}
+          />
+        </div>
+      </div>
       </div>
     </div>
   );
