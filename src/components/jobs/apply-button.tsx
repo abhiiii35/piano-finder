@@ -47,7 +47,7 @@ export function ApplyButton({
     return (
       <Button
         onClick={() => setShowForm(true)}
-        className="bg-amber-500 hover:bg-amber-600"
+        className="bg-primary hover:bg-primary/90"
       >
         Apply to this Job
       </Button>
@@ -71,7 +71,7 @@ export function ApplyButton({
           <Button
             onClick={handleApply}
             disabled={loading}
-            className="bg-amber-500 hover:bg-amber-600"
+            className="bg-primary hover:bg-primary/90"
           >
             {loading ? "Submitting..." : "Submit Application"}
           </Button>

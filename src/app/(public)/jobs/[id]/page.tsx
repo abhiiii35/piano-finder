@@ -38,8 +38,8 @@ export default async function JobDetailPage({
     <div className="mx-auto max-w-2xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{job.title}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-foreground">{job.title}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
               {job.city}, {job.state}
@@ -57,8 +57,8 @@ export default async function JobDetailPage({
         <Badge
           className={
             job.status === "OPEN"
-              ? "bg-amber-500 text-white"
-              : "bg-slate-200 text-slate-600"
+              ? "bg-accent text-accent-foreground"
+              : "bg-secondary text-muted-foreground"
           }
         >
           {job.status.toLowerCase()}
@@ -70,15 +70,15 @@ export default async function JobDetailPage({
           <CardTitle className="text-base">Description</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-line">
+          <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
             {job.description}
           </p>
           <div className="mt-4">
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+            <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground">
               {job.serviceType}
             </span>
           </div>
-          <p className="mt-4 text-xs text-slate-400">
+          <p className="mt-4 text-xs text-muted-foreground">
             Posted by {job.customer.name ?? "Anonymous"}
           </p>
         </CardContent>
@@ -103,15 +103,15 @@ export default async function JobDetailPage({
             {job.applications.map((app) => (
               <div
                 key={app.id}
-                className="rounded-lg border border-slate-200 p-4"
+                className="rounded-lg border border-border p-4"
               >
-                <p className="font-medium text-sm text-slate-900">
+                <p className="font-medium text-sm text-foreground">
                   {app.technician.name}
                 </p>
                 {app.message && (
-                  <p className="mt-1 text-sm text-slate-500">{app.message}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{app.message}</p>
                 )}
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Applied {format(new Date(app.createdAt), "MMM d, yyyy")}
                 </p>
               </div>

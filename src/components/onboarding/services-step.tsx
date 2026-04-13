@@ -120,17 +120,17 @@ export function ServicesStep({ initialServices, onComplete, loading }: Props) {
       </div>
 
       {services.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center">
+        <div className="rounded-lg border border-dashed border-border p-8 text-center">
           <p className="text-sm text-muted-foreground">No services yet. Add at least one service.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {services.map((svc) => (
-            <div key={svc.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+            <div key={svc.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
               <div>
-                <p className="font-medium text-slate-900">{svc.name}</p>
+                <p className="font-medium text-foreground">{svc.name}</p>
                 {svc.description && <p className="text-sm text-muted-foreground">{svc.description}</p>}
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   ${(svc.priceCents / 100).toFixed(2)} &middot; {svc.durationMin} min
                 </p>
               </div>

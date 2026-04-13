@@ -38,7 +38,7 @@ export function OnboardingBanner({ onboardingStatus, hasAvailability, rejectionR
   }
 
   return (
-    <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4">
+    <div className="mb-8 rounded-lg border border-border bg-secondary p-4">
       {onboardingStatus === ONBOARDING_STATUS.REJECTED && rejectionReason && (
         <div className="mb-3 rounded-md border border-red-200 bg-red-50 p-3">
           <p className="text-sm font-medium text-red-900">Changes requested</p>
@@ -46,12 +46,12 @@ export function OnboardingBanner({ onboardingStatus, hasAvailability, rejectionR
         </div>
       )}
       <div className="flex items-center justify-between mb-3">
-        <p className="font-medium text-amber-900">Complete your profile to appear in search</p>
-        <span className="text-sm text-amber-700">{doneCount} of {steps.length} steps done</span>
+        <p className="font-medium text-foreground">Complete your profile to appear in search</p>
+        <span className="text-sm text-muted-foreground">{doneCount} of {steps.length} steps done</span>
       </div>
-      <div className="mb-3 h-2 rounded-full bg-amber-200">
+      <div className="mb-3 h-2 rounded-full bg-border">
         <div
-          className="h-2 rounded-full bg-amber-500 transition-all"
+          className="h-2 rounded-full bg-accent transition-all"
           style={{ width: `${(doneCount / steps.length) * 100}%` }}
         />
       </div>
@@ -64,14 +64,14 @@ export function OnboardingBanner({ onboardingStatus, hasAvailability, rejectionR
                 <span className="text-green-700">{step.label}</span>
               </>
             ) : step.href ? (
-              <Link href={step.href} className="flex items-center gap-1.5 text-slate-600 underline hover:text-slate-900">
+              <Link href={step.href} className="flex items-center gap-1.5 text-muted-foreground underline hover:text-foreground">
                 <Circle className="h-4 w-4" />
                 {step.label}
               </Link>
             ) : (
               <>
-                <Circle className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-500">{step.label}</span>
+                <Circle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">{step.label}</span>
               </>
             )}
           </span>

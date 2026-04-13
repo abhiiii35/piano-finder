@@ -20,7 +20,7 @@ export default function PostJobPage() {
   if (!session) {
     return (
       <div className="py-16 text-center">
-        <p className="text-lg font-medium text-slate-900">
+        <p className="text-lg font-medium text-foreground">
           Please sign in to post a job
         </p>
         <Button className="mt-4" onClick={() => router.push("/sign-in")}>
@@ -46,8 +46,8 @@ export default function PostJobPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900">Post a Job</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="text-2xl font-bold text-foreground">Post a Job</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
         Describe what you need and set your budget
       </p>
 
@@ -74,7 +74,7 @@ export default function PostJobPage() {
                   id="serviceType"
                   name="serviceType"
                   required
-                  className="w-full appearance-none rounded-lg border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-300"
+                  className="w-full appearance-none rounded-lg border border-border bg-card py-2.5 pl-3 pr-8 text-sm text-foreground focus:border-border focus:outline-none focus:ring-1 focus:ring-ring"
                 >
                   <option value="">Select a service</option>
                   <option value="Tuning">Tuning</option>
@@ -84,7 +84,7 @@ export default function PostJobPage() {
                   <option value="Appraisal">Appraisal</option>
                   <option value="Other">Other</option>
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
 
@@ -131,7 +131,7 @@ export default function PostJobPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-amber-500 hover:bg-amber-600"
+              className="w-full bg-primary hover:bg-primary/90"
             >
               {loading ? "Posting..." : "Post Job"}
             </Button>

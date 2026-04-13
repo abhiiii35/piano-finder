@@ -62,16 +62,16 @@ export function OnboardingWizard({ profile, services }: Props) {
     <div className="w-full max-w-lg">
       {/* Progress */}
       <div className="mb-8">
-        <div className="flex justify-between text-sm text-slate-500 mb-2">
+        <div className="flex justify-between text-sm text-muted-foreground mb-2">
           {STEPS.map((label, i) => (
-            <span key={label} className={i <= step ? "font-medium text-slate-900" : ""}>
+            <span key={label} className={i <= step ? "font-medium text-foreground" : ""}>
               {label}
             </span>
           ))}
         </div>
-        <div className="h-2 rounded-full bg-slate-200">
+        <div className="h-2 rounded-full bg-secondary">
           <div
-            className="h-2 rounded-full bg-amber-500 transition-all duration-300"
+            className="h-2 rounded-full bg-accent transition-all duration-300"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </div>

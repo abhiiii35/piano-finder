@@ -403,8 +403,8 @@ export default function BookingPage() {
                 </Button>
               </div>
               {conflictSlots && (
-                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                  <p className="text-sm font-medium text-amber-900 mb-2">
+                <div className="mt-4 rounded-lg border border-border bg-secondary p-4">
+                  <p className="text-sm font-medium text-foreground mb-2">
                     Pick a different time:
                   </p>
                   <div className="grid grid-cols-4 gap-2">
@@ -423,7 +423,7 @@ export default function BookingPage() {
                     ))}
                   </div>
                   {conflictSlots.length === 0 && (
-                    <p className="text-sm text-amber-700 mt-2">
+                    <p className="text-sm text-muted-foreground mt-2">
                       No more slots available on this day. Please go back and pick a different date.
                     </p>
                   )}
