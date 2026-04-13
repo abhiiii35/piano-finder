@@ -64,53 +64,55 @@ export function TechnicianCard({
   return (
     <Link href={`/technicians/${id}`} className="block">
       <div className="rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
-        {/* Header row */}
-        <div className="flex items-start gap-3">
-          <div
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${colorFromId(id)}`}
-          >
-            {initials}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <h3 className="truncate font-semibold text-foreground">
-                {displayName}
-              </h3>
-              {isVerified && (
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-              )}
+        {/* Top row: avatar + name (left), rating badge (right) */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <div
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${colorFromId(id)}`}
+            >
+              {initials}
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {city && state && (
-                <span className="flex items-center gap-0.5">
-                  <MapPin className="h-3 w-3" />
-                  {city}, {state}
-                </span>
-              )}
-              {yearsExperience && (
-                <span>{yearsExperience}yr exp</span>
-              )}
-              {distanceMiles != null && (
-                <span className="text-xs text-accent font-medium">
-                  {distanceMiles} mi away
-                </span>
-              )}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="truncate text-base font-bold text-foreground">
+                  {displayName}
+                </h3>
+                {isVerified && (
+                  <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                )}
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                {city && state && (
+                  <span className="flex items-center gap-0.5">
+                    <MapPin className="h-3 w-3" />
+                    {city}, {state}
+                  </span>
+                )}
+                {yearsExperience && <span>{yearsExperience}yr exp</span>}
+                {distanceMiles != null && (
+                  <span className="text-accent font-medium">
+                    {distanceMiles} mi
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Rating + Instant Book */}
-        <div className="mt-3 flex items-center gap-3">
+          {/* Rating badge - prominent, top-right */}
           {reviewCount > 0 && (
-            <div className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-accent text-accent" />
-              <span className="text-sm font-semibold text-foreground">
+            <div className="flex items-center gap-1.5 rounded-lg bg-secondary px-2.5 py-1.5 shrink-0">
+              <Star className="h-4 w-4 fill-accent text-accent" />
+              <span className="text-base font-bold text-foreground">
                 {avgRating.toFixed(1)}
               </span>
               <span className="text-xs text-muted-foreground">({reviewCount})</span>
             </div>
           )}
-          <span className="flex items-center gap-1 text-xs font-medium text-accent">
+        </div>
+
+        {/* Instant Book badge */}
+        <div className="mt-3">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
             <Zap className="h-3 w-3" />
             Instant Book
           </span>
@@ -133,10 +135,10 @@ export function TechnicianCard({
           )}
         </div>
 
-        {/* Price */}
+        {/* Price - bottom right */}
         {minPrice > 0 && (
-          <div className="mt-4 flex items-baseline justify-between">
-            <div>
+          <div className="mt-4 flex items-baseline justify-end">
+            <div className="text-right">
               <span className="text-xs text-muted-foreground">Starting at</span>
               <p className="text-xl font-bold text-foreground">
                 ${(minPrice / 100).toFixed(0)}
