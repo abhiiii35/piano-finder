@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAnimateOnScroll } from "@/hooks/use-animate-on-scroll";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import {
@@ -18,6 +19,8 @@ import {
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const howItWorks = useAnimateOnScroll();
+  const forTechnicians = useAnimateOnScroll();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -135,12 +138,20 @@ export default function HomePage() {
         </section>
 
         {/* How It Works */}
-        <section className="px-4 py-20">
+        <section className="px-4 py-20" ref={howItWorks.ref}>
           <div className="mx-auto max-w-5xl">
-            <h2 className="text-center text-3xl font-bold text-foreground">
+            <h2
+              className={`text-center text-3xl font-bold text-foreground transition-opacity duration-500 ${
+                howItWorks.isVisible ? "animate-fade-in" : "opacity-0"
+              }`}
+            >
               How it works
             </h2>
-            <p className="mt-3 text-center text-muted-foreground">
+            <p
+              className={`mt-3 text-center text-muted-foreground transition-opacity duration-500 ${
+                howItWorks.isVisible ? "animate-fade-in" : "opacity-0"
+              }`}
+            >
               Book a piano tuner in three simple steps
             </p>
 
@@ -173,9 +184,13 @@ export default function HomePage() {
               ].map((step, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                  className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+                    howItWorks.isVisible
+                      ? `animate-fade-up animation-delay-${(i + 1) * 100}`
+                      : "opacity-0"
+                  }`}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary transition-transform duration-300 hover:scale-110">
                     <step.icon className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <h3 className="mt-4 font-semibold text-foreground">
@@ -191,24 +206,46 @@ export default function HomePage() {
         </section>
 
         {/* For Technicians — dark section */}
-        <section className="bg-[#0f1729] px-4 py-20">
+        <section className="bg-[#0f1729] px-4 py-20" ref={forTechnicians.ref}>
           <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center">
             {/* Left: copy */}
             <div>
-              <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-medium text-accent">
+              <div
+                className={`inline-flex rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-medium text-accent ${
+                  forTechnicians.isVisible ? "animate-fade-up" : "opacity-0"
+                }`}
+              >
                 For Piano Technicians
               </div>
 
-              <h2 className="mt-6 text-3xl font-bold text-[#f5f0e8] sm:text-4xl">
+              <h2
+                className={`mt-6 text-3xl font-bold text-[#f5f0e8] sm:text-4xl ${
+                  forTechnicians.isVisible
+                    ? "animate-fade-up animation-delay-100"
+                    : "opacity-0"
+                }`}
+              >
                 Replace your entire tool stack
               </h2>
 
-              <p className="mt-4 text-[#8a94a8] leading-relaxed">
+              <p
+                className={`mt-4 text-[#8a94a8] leading-relaxed ${
+                  forTechnicians.isVisible
+                    ? "animate-fade-up animation-delay-200"
+                    : "opacity-0"
+                }`}
+              >
                 PianoTune replaces Square, QuickBooks, Google Calendar, and paper
                 logs. Everything you need to run your business in one platform.
               </p>
 
-              <ul className="mt-8 space-y-3">
+              <ul
+                className={`mt-8 space-y-3 ${
+                  forTechnicians.isVisible
+                    ? "animate-fade-up animation-delay-300"
+                    : "opacity-0"
+                }`}
+              >
                 {[
                   "Manage bookings, invoicing, and payments in one place",
                   "Automated 6-month and annual tuning reminders",
@@ -224,15 +261,25 @@ export default function HomePage() {
 
               <Link
                 href="/sign-up"
-                className="mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+                className={`group mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-all duration-300 hover:bg-accent/90 ${
+                  forTechnicians.isVisible
+                    ? "animate-fade-up animation-delay-400"
+                    : "opacity-0"
+                }`}
               >
                 Join as a Technician
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
 
             {/* Right: schedule mockup */}
-            <div className="rounded-xl border border-[#1e2d4a] bg-[#162040] p-6 shadow-lg">
+            <div
+              className={`rounded-xl border border-[#1e2d4a] bg-[#162040] p-6 shadow-lg ${
+                forTechnicians.isVisible
+                  ? "animate-fade-in animation-delay-200"
+                  : "opacity-0"
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-[#f5f0e8]">
                   Today&apos;s Schedule
@@ -257,10 +304,14 @@ export default function HomePage() {
                     name: "Maria L.",
                     service: "Regulation - Bosendorfer",
                   },
-                ].map((appointment) => (
+                ].map((appointment, i) => (
                   <div
                     key={appointment.time}
-                    className="flex items-center gap-4 rounded-lg border border-[#1e2d4a] bg-[#162040]/50 p-4"
+                    className={`flex items-center gap-4 rounded-lg border border-[#1e2d4a] bg-[#162040]/50 p-4 ${
+                      forTechnicians.isVisible
+                        ? `animate-slide-in-right animation-delay-${(i + 2) * 200}`
+                        : "opacity-0"
+                    }`}
                   >
                     <span className="text-sm font-semibold text-accent w-20 shrink-0">
                       {appointment.time}
