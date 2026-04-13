@@ -14,6 +14,10 @@ describe("GET /api/technicians/[id]", () => {
       user: { name: "Mike Tuner" },
       services: [fixtures.service],
     });
+    prismaMock.review.aggregate.mockResolvedValue({
+      _avg: { rating: 4.8 },
+      _count: 12,
+    });
 
     const response = await GET(
       new Request("http://localhost:3000/api/technicians/tech-profile-1"),
@@ -28,6 +32,10 @@ describe("GET /api/technicians/[id]", () => {
 
   it("returns 404 for non-existent technician", async () => {
     prismaMock.technicianProfile.findUnique.mockResolvedValue(null);
+    prismaMock.review.aggregate.mockResolvedValue({
+      _avg: { rating: null },
+      _count: 0,
+    });
 
     const response = await GET(
       new Request("http://localhost:3000/api/technicians/invalid"),
