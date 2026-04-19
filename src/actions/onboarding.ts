@@ -60,7 +60,7 @@ export async function submitForReview() {
   if ("error" in result) return { error: result.error };
   const { profile } = result;
 
-  const allowed = [ONBOARDING_STATUS.CHECKLIST_PENDING, ONBOARDING_STATUS.REJECTED];
+  const allowed: string[] = [ONBOARDING_STATUS.CHECKLIST_PENDING, ONBOARDING_STATUS.REJECTED];
   if (!allowed.includes(profile.onboardingStatus)) {
     return { error: "Cannot submit from current status" };
   }

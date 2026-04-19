@@ -20,7 +20,7 @@ export default async function SubmitPage() {
 
   if (!profile) redirect("/sign-up/technician");
 
-  const allowed = [ONBOARDING_STATUS.CHECKLIST_PENDING, ONBOARDING_STATUS.REJECTED];
+  const allowed: string[] = [ONBOARDING_STATUS.CHECKLIST_PENDING, ONBOARDING_STATUS.REJECTED];
   if (!allowed.includes(profile.onboardingStatus)) redirect("/dashboard/technician");
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
