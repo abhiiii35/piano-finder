@@ -1,0 +1,32 @@
+#!/bin/sh
+
+echo "Running pre-push checks..."
+
+# Run tests
+echo "  Running tests..."
+npx vitest run --silent 2>&1
+if [ $? -ne 0 ]; then
+  echo "  FAILED: Tests are failing. Fix before pushing."
+  exit 1
+fi
+echo "  Tests passed."
+
+# Check coverage (90% statement threshold)
+echo "  Checking coverage..."
+COVERAGE=$(npx vitest run --coverage --silent 2>&1 | grep "All files" | awk '{print $4}')
+if [ -n "$COVERAGE" ] && [ "$(echo "$COVERAGE < 90" | bc)" -eq 1 ]; then
+  echo "  FAILED: Coverage is ${COVERAGE}% (minimum 90%). Add tests before pushing."
+  exit 1
+fi
+echo "  Coverage: ${COVERAGE}%"
+
+# Build check
+echo "  Running build..."
+npm run build --silent 2>&1
+if [ $? -ne 0 ]; then
+  echo "  FAILED: Build errors. Fix before pushing."
+  exit 1
+fi
+echo "  Build passed."
+
+echo "All pre-push checks passed."
