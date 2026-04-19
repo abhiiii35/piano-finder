@@ -12,6 +12,7 @@ export async function sendEmail(options: {
   to: string;
   subject: string;
   html: string;
+  attachments?: { filename: string; content: Buffer }[];
 }): Promise<void> {
   const client = getResend();
 
@@ -29,6 +30,7 @@ export async function sendEmail(options: {
       to: options.to,
       subject: options.subject,
       html: options.html,
+      attachments: options.attachments,
     });
   } catch (error) {
     console.error("[EMAIL] Failed to send:", error);
