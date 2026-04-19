@@ -39,14 +39,14 @@ export const prismaMock = {
 
 // ─── Session Helpers ─────────────────────────────────────────
 
-export function mockCustomerSession(overrides?: Partial<{ emailVerified: Date | null }>) {
+export function mockCustomerSession(overrides?: { emailVerified?: Date | null }) {
   return {
     user: {
       id: "customer-1",
       name: "Jane Doe",
       email: "customer@example.com",
       role: "CUSTOMER",
-      emailVerified: overrides?.emailVerified ?? new Date(),
+      emailVerified: overrides && "emailVerified" in overrides ? overrides.emailVerified : new Date(),
     },
   };
 }
