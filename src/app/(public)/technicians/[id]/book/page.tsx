@@ -108,6 +108,7 @@ export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const stripeEnabled = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   const [step, setStep] = useState(1);
   const [technician, setTechnician] = useState<TechnicianData | null>(null);
@@ -532,8 +533,13 @@ export default function BookingPage() {
                   Back
                 </Button>
                 <Button onClick={handleConfirm} disabled={loading}>
-                  {loading ? "Booking..." : "Confirm Booking"}
+                  {loading ? "Booking..." : stripeEnabled ? "Confirm Booking" : "Book & Pay Later"}
                 </Button>
+                {!stripeEnabled && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Online payments coming soon. Your technician will arrange payment directly.
+                  </p>
+                )}
               </div>
               {conflictSlots && (
                 <div className="mt-4 rounded-lg border border-border bg-secondary p-4">
