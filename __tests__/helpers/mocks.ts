@@ -34,17 +34,19 @@ export const prismaMock = {
   job: createMockModel(),
   jobApplication: createMockModel(),
   message: createMockModel(),
+  verificationToken: createMockModel(),
 };
 
 // ─── Session Helpers ─────────────────────────────────────────
 
-export function mockCustomerSession() {
+export function mockCustomerSession(overrides?: Partial<{ emailVerified: Date | null }>) {
   return {
     user: {
       id: "customer-1",
       name: "Jane Doe",
       email: "customer@example.com",
       role: "CUSTOMER",
+      emailVerified: overrides?.emailVerified ?? new Date(),
     },
   };
 }
@@ -56,6 +58,7 @@ export function mockTechnicianSession() {
       name: "Mike Tuner",
       email: "tech@example.com",
       role: "TECHNICIAN",
+      emailVerified: new Date(),
     },
   };
 }
@@ -67,6 +70,7 @@ export function mockAdminSession() {
       name: "Admin User",
       email: "admin@example.com",
       role: "ADMIN",
+      emailVerified: new Date(),
     },
   };
 }

@@ -75,6 +75,23 @@ describe("createBooking", () => {
     expect(createCall.data.durationMin).toBe(210); // 90 + 120
   });
 
+  it("rejects unverified user", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession({ emailVerified: null }));
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-15T10:00:00",
+      addressLine1: "123 Main St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.error).toContain("verify your email");
+    expect(prismaMock.booking.create).not.toHaveBeenCalled();
+  });
+
   it("rejects unauthenticated user", async () => {
     mockGetSession.mockResolvedValue(null);
 

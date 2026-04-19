@@ -25,6 +25,10 @@ export async function createBooking(data: {
   const session = await getServerSession(authOptions);
   if (!session) return { error: "Please sign in to book" };
 
+  if (!session.user.emailVerified) {
+    return { error: "Please verify your email before booking" };
+  }
+
   const result = bookingSchema.safeParse(data);
   if (!result.success) {
     return { error: result.error.issues[0].message };
