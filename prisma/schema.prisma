@@ -243,6 +243,8 @@ model CustomerRecord {
   updatedAt      DateTime @updatedAt
 
   technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@unique([technicianId, customerEmail])
 }
 
 // ─── Messages ────────────────────────────────────────────────

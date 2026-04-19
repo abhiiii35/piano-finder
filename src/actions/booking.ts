@@ -199,6 +199,46 @@ export async function updateBookingStatus(
     console.error("[EMAIL] Failed to send status email:", error);
   }
 
+  // Auto-populate CRM when booking completes
+  if (newStatus === "COMPLETED") {
+    try {
+      const completedBooking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          customer: { select: { name: true, email: true, phone: true } },
+        },
+      });
+      if (completedBooking?.customer.email) {
+        await prisma.customerRecord.upsert({
+          where: {
+            technicianId_customerEmail: {
+              technicianId: booking.technicianId,
+              customerEmail: completedBooking.customer.email,
+            },
+          },
+          update: {
+            customerName: completedBooking.customer.name ?? undefined,
+            customerPhone: completedBooking.customer.phone ?? undefined,
+            pianoMake: completedBooking.pianoMake ?? undefined,
+            pianoModel: completedBooking.pianoModel ?? undefined,
+            pianoLocation: completedBooking.addressLine1 ?? undefined,
+          },
+          create: {
+            technicianId: booking.technicianId,
+            customerName: completedBooking.customer.name ?? "Customer",
+            customerEmail: completedBooking.customer.email,
+            customerPhone: completedBooking.customer.phone,
+            pianoMake: completedBooking.pianoMake,
+            pianoModel: completedBooking.pianoModel,
+            pianoLocation: completedBooking.addressLine1,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("[CRM] Failed to auto-populate customer record:", error);
+    }
+  }
+
   revalidatePath(`/dashboard/customer/bookings/${bookingId}`);
   revalidatePath(`/dashboard/technician/bookings/${bookingId}`);
   revalidatePath("/dashboard/customer/bookings");

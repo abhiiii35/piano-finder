@@ -258,6 +258,79 @@ describe("updateBookingStatus", () => {
     const result = await updateBookingStatus("booking-1", "CONFIRMED");
     expect(result.error).toContain("Unauthorized");
   });
+
+  it("auto-populates CRM CustomerRecord when booking completes", async () => {
+    mockGetSession.mockResolvedValue(mockTechnicianSession());
+    prismaMock.booking.findUnique
+      .mockResolvedValueOnce({
+        ...fixtures.booking,
+        status: "IN_PROGRESS",
+        technician: { userId: "tech-user-1" },
+      })
+      // Second findUnique call for email sending
+      .mockResolvedValueOnce({
+        ...fixtures.booking,
+        status: "COMPLETED",
+        customer: { email: "customer@example.com" },
+        technician: { user: { name: "Mike Tuner", email: "tech@example.com" } },
+      })
+      // Third findUnique call for CRM auto-populate
+      .mockResolvedValueOnce({
+        ...fixtures.booking,
+        customer: {
+          name: "Jane Doe",
+          email: "customer@example.com",
+          phone: "617-555-0100",
+        },
+      });
+    prismaMock.booking.update.mockResolvedValue({});
+    prismaMock.customerRecord.upsert.mockResolvedValue({});
+
+    const result = await updateBookingStatus("booking-1", "COMPLETED");
+
+    expect(result.success).toBe(true);
+    expect(prismaMock.customerRecord.upsert).toHaveBeenCalledOnce();
+    expect(prismaMock.customerRecord.upsert).toHaveBeenCalledWith({
+      where: {
+        technicianId_customerEmail: {
+          technicianId: "tech-profile-1",
+          customerEmail: "customer@example.com",
+        },
+      },
+      update: expect.objectContaining({
+        customerName: "Jane Doe",
+        pianoMake: "Steinway",
+      }),
+      create: expect.objectContaining({
+        technicianId: "tech-profile-1",
+        customerEmail: "customer@example.com",
+        customerName: "Jane Doe",
+        pianoMake: "Steinway",
+        pianoModel: "Model B",
+      }),
+    });
+  });
+
+  it("does not populate CRM for non-COMPLETED status changes", async () => {
+    mockGetSession.mockResolvedValue(mockTechnicianSession());
+    prismaMock.booking.findUnique
+      .mockResolvedValueOnce({
+        ...fixtures.booking,
+        status: "PENDING",
+        technician: { userId: "tech-user-1" },
+      })
+      .mockResolvedValueOnce({
+        ...fixtures.booking,
+        status: "CONFIRMED",
+        customer: { email: "customer@example.com" },
+        technician: { user: { name: "Mike Tuner", email: "tech@example.com" } },
+      });
+    prismaMock.booking.update.mockResolvedValue({});
+
+    await updateBookingStatus("booking-1", "CONFIRMED");
+
+    expect(prismaMock.customerRecord.upsert).not.toHaveBeenCalled();
+  });
 });
 
 describe("getAvailableSlots", () => {
