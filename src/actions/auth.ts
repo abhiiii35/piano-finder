@@ -66,3 +66,50 @@ export async function signUp(formData: FormData) {
 
   return { success: true };
 }
+
+export async function resendVerification(email: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    return { error: "No account found with this email" };
+  }
+
+  if (user.emailVerified) {
+    return { error: "Email is already verified" };
+  }
+
+  // Rate limit: reject if a token was created in the last 60 seconds
+  // A token with expires > 23hrs from now was created less than 60 seconds ago
+  const rateLimitThreshold = new Date(Date.now() + 23 * 60 * 60 * 1000);
+  const recentToken = await prisma.verificationToken.findFirst({
+    where: {
+      identifier: email,
+      expires: { gt: rateLimitThreshold },
+    },
+  });
+
+  if (recentToken) {
+    return { error: "Please wait before requesting another verification email" };
+  }
+
+  // Delete old tokens for this email
+  await prisma.verificationToken.deleteMany({
+    where: { identifier: email },
+  });
+
+  // Create new token and send email
+  const token = randomUUID();
+  await prisma.verificationToken.create({
+    data: {
+      identifier: email,
+      token,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+
+  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const verifyUrl = `${baseUrl}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+  const { subject, html } = verificationEmail(verifyUrl);
+  await sendEmail({ to: email, subject, html });
+
+  return { success: true };
+}
