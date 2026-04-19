@@ -36,4 +36,38 @@ describe("sendEmail", () => {
     );
     spy.mockRestore();
   });
+
+  it("catches and logs errors when Resend throws", async () => {
+    process.env.RESEND_API_KEY = "re_test_key";
+    const { Resend } = await import("resend");
+    // Mock Resend to throw
+    vi.spyOn(Resend.prototype, "constructor" as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // We need to re-import to pick up the API key. Since the module is already
+    // cached, we mock resend at the module level instead.
+    const mockSend = vi.fn().mockRejectedValue(new Error("API error"));
+    vi.doMock("resend", () => ({
+      Resend: class {
+        emails = { send: mockSend };
+      },
+    }));
+
+    // Clear cached module so sendEmail re-evaluates
+    vi.resetModules();
+    const { sendEmail: freshSendEmail } = await import("@/lib/email");
+
+    await freshSendEmail({
+      to: "test@example.com",
+      subject: "Test",
+      html: "<p>Hi</p>",
+    });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      "[EMAIL] Failed to send:",
+      expect.any(Error)
+    );
+    errorSpy.mockRestore();
+    delete process.env.RESEND_API_KEY;
+  });
 });

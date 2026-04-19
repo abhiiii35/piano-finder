@@ -114,4 +114,36 @@ describe("markCashPayment", () => {
     const result = await markCashPayment("booking-1");
     expect(result.error).toContain("Unauthorized");
   });
+
+  it("rejects if booking already has a SUCCEEDED payment", async () => {
+    mockGetSession.mockResolvedValue(mockTechnicianSession());
+    prismaMock.technicianProfile.findUnique.mockResolvedValue(fixtures.technicianProfile);
+    prismaMock.booking.findFirst.mockResolvedValue({
+      ...fixtures.booking,
+      payment: { id: "pay-1", status: "SUCCEEDED" },
+    });
+
+    const result = await markCashPayment("booking-1");
+    expect(result.error).toContain("Already paid");
+  });
+
+  it("still succeeds when email sending fails", async () => {
+    mockGetSession.mockResolvedValue(mockTechnicianSession());
+    prismaMock.technicianProfile.findUnique.mockResolvedValue(fixtures.technicianProfile);
+    prismaMock.booking.findFirst.mockResolvedValue({
+      ...fixtures.booking,
+      payment: null,
+    });
+    prismaMock.payment.create.mockResolvedValue({});
+    prismaMock.booking.findUnique.mockRejectedValue(new Error("DB error"));
+
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await markCashPayment("booking-1");
+    expect(result.success).toBe(true);
+    expect(errorSpy).toHaveBeenCalledWith(
+      "[EMAIL] Failed to send payment receipt:",
+      expect.any(Error)
+    );
+    errorSpy.mockRestore();
+  });
 });
