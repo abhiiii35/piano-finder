@@ -35,6 +35,8 @@ export default async function CustomerBookingDetailPage({
 
   if (!booking) notFound();
 
+  const stripeEnabled = !!process.env.STRIPE_SECRET_KEY;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -105,7 +107,13 @@ export default async function CustomerBookingDetailPage({
           role="CUSTOMER"
         />
         {booking.payment?.status !== "SUCCEEDED" && booking.status !== "CANCELLED" && (
-          <PayButton bookingId={booking.id} />
+          stripeEnabled ? (
+            <PayButton bookingId={booking.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Payment will be arranged with your technician.
+            </p>
+          )
         )}
         {booking.status === "COMPLETED" && !booking.review && (
           <Link href={`/dashboard/customer/bookings/${booking.id}/review`}>
