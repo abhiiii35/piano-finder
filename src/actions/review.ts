@@ -10,6 +10,7 @@ export async function createReview(data: {
   bookingId: string;
   rating: number;
   comment?: string;
+  photos?: string[];
 }) {
   const session = await getServerSession(authOptions);
   if (!session) return { error: "Please sign in" };
@@ -19,7 +20,7 @@ export async function createReview(data: {
     return { error: result.error.issues[0].message };
   }
 
-  const { bookingId, rating, comment } = result.data;
+  const { bookingId, rating, comment, photos } = result.data;
 
   const booking = await prisma.booking.findFirst({
     where: {
@@ -39,6 +40,7 @@ export async function createReview(data: {
       authorId: session.user.id,
       rating,
       comment: comment || null,
+      photos: JSON.stringify(photos),
     },
   });
 
