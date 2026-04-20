@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import { EmailInvoiceButton } from "@/components/invoice/email-invoice-button";
+import { PrintInvoiceButton } from "@/components/invoice/print-invoice-button";
 
 export default async function InvoicePage({
   params,
@@ -37,12 +38,7 @@ export default async function InvoicePage({
       <style>{`@media print { .no-print { display: none; } }`}</style>
 
       <div className="no-print mb-6 flex gap-3">
-        <button
-          onClick={() => window.print()}
-          className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
-        >
-          Print Invoice
-        </button>
+        <PrintInvoiceButton />
         <a
           href={`/api/invoices/${booking.id}/pdf`}
           download
