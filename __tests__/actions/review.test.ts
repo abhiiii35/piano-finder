@@ -36,6 +36,7 @@ describe("createReview", () => {
         authorId: "customer-1",
         rating: 5,
         comment: "Excellent!",
+        photos: "[]",
       },
     });
   });
