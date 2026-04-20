@@ -12,6 +12,7 @@ import { ReviewSummary } from "@/components/reviews/review-summary";
 import { formatCents } from "@/lib/utils";
 import { MapPin, Award, Clock, Calendar } from "lucide-react";
 import { MessageButton } from "@/components/messages/message-button";
+import { PortfolioGallery } from "@/components/profile/portfolio-gallery";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -103,6 +104,11 @@ export default async function TechnicianProfilePage({
               )}
             </div>
           </div>
+        )}
+
+        {/* Portfolio */}
+        {technician.portfolioPhotos && (
+          <PortfolioGallery photos={technician.portfolioPhotos} />
         )}
 
         {/* Reviews */}
