@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   format,
@@ -59,24 +59,15 @@ export function BookingCalendar({
     day = addDays(day, 1);
   }
 
-  // Fetch available time slots when a date is selected
-  useEffect(() => {
-    if (!selectedDate) {
-      setSlots([]);
-      return;
-    }
-    setLoadingSlots(true);
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
-    getAvailableSlots(technicianId, dateStr).then((result) => {
-      setSlots(result);
-      setLoadingSlots(false);
-    });
-  }, [selectedDate, technicianId]);
-
-  function handleDateClick(date: Date) {
+  async function handleDateClick(date: Date) {
     if (isBefore(date, today)) return;
     if (!availableDays.has(date.getDay())) return;
     setSelectedDate(date);
+    setLoadingSlots(true);
+    const dateStr = format(date, "yyyy-MM-dd");
+    const result = await getAvailableSlots(technicianId, dateStr);
+    setSlots(result);
+    setLoadingSlots(false);
   }
 
   function handleTimeClick(time: string) {
