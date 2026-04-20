@@ -1,11 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+const PRIMARY_DOMAIN = "www.bookatuner.com";
+
 export const config = {
-  matcher: ["/dashboard/:path*", "/onboarding/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/webhooks).*)"],
 };
 
 export async function proxy(request: NextRequest) {
+  // Redirect non-primary domains to primary
+  const host = request.headers.get("host") ?? "";
+  if (
+    host &&
+    host !== PRIMARY_DOMAIN &&
+    host !== "localhost:3000" &&
+    !host.includes("localhost")
+  ) {
+    const url = new URL(request.url);
+    url.host = PRIMARY_DOMAIN;
+    url.protocol = "https";
+    return NextResponse.redirect(url, 308);
+  }
+
+  const pathname = request.nextUrl.pathname;
+
+  // Only run auth checks on protected routes
+  if (
+    !pathname.startsWith("/dashboard") &&
+    !pathname.startsWith("/onboarding")
+  ) {
+    return NextResponse.next();
+  }
+
   const token = await getToken({ req: request });
 
   if (!token) {
@@ -13,8 +39,6 @@ export async function proxy(request: NextRequest) {
     signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
     return NextResponse.redirect(signInUrl);
   }
-
-  const pathname = request.nextUrl.pathname;
 
   // Redirect technician-only routes for non-technicians
   if (pathname.startsWith("/dashboard/technician") && token.role !== "TECHNICIAN") {
