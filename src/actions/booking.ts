@@ -25,7 +25,13 @@ export async function createBooking(data: {
   const session = await getServerSession(authOptions);
   if (!session) return { error: "Please sign in to book" };
 
-  if (!session.user.emailVerified) {
+  // Check emailVerified from database (not session) so it reflects
+  // verification that happened after sign-in
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { emailVerified: true },
+  });
+  if (!currentUser?.emailVerified) {
     return { error: "Please verify your email before booking" };
   }
 

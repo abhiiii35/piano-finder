@@ -27,6 +27,11 @@ describe("createBooking", () => {
     prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
       return cb(prismaMock);
     });
+    // Default: user is email-verified (checked from DB, not session)
+    prismaMock.user.findUnique.mockResolvedValue({
+      ...fixtures.user,
+      emailVerified: new Date(),
+    });
   });
 
   it("creates a booking with selected services", async () => {
@@ -77,6 +82,10 @@ describe("createBooking", () => {
 
   it("rejects unverified user", async () => {
     mockGetSession.mockResolvedValue(mockCustomerSession({ emailVerified: null }));
+    prismaMock.user.findUnique.mockResolvedValue({
+      ...fixtures.user,
+      emailVerified: null,
+    });
 
     const result = await createBooking({
       technicianId: "tech-profile-1",
