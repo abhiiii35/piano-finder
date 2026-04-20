@@ -35,6 +35,7 @@ async function main() {
       email: "customer@test.com",
       hashedPassword: password,
       role: "CUSTOMER",
+      emailVerified: new Date(),
     },
   });
 
@@ -47,6 +48,7 @@ async function main() {
       hashedPassword: password,
       role: "TECHNICIAN",
       phone: "617-555-0200",
+      emailVerified: new Date(),
     },
   });
 
@@ -67,6 +69,7 @@ async function main() {
       zipCode: "02108",
       isVerified: true,
       isActive: true,
+      onboardingStatus: "APPROVED",
     },
   });
 
@@ -138,6 +141,37 @@ async function main() {
           authorId: "test-customer",
           rating: 5,
           comment: "Excellent tuning!",
+        },
+      },
+    },
+  });
+
+  // A completed booking without a review (for testing review submission)
+  await prisma.booking.create({
+    data: {
+      id: "test-booking-no-review",
+      customerId: "test-customer",
+      technicianId: profile.id,
+      status: "COMPLETED",
+      scheduledAt: new Date("2026-03-20T14:00:00"),
+      durationMin: 60,
+      addressLine1: "456 Test Ave",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02109",
+      totalCents: 12500,
+      pianoType: "UPRIGHT",
+      services: {
+        create: {
+          serviceId: "test-service-repair",
+          priceCents: 12500,
+        },
+      },
+      payment: {
+        create: {
+          amountCents: 12500,
+          status: "SUCCEEDED",
+          method: "CARD",
         },
       },
     },

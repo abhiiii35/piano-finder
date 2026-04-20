@@ -11,7 +11,7 @@ test.describe("Homepage", () => {
     await page.goto("/");
     await expect(page.locator("text=How it works")).toBeVisible();
     await expect(page.locator("text=Easy Discovery")).toBeVisible();
-    await expect(page.locator("text=Instant Booking")).toBeVisible();
+    await expect(page.locator("text=Instant Booking").first()).toBeVisible();
   });
 
   test("renders technician section", async ({ page }) => {

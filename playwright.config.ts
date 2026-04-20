@@ -16,9 +16,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "DATABASE_URL=file:./test.db NEXTAUTH_SECRET=test-secret-e2e npx next dev --port 3001",
+    command: "DATABASE_URL=file:./test.db TURSO_DATABASE_URL= NEXTAUTH_SECRET=test-secret-e2e npx next dev --port 3001",
     port: 3001,
-    timeout: 30000,
+    timeout: 60000,
     reuseExistingServer: !process.env.CI,
   },
 });
