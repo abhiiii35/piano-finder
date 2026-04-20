@@ -8,9 +8,9 @@ describe("buildEmailHtml", () => {
     expect(html).toContain("<p>Test body</p>");
   });
 
-  it("includes PianoTune branding", () => {
+  it("includes BookATuner branding", () => {
     const html = buildEmailHtml("Hi", "<p>Content</p>");
-    expect(html).toContain("PianoTune");
+    expect(html).toContain("BookATuner");
   });
 
   it("includes footer", () => {
