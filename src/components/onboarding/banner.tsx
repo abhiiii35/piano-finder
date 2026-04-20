@@ -31,7 +31,7 @@ export function OnboardingBanner({ onboardingStatus, hasAvailability, rejectionR
       <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 p-4">
         <p className="font-medium text-blue-900">Profile under review</p>
         <p className="mt-1 text-sm text-blue-700">
-          We're reviewing your profile. You'll receive an email once it's approved.
+          We&apos;re reviewing your profile. You&apos;ll receive an email once it&apos;s approved.
         </p>
       </div>
     );

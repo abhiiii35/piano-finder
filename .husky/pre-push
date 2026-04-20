@@ -2,6 +2,15 @@
 
 echo "Running pre-push checks..."
 
+# Lint (errors only, warnings are ok)
+echo "  Running linter..."
+npx eslint --quiet src/ 2>&1
+if [ $? -ne 0 ]; then
+  echo "  FAILED: Lint errors found. Fix before pushing."
+  exit 1
+fi
+echo "  Lint passed."
+
 # Run tests
 echo "  Running tests..."
 npx vitest run --silent 2>&1

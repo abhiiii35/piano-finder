@@ -20,10 +20,10 @@ import {
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const emotionalSection = useAnimateOnScroll();
-  const howItWorks = useAnimateOnScroll();
-  const testimonials = useAnimateOnScroll();
-  const forTechnicians = useAnimateOnScroll();
+  const [emotionalRef, emotionalVisible] = useAnimateOnScroll();
+  const [howItWorksRef, howItWorksVisible] = useAnimateOnScroll();
+  const [testimonialsRef, testimonialsVisible] = useAnimateOnScroll();
+  const [forTechniciansRef, forTechniciansVisible] = useAnimateOnScroll();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -141,7 +141,7 @@ export default function HomePage() {
         </section>
 
         {/* Emotional statement */}
-        <section className="relative px-4 py-24 sm:py-32" ref={emotionalSection.ref}>
+        <section className="relative px-4 py-24 sm:py-32" ref={emotionalRef}>
           {/* Staff lines motif */}
           <div className="pointer-events-none absolute inset-0 flex flex-col justify-center gap-[18px] opacity-[0.04]">
             {Array.from({ length: 5 }, (_, i) => (
@@ -152,12 +152,12 @@ export default function HomePage() {
           <div className="relative mx-auto max-w-3xl text-center">
             <div
               className={`mx-auto mb-6 h-px w-16 bg-accent ${
-                emotionalSection.isVisible ? "animate-fade-in" : "opacity-0"
+                emotionalVisible ? "animate-fade-in" : "opacity-0"
               }`}
             />
             <blockquote
               className={`text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl ${
-                emotionalSection.isVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
+                emotionalVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
               }`}
             >
               Every piano tells a story.
@@ -166,7 +166,7 @@ export default function HomePage() {
             </blockquote>
             <p
               className={`mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground ${
-                emotionalSection.isVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
+                emotionalVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
               }`}
             >
               Whether it&apos;s a family heirloom or a concert grand, your piano
@@ -175,25 +175,25 @@ export default function HomePage() {
             </p>
             <div
               className={`mx-auto mt-6 h-px w-16 bg-accent ${
-                emotionalSection.isVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
+                emotionalVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
               }`}
             />
           </div>
         </section>
 
         {/* How It Works */}
-        <section className="px-4 py-20" ref={howItWorks.ref}>
+        <section className="px-4 py-20" ref={howItWorksRef}>
           <div className="mx-auto max-w-5xl">
             <h2
               className={`text-center text-3xl font-bold text-foreground transition-opacity duration-500 ${
-                howItWorks.isVisible ? "animate-fade-in" : "opacity-0"
+                howItWorksVisible ? "animate-fade-in" : "opacity-0"
               }`}
             >
               How it works
             </h2>
             <p
               className={`mt-3 text-center text-muted-foreground transition-opacity duration-500 ${
-                howItWorks.isVisible ? "animate-fade-in" : "opacity-0"
+                howItWorksVisible ? "animate-fade-in" : "opacity-0"
               }`}
             >
               Book a piano tuner in three simple steps
@@ -229,7 +229,7 @@ export default function HomePage() {
                 <div
                   key={i}
                   className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                    howItWorks.isVisible
+                    howItWorksVisible
                       ? `animate-fade-up animation-delay-${(i + 1) * 100}`
                       : "opacity-0"
                   }`}
@@ -250,11 +250,11 @@ export default function HomePage() {
         </section>
 
         {/* Testimonials */}
-        <section className="border-y border-border bg-secondary/50 px-4 py-20" ref={testimonials.ref}>
+        <section className="border-y border-border bg-secondary/50 px-4 py-20" ref={testimonialsRef}>
           <div className="mx-auto max-w-5xl">
             <p
               className={`text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground ${
-                testimonials.isVisible ? "animate-fade-in" : "opacity-0"
+                testimonialsVisible ? "animate-fade-in" : "opacity-0"
               }`}
             >
               Trusted by piano owners
@@ -264,7 +264,7 @@ export default function HomePage() {
               {/* Featured testimonial — large */}
               <div
                 className={`relative rounded-2xl border border-border bg-card p-8 shadow-sm ${
-                  testimonials.isVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
+                  testimonialsVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
                 }`}
               >
                 <Quote className="absolute right-6 top-6 h-8 w-8 text-accent/20" />
@@ -298,7 +298,7 @@ export default function HomePage() {
               <div className="flex flex-col gap-6">
                 <div
                   className={`rounded-2xl border border-border bg-card p-6 shadow-sm ${
-                    testimonials.isVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
+                    testimonialsVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
                   }`}
                 >
                   <p className="text-sm leading-relaxed text-foreground">
@@ -323,7 +323,7 @@ export default function HomePage() {
 
                 <div
                   className={`rounded-2xl border border-border bg-card p-6 shadow-sm ${
-                    testimonials.isVisible ? "animate-fade-up animation-delay-300" : "opacity-0"
+                    testimonialsVisible ? "animate-fade-up animation-delay-300" : "opacity-0"
                   }`}
                 >
                   <p className="text-sm leading-relaxed text-foreground">
@@ -351,13 +351,13 @@ export default function HomePage() {
         </section>
 
         {/* For Technicians — dark section */}
-        <section className="bg-[#0f1729] px-4 py-20" ref={forTechnicians.ref}>
+        <section className="bg-[#0f1729] px-4 py-20" ref={forTechniciansRef}>
           <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center">
             {/* Left: copy */}
             <div>
               <div
                 className={`inline-flex rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-sm font-medium text-accent ${
-                  forTechnicians.isVisible ? "animate-fade-up" : "opacity-0"
+                  forTechniciansVisible ? "animate-fade-up" : "opacity-0"
                 }`}
               >
                 For Piano Technicians
@@ -365,7 +365,7 @@ export default function HomePage() {
 
               <h2
                 className={`mt-6 text-3xl font-bold text-[#f5f0e8] sm:text-4xl ${
-                  forTechnicians.isVisible
+                  forTechniciansVisible
                     ? "animate-fade-up animation-delay-100"
                     : "opacity-0"
                 }`}
@@ -375,7 +375,7 @@ export default function HomePage() {
 
               <p
                 className={`mt-4 text-[#8a94a8] leading-relaxed ${
-                  forTechnicians.isVisible
+                  forTechniciansVisible
                     ? "animate-fade-up animation-delay-200"
                     : "opacity-0"
                 }`}
@@ -386,7 +386,7 @@ export default function HomePage() {
 
               <ul
                 className={`mt-8 space-y-3 ${
-                  forTechnicians.isVisible
+                  forTechniciansVisible
                     ? "animate-fade-up animation-delay-300"
                     : "opacity-0"
                 }`}
@@ -407,7 +407,7 @@ export default function HomePage() {
               <Link
                 href="/sign-up"
                 className={`group mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-all duration-300 hover:bg-accent/90 ${
-                  forTechnicians.isVisible
+                  forTechniciansVisible
                     ? "animate-fade-up animation-delay-400"
                     : "opacity-0"
                 }`}
@@ -420,7 +420,7 @@ export default function HomePage() {
             {/* Right: schedule mockup */}
             <div
               className={`rounded-xl border border-[#1e2d4a] bg-[#162040] p-6 shadow-lg ${
-                forTechnicians.isVisible
+                forTechniciansVisible
                   ? "animate-fade-in animation-delay-200"
                   : "opacity-0"
               }`}
@@ -453,7 +453,7 @@ export default function HomePage() {
                   <div
                     key={appointment.time}
                     className={`flex items-center gap-4 rounded-lg border border-[#1e2d4a] bg-[#162040]/50 p-4 ${
-                      forTechnicians.isVisible
+                      forTechniciansVisible
                         ? `animate-slide-in-right animation-delay-${(i + 2) * 200}`
                         : "opacity-0"
                     }`}
