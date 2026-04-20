@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { createBooking, getAvailableSlots } from "@/actions/booking";
 import { Button } from "@/components/ui/button";
@@ -107,15 +107,16 @@ function TechnicianSidebar({
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const stripeEnabled = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   const [step, setStep] = useState(1);
   const [technician, setTechnician] = useState<TechnicianData | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(searchParams.get("date") ?? "");
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedTime, setSelectedTime] = useState(searchParams.get("time") ?? "");
   const [address, setAddress] = useState({
     addressLine1: "",
     city: "",

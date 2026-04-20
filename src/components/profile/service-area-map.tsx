@@ -31,13 +31,12 @@ export function ServiceAreaMap({
 
     async function initMap() {
       try {
-        const { Loader } = await import("@googlemaps/js-api-loader");
-        const loader = new Loader({
-          apiKey: apiKey!,
-          version: "weekly",
-        });
+        const { setOptions, importLibrary } = await import(
+          "@googlemaps/js-api-loader"
+        );
+        setOptions({ key: apiKey! });
 
-        const mapsLib = await loader.importLibrary("maps");
+        const mapsLib = (await importLibrary("maps")) as google.maps.MapsLibrary;
         if (cancelled || !mapRef.current) return;
 
         const center = { lat: latitude, lng: longitude };

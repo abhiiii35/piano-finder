@@ -13,8 +13,8 @@ import { formatCents } from "@/lib/utils";
 import { MapPin, Award, Clock, Calendar } from "lucide-react";
 import { MessageButton } from "@/components/messages/message-button";
 import { PortfolioGallery } from "@/components/profile/portfolio-gallery";
-
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import { BookingCalendar } from "@/components/profile/booking-calendar";
+import { ServiceAreaMap } from "@/components/profile/service-area-map";
 
 export default async function TechnicianProfilePage({
   params,
@@ -185,25 +185,33 @@ export default async function TechnicianProfilePage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Availability
+              Book an Appointment
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {DAYS.map((day, i) => {
-              const slot = technician.availabilitySlots.find(
-                (s) => s.dayOfWeek === i
-              );
-              return (
-                <div key={i} className="flex justify-between text-sm">
-                  <span className="font-medium">{day}</span>
-                  <span className="text-muted-foreground">
-                    {slot ? `${slot.startTime} - ${slot.endTime}` : "Closed"}
-                  </span>
-                </div>
-              );
-            })}
+          <CardContent>
+            <BookingCalendar
+              technicianId={id}
+              availabilitySlots={technician.availabilitySlots}
+            />
           </CardContent>
         </Card>
+
+        {technician.latitude && technician.longitude && technician.serviceRadius && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Service Area</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ServiceAreaMap
+                latitude={technician.latitude}
+                longitude={technician.longitude}
+                radiusMiles={technician.serviceRadius}
+                city={technician.city ?? ""}
+                state={technician.state ?? ""}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <MessageButton technicianId={id} />
 
