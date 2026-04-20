@@ -92,6 +92,7 @@ model TechnicianProfile {
   isActive         Boolean @default(true)
   onboardingStatus String  @default("WIZARD_PENDING") // WIZARD_PENDING | CHECKLIST_PENDING | SUBMITTED | APPROVED | REJECTED
   rejectionReason  String? // Admin's reason when rejecting
+  portfolioPhotos String @default("[]")
   createdAt        DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -190,6 +191,7 @@ model Review {
   authorId  String
   rating    Int      // 1-5
   comment   String?
+  photos    String  @default("[]")
   createdAt DateTime @default(now())
 
   booking Booking @relation(fields: [bookingId], references: [id])
