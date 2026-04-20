@@ -26,7 +26,7 @@ export async function sendEmail(options: {
 
   try {
     await client.emails.send({
-      from: "PianoTune <notifications@pianotune.com>",
+      from: "BookATuner <notifications@bookatuner.com>",
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -45,7 +45,7 @@ export function buildEmailHtml(heading: string, bodyHtml: string): string {
   <div style="max-width:560px;margin:0 auto;padding:40px 20px;">
     <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0;">
       <div style="text-align:center;margin-bottom:24px;">
-        <span style="font-size:20px;font-weight:700;color:#1e293b;">PianoTune</span>
+        <span style="font-size:20px;font-weight:700;color:#1e293b;">BookATuner</span>
       </div>
       <h1 style="font-size:20px;font-weight:600;color:#1e293b;margin:0 0 16px;">${heading}</h1>
       <div style="font-size:14px;line-height:1.6;color:#475569;">
@@ -53,7 +53,7 @@ export function buildEmailHtml(heading: string, bodyHtml: string): string {
       </div>
     </div>
     <div style="text-align:center;margin-top:24px;font-size:12px;color:#94a3b8;">
-      &copy; ${new Date().getFullYear()} PianoTune. All rights reserved.
+      &copy; ${new Date().getFullYear()} BookATuner. All rights reserved.
     </div>
   </div>
 </body>
