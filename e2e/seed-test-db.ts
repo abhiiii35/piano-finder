@@ -177,6 +177,26 @@ async function main() {
     },
   });
 
+  // A pending booking (for testing booking status changes)
+  await prisma.booking.create({
+    data: {
+      id: "test-booking-pending",
+      customerId: "test-customer",
+      technicianId: profile.id,
+      status: "PENDING",
+      scheduledAt: new Date("2026-05-01T10:00:00"),
+      durationMin: 90,
+      addressLine1: "456 Test Ave",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+      totalCents: 17500,
+      services: {
+        create: { serviceId: "test-service-tuning", priceCents: 17500 },
+      },
+    },
+  });
+
   // A job posting
   await prisma.job.create({
     data: {
