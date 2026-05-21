@@ -44,8 +44,8 @@ export default function HomePage() {
             </div>
 
             <h1 className="animate-fade-up animation-delay-100 mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Your piano deserves{" "}
-              <span className="text-accent">expert care</span>
+              Your piano{" "}
+              <span className="text-accent">and you</span>
             </h1>
 
             <p className="animate-fade-up animation-delay-200 mt-6 text-lg leading-relaxed text-muted-foreground">
