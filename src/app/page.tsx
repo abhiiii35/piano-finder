@@ -45,7 +45,7 @@ export default function HomePage() {
 
             <h1 className="animate-fade-up animation-delay-100 mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               Your piano{" "}
-              <span className="text-accent">and you</span>
+              <span className="text-accent">and me</span>
             </h1>
 
             <p className="animate-fade-up animation-delay-200 mt-6 text-lg leading-relaxed text-muted-foreground">
