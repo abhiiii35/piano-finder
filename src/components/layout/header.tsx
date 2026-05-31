@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Music, Search, LayoutDashboard, LogOut, User, Briefcase } from "lucide-react";
+import { Search, LayoutDashboard, LogOut, User, Briefcase, Sparkles, Wrench } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
@@ -17,16 +17,54 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // When already on the home page, App Router's <Link href="/#id"> won't scroll
+  // (same route). Intercept and smooth-scroll to the section ourselves.
+  function handleHashNav(
+    e: React.MouseEvent<HTMLAnchorElement>,
+    id: string
+  ) {
+    if (pathname !== "/") return; // other pages: let Link navigate to /#id
+    const el = document.getElementById(id);
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: "smooth" });
+    window.history.replaceState(null, "", `/#${id}`);
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Music className="h-5 w-5 text-primary-foreground" />
+            {/* Black & white piano keys */}
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <rect
+                x="2.5"
+                y="3.5"
+                width="19"
+                height="17"
+                rx="2.5"
+                fill="#ffffff"
+                stroke="#0f172a"
+                strokeWidth="1.4"
+              />
+              <line x1="7" y1="4" x2="7" y2="20" stroke="#0f172a" strokeWidth="0.9" />
+              <line x1="12" y1="4" x2="12" y2="20" stroke="#0f172a" strokeWidth="0.9" />
+              <line x1="17" y1="4" x2="17" y2="20" stroke="#0f172a" strokeWidth="0.9" />
+              <rect x="5.6" y="3.6" width="2.8" height="9" rx="0.7" fill="#0f172a" />
+              <rect x="10.6" y="3.6" width="2.8" height="9" rx="0.7" fill="#0f172a" />
+              <rect x="15.6" y="3.6" width="2.8" height="9" rx="0.7" fill="#0f172a" />
+            </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-foreground">
-            PianoTune
+            PianoTuner
           </span>
         </Link>
 
@@ -37,6 +75,22 @@ export function Header() {
           >
             <Search className="h-4 w-4" />
             Find a Tuner
+          </Link>
+          <Link
+            href="/#how-it-works"
+            onClick={(e) => handleHashNav(e, "how-it-works")}
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Sparkles className="h-4 w-4" />
+            How it works
+          </Link>
+          <Link
+            href="/#for-technicians"
+            onClick={(e) => handleHashNav(e, "for-technicians")}
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Wrench className="h-4 w-4" />
+            For Piano Technicians
           </Link>
           <Link
             href="/jobs"

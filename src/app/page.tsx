@@ -38,60 +38,95 @@ export default function HomePage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden bg-gradient-to-b from-secondary to-background px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3.5 py-1 text-sm font-medium text-accent">
-              <span>The #1 Piano Technician Platform</span>
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+            {/* Left: headline + search */}
+            <div className="text-center lg:text-left">
+              <div className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3.5 py-1 text-sm font-medium text-accent">
+                <span>The #1 Piano Technician Platform</span>
+              </div>
+
+              <h1 className="animate-fade-up animation-delay-100 mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                Your piano deserves{" "}
+                <span className="text-accent">expert care</span>
+              </h1>
+
+              <p className="animate-fade-up animation-delay-200 mt-6 text-lg leading-relaxed text-muted-foreground">
+                Find certified piano tuners and technicians near you. Book online,
+                pay securely, and keep your piano sounding its best.
+              </p>
+
+              {/* Search Bar */}
+              <form
+                onSubmit={handleSearch}
+                className="animate-fade-up animation-delay-300 mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-border lg:mx-0"
+              >
+                <div className="flex flex-1 items-center gap-2 pl-3">
+                  <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Enter your city or zip code"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  <Search className="h-4 w-4" />
+                  Find Tuners
+                </button>
+              </form>
+
+              {/* Benefit pills */}
+              <div className="animate-fade-up animation-delay-400 mx-auto mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 lg:mx-0 lg:justify-start">
+                {[
+                  { icon: CalendarCheck, label: "Instant booking" },
+                  { icon: ShieldCheck, label: "Verified credentials" },
+                  { icon: CheckCircle2, label: "No phone calls" },
+                ].map((item) => (
+                  <span
+                    key={item.label}
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground"
+                  >
+                    <item.icon className="h-4 w-4 text-accent" />
+                    {item.label}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            <h1 className="animate-fade-up animation-delay-100 mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Your piano deserves{" "}
-              <span className="text-accent">expert care</span>
-            </h1>
-
-            <p className="animate-fade-up animation-delay-200 mt-6 text-lg leading-relaxed text-muted-foreground">
-              Find certified piano tuners and technicians near you. Book online,
-              pay securely, and keep your piano sounding its best.
-            </p>
-
-            {/* Search Bar */}
-            <form
-              onSubmit={handleSearch}
-              className="animate-fade-up animation-delay-300 mx-auto mt-10 flex max-w-md items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:shadow-md focus-within:border-border"
-            >
-              <div className="flex flex-1 items-center gap-2 pl-3">
-                <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Enter your city or zip code"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                />
-              </div>
-              <button
-                type="submit"
-                className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            {/* Right: Every piano tells a story */}
+            <div className="text-center lg:text-left" ref={emotionalRef}>
+              <div
+                className={`mx-auto mb-6 h-px w-16 bg-accent lg:mx-0 ${
+                  emotionalVisible ? "animate-fade-in" : "opacity-0"
+                }`}
+              />
+              <blockquote
+                className={`text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl ${
+                  emotionalVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
+                }`}
               >
-                <Search className="h-4 w-4" />
-                Find Tuners
-              </button>
-            </form>
-
-            {/* Benefit pills */}
-            <div className="animate-fade-up animation-delay-400 mx-auto mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              {[
-                { icon: CalendarCheck, label: "Instant booking" },
-                { icon: ShieldCheck, label: "Verified credentials" },
-                { icon: CheckCircle2, label: "No phone calls" },
-              ].map((item) => (
-                <span
-                  key={item.label}
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground"
-                >
-                  <item.icon className="h-4 w-4 text-accent" />
-                  {item.label}
-                </span>
-              ))}
+                Every piano tells a story.
+                <br />
+                <span className="text-accent">We connect you with technicians who listen.</span>
+              </blockquote>
+              <p
+                className={`mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0 ${
+                  emotionalVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
+                }`}
+              >
+                Whether it&apos;s a family heirloom or a concert grand, your piano
+                deserves someone who understands its voice. Our technicians bring
+                decades of experience and genuine care to every instrument.
+              </p>
+              <div
+                className={`mx-auto mt-6 h-px w-16 bg-accent lg:mx-0 ${
+                  emotionalVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
+                }`}
+              />
             </div>
           </div>
 
@@ -140,49 +175,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Emotional statement */}
-        <section className="relative px-4 py-24 sm:py-32" ref={emotionalRef}>
-          {/* Staff lines motif */}
-          <div className="pointer-events-none absolute inset-0 flex flex-col justify-center gap-[18px] opacity-[0.04]">
-            {Array.from({ length: 5 }, (_, i) => (
-              <div key={i} className="h-px w-full bg-foreground" />
-            ))}
-          </div>
-
-          <div className="relative mx-auto max-w-3xl text-center">
-            <div
-              className={`mx-auto mb-6 h-px w-16 bg-accent ${
-                emotionalVisible ? "animate-fade-in" : "opacity-0"
-              }`}
-            />
-            <blockquote
-              className={`text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl ${
-                emotionalVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
-              }`}
-            >
-              Every piano tells a story.
-              <br />
-              <span className="text-accent">We connect you with technicians who listen.</span>
-            </blockquote>
-            <p
-              className={`mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground ${
-                emotionalVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
-              }`}
-            >
-              Whether it&apos;s a family heirloom or a concert grand, your piano
-              deserves someone who understands its voice. Our technicians bring
-              decades of experience and genuine care to every instrument.
-            </p>
-            <div
-              className={`mx-auto mt-6 h-px w-16 bg-accent ${
-                emotionalVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
-              }`}
-            />
-          </div>
-        </section>
-
         {/* How It Works */}
-        <section className="px-4 py-20" ref={howItWorksRef}>
+        <section
+          id="how-it-works"
+          className="scroll-mt-24 px-4 py-20"
+          ref={howItWorksRef}
+        >
           <div className="mx-auto max-w-5xl">
             <h2
               className={`text-center text-3xl font-bold text-foreground transition-opacity duration-500 ${
@@ -328,7 +326,7 @@ export default function HomePage() {
                 >
                   <p className="text-sm leading-relaxed text-foreground">
                     &ldquo;As a piano teacher, I need my instruments in top shape.
-                    PianoTune makes it easy to schedule regular tunings and keep
+                    PianoTuner makes it easy to schedule regular tunings and keep
                     track of my service history.&rdquo;
                   </p>
                   <div className="mt-4 flex items-center gap-3">
@@ -351,7 +349,11 @@ export default function HomePage() {
         </section>
 
         {/* For Technicians — dark section */}
-        <section className="bg-[#0f1729] px-4 py-20" ref={forTechniciansRef}>
+        <section
+          id="for-technicians"
+          className="scroll-mt-24 bg-[#0f1729] px-4 py-20"
+          ref={forTechniciansRef}
+        >
           <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center">
             {/* Left: copy */}
             <div>
@@ -380,7 +382,7 @@ export default function HomePage() {
                     : "opacity-0"
                 }`}
               >
-                PianoTune replaces Square, QuickBooks, Google Calendar, and paper
+                PianoTuner replaces Square, QuickBooks, Google Calendar, and paper
                 logs. Everything you need to run your business in one platform.
               </p>
 

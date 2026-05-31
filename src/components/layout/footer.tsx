@@ -13,7 +13,7 @@ export function Footer() {
                 <Music className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="text-lg font-bold tracking-tight text-foreground">
-                PianoTune
+                PianoTuner
               </span>
             </Link>
             <p className="mt-3 text-sm text-muted-foreground">
@@ -75,7 +75,7 @@ export function Footer() {
 
         <div className="mt-12 border-t pt-8">
           <p className="text-center text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} PianoTune. All rights reserved.
+            &copy; {new Date().getFullYear()} PianoTuner. All rights reserved.
           </p>
         </div>
       </div>

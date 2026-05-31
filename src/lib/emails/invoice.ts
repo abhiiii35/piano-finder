@@ -5,5 +5,5 @@ export function invoiceEmail(technicianName: string) {
     "Your Invoice",
     `<p>Your invoice from <strong>${technicianName}</strong> is attached as a PDF.</p>`
   );
-  return { subject: `Your invoice from ${technicianName} — PianoTune`, html };
+  return { subject: `Your invoice from ${technicianName} — PianoTuner`, html };
 }

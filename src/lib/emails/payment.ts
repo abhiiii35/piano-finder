@@ -19,6 +19,6 @@ export function paymentReceiptEmail(
         <tr><td style="padding:8px 0;color:#64748b;">Services</td><td style="padding:8px 0;">${services.join(", ")}</td></tr>
         <tr><td style="padding:8px 0;color:#64748b;">Date</td><td style="padding:8px 0;">${dateStr}</td></tr>
       </table>
-      <p>Thank you for choosing PianoTune!</p>`),
+      <p>Thank you for choosing PianoTuner!</p>`),
   };
 }

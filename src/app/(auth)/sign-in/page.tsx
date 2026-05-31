@@ -46,7 +46,7 @@ export default function SignInPage() {
           </div>
         </div>
         <h1 className="mt-5 text-xl font-bold text-foreground">
-          Welcome to PianoTune
+          Welcome to PianoTuner
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">Sign in to continue</p>
       </div>

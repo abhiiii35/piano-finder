@@ -13,7 +13,7 @@ export default function AuthLayout({
           <Music className="h-6 w-6 text-primary-foreground" />
         </div>
         <span className="text-2xl font-bold tracking-tight text-foreground">
-          PianoTune
+          PianoTuner
         </span>
       </Link>
       {children}
