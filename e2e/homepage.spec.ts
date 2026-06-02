@@ -9,7 +9,7 @@ test.describe("Homepage", () => {
 
   test("renders how it works section", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("text=How it works")).toBeVisible();
+    await expect(page.locator("h2", { hasText: "How it works" })).toBeVisible();
     await expect(page.locator("text=Easy Discovery")).toBeVisible();
     await expect(page.locator("text=Instant Booking").first()).toBeVisible();
   });

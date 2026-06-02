@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PianoLogoMark } from "@/components/ui/piano-logo";
 
 export function Header() {
   const { data: session } = useSession();
@@ -20,49 +21,36 @@ export function Header() {
   const pathname = usePathname();
 
   // When already on the home page, App Router's <Link href="/#id"> won't scroll
-  // (same route). Intercept and smooth-scroll to the section ourselves.
+  // (same route). Intercept and smooth-scroll to the section ourselves. On other
+  // routes we let <Link> navigate to "/#id" and HomePage scrolls to it on mount.
   function handleHashNav(
     e: React.MouseEvent<HTMLAnchorElement>,
     id: string
   ) {
-    if (pathname !== "/") return; // other pages: let Link navigate to /#id
+    // Let the browser handle modifier / non-primary clicks (open in new tab, etc.).
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (pathname !== "/") return;
     const el = document.getElementById(id);
     if (!el) return;
     e.preventDefault();
-    el.scrollIntoView({ behavior: "smooth" });
-    window.history.replaceState(null, "", `/#${id}`);
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+    // Reflect the section in the URL without dropping query params or clobbering
+    // Next.js's own history state (preserve both; push so Back returns here).
+    window.history.pushState(
+      window.history.state,
+      "",
+      `${window.location.pathname}${window.location.search}#${id}`
+    );
   }
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            {/* Black & white piano keys */}
-            <svg
-              viewBox="0 0 24 24"
-              className="h-6 w-6"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <rect
-                x="2.5"
-                y="3.5"
-                width="19"
-                height="17"
-                rx="2.5"
-                fill="#ffffff"
-                stroke="#0f172a"
-                strokeWidth="1.4"
-              />
-              <line x1="7" y1="4" x2="7" y2="20" stroke="#0f172a" strokeWidth="0.9" />
-              <line x1="12" y1="4" x2="12" y2="20" stroke="#0f172a" strokeWidth="0.9" />
-              <line x1="17" y1="4" x2="17" y2="20" stroke="#0f172a" strokeWidth="0.9" />
-              <rect x="5.6" y="3.6" width="2.8" height="9" rx="0.7" fill="#0f172a" />
-              <rect x="10.6" y="3.6" width="2.8" height="9" rx="0.7" fill="#0f172a" />
-              <rect x="15.6" y="3.6" width="2.8" height="9" rx="0.7" fill="#0f172a" />
-            </svg>
-          </div>
+          <PianoLogoMark className="h-9 w-9" />
           <span className="text-lg font-bold tracking-tight text-foreground">
             PianoTuner
           </span>

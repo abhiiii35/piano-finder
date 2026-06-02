@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Music } from "lucide-react";
+import { PianoLogoMark } from "@/components/ui/piano-logo";
 
 export function Footer() {
   return (
@@ -9,9 +9,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Music className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <PianoLogoMark className="h-9 w-9" />
               <span className="text-lg font-bold tracking-tight text-foreground">
                 PianoTuner
               </span>

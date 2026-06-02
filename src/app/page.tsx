@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAnimateOnScroll } from "@/hooks/use-animate-on-scroll";
@@ -20,10 +20,25 @@ import {
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [emotionalRef, emotionalVisible] = useAnimateOnScroll();
   const [howItWorksRef, howItWorksVisible] = useAnimateOnScroll();
   const [testimonialsRef, testimonialsVisible] = useAnimateOnScroll();
   const [forTechniciansRef, forTechniciansVisible] = useAnimateOnScroll();
+
+  // Scroll to the hash section when arriving from another route (e.g. the header
+  // "How it works" link navigates to "/#how-it-works"); App Router does not scroll
+  // to fragments on client-side navigation, so we do it here on mount.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    requestAnimationFrame(() =>
+      el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" })
+    );
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -38,7 +53,7 @@ export default function HomePage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden bg-gradient-to-b from-secondary to-background px-4 pb-16 pt-20 sm:pt-28 sm:pb-20">
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+          <div className="relative mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-2">
             {/* Left: headline + search */}
             <div className="text-center lg:text-left">
               <div className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3.5 py-1 text-sm font-medium text-accent">
@@ -97,36 +112,20 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Every piano tells a story */}
-            <div className="text-center lg:text-left" ref={emotionalRef}>
-              <div
-                className={`mx-auto mb-6 h-px w-16 bg-accent lg:mx-0 ${
-                  emotionalVisible ? "animate-fade-in" : "opacity-0"
-                }`}
-              />
-              <blockquote
-                className={`text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl ${
-                  emotionalVisible ? "animate-fade-up animation-delay-100" : "opacity-0"
-                }`}
-              >
+            {/* Right: Every piano tells a story (above the fold — animate immediately) */}
+            <div className="text-center lg:text-left">
+              <div className="animate-fade-in mx-auto mb-6 h-px w-16 bg-accent lg:mx-0" />
+              <blockquote className="animate-fade-up animation-delay-100 text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl">
                 Every piano tells a story.
                 <br />
                 <span className="text-accent">We connect you with technicians who listen.</span>
               </blockquote>
-              <p
-                className={`mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0 ${
-                  emotionalVisible ? "animate-fade-up animation-delay-200" : "opacity-0"
-                }`}
-              >
+              <p className="animate-fade-up animation-delay-200 mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0">
                 Whether it&apos;s a family heirloom or a concert grand, your piano
                 deserves someone who understands its voice. Our technicians bring
                 decades of experience and genuine care to every instrument.
               </p>
-              <div
-                className={`mx-auto mt-6 h-px w-16 bg-accent lg:mx-0 ${
-                  emotionalVisible ? "animate-fade-in animation-delay-300" : "opacity-0"
-                }`}
-              />
+              <div className="animate-fade-in animation-delay-300 mx-auto mt-6 h-px w-16 bg-accent lg:mx-0" />
             </div>
           </div>
 
