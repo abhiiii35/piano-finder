@@ -113,19 +113,31 @@ export default function HomePage() {
             </div>
 
             {/* Right: Every piano tells a story (above the fold — animate immediately) */}
-            <div className="text-center lg:text-left">
-              <div className="animate-fade-in mx-auto mb-6 h-px w-16 bg-accent lg:mx-0" />
-              <blockquote className="animate-fade-up animation-delay-100 text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-                Every piano tells a story.
-                <br />
-                <span className="text-accent">We connect you with technicians who listen.</span>
-              </blockquote>
-              <p className="animate-fade-up animation-delay-200 mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0">
-                Whether it&apos;s a family heirloom or a concert grand, your piano
-                deserves someone who understands its voice. Our technicians bring
-                decades of experience and genuine care to every instrument.
-              </p>
-              <div className="animate-fade-in animation-delay-300 mx-auto mt-6 h-px w-16 bg-accent lg:mx-0" />
+            <div className="relative text-center lg:text-left">
+              {/* Staff lines motif */}
+              <div
+                className="pointer-events-none absolute inset-0 flex flex-col justify-center gap-[18px] opacity-[0.04]"
+                aria-hidden="true"
+              >
+                {Array.from({ length: 5 }, (_, i) => (
+                  <div key={i} className="h-px w-full bg-foreground" />
+                ))}
+              </div>
+
+              <div className="relative">
+                <div className="animate-fade-in mx-auto mb-6 h-px w-16 bg-accent lg:mx-0" />
+                <blockquote className="animate-fade-up animation-delay-100 text-2xl font-light leading-relaxed tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+                  Every piano tells a story.
+                  <br />
+                  <span className="text-accent">We connect you with technicians who listen.</span>
+                </blockquote>
+                <p className="animate-fade-up animation-delay-200 mx-auto mt-6 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0">
+                  Whether it&apos;s a family heirloom or a concert grand, your piano
+                  deserves someone who understands its voice. Our technicians bring
+                  decades of experience and genuine care to every instrument.
+                </p>
+                <div className="animate-fade-in animation-delay-300 mx-auto mt-6 h-px w-16 bg-accent lg:mx-0" />
+              </div>
             </div>
           </div>
 

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { createTechnicianProfile } from "@/actions/technician-signup";
-import { Music, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { PianoLogoMark } from "@/components/ui/piano-logo";
 import { toast } from "sonner";
 import { SERVICE_TYPES, PIANO_TYPES } from "@/lib/constants";
 
@@ -72,9 +73,7 @@ export default function TechnicianSignupPage() {
 
       {/* Header */}
       <div className="mt-6 flex flex-col items-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-          <Music className="h-6 w-6 text-muted-foreground" />
-        </div>
+        <PianoLogoMark className="h-12 w-12 rounded-full" iconClassName="h-7 w-7" />
         <h1 className="mt-4 text-2xl font-bold text-foreground">
           Join as a Technician
         </h1>

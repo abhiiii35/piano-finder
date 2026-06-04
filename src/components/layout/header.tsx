@@ -1,9 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Search, LayoutDashboard, LogOut, User, Briefcase, Sparkles, Wrench } from "lucide-react";
+import {
+  Search,
+  LayoutDashboard,
+  LogOut,
+  User,
+  Briefcase,
+  Sparkles,
+  Wrench,
+  Menu,
+  X,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
@@ -15,10 +26,43 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PianoLogoMark } from "@/components/ui/piano-logo";
 
+type NavLink = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  hash?: string;
+};
+
+const NAV_LINKS: NavLink[] = [
+  { href: "/search", label: "Find a Tuner", icon: Search },
+  { href: "/#how-it-works", label: "How it works", icon: Sparkles, hash: "how-it-works" },
+  {
+    href: "/#for-technicians",
+    label: "For Piano Technicians",
+    icon: Wrench,
+    hash: "for-technicians",
+  },
+  { href: "/jobs", label: "Job Board", icon: Briefcase },
+];
+
 export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navLinks: NavLink[] =
+    session?.user.role === "TECHNICIAN"
+      ? [
+          ...NAV_LINKS,
+          { href: "/dashboard/technician", label: "Dashboard", icon: LayoutDashboard },
+        ]
+      : NAV_LINKS;
+
+  function handleNavClick(e: React.MouseEvent<HTMLAnchorElement>, link: NavLink) {
+    if (link.hash) handleHashNav(e, link.hash);
+    setMobileOpen(false);
+  }
 
   // When already on the home page, App Router's <Link href="/#id"> won't scroll
   // (same route). Intercept and smooth-scroll to the section ourselves. On other
@@ -49,7 +93,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link
+          href="/"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-2.5"
+        >
           <PianoLogoMark className="h-9 w-9" />
           <span className="text-lg font-bold tracking-tight text-foreground">
             PianoTuner
@@ -57,45 +105,17 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 sm:flex">
-          <Link
-            href="/search"
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Search className="h-4 w-4" />
-            Find a Tuner
-          </Link>
-          <Link
-            href="/#how-it-works"
-            onClick={(e) => handleHashNav(e, "how-it-works")}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Sparkles className="h-4 w-4" />
-            How it works
-          </Link>
-          <Link
-            href="/#for-technicians"
-            onClick={(e) => handleHashNav(e, "for-technicians")}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Wrench className="h-4 w-4" />
-            For Piano Technicians
-          </Link>
-          <Link
-            href="/jobs"
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Briefcase className="h-4 w-4" />
-            Job Board
-          </Link>
-          {session?.user.role === "TECHNICIAN" && (
+          {navLinks.map((link) => (
             <Link
-              href="/dashboard/technician"
+              key={link.href}
+              href={link.href}
+              onClick={(e) => handleNavClick(e, link)}
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
+              <link.icon className="h-4 w-4" />
+              {link.label}
             </Link>
-          )}
+          ))}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -160,8 +180,48 @@ export function Header() {
               <User className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             </Link>
           )}
+
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:hidden"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu panel */}
+      {mobileOpen && (
+        <nav className="border-t bg-background px-4 py-3 sm:hidden">
+          <div className="flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link)}
+                className="flex items-center gap-2.5 rounded-md px-2 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <link.icon className="h-4 w-4" />
+                {link.label}
+              </Link>
+            ))}
+            {session?.user.role === "CUSTOMER" && (
+              <Link
+                href="/sign-up/technician"
+                onClick={() => setMobileOpen(false)}
+                className="mt-1 flex items-center gap-2.5 rounded-md px-2 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <Wrench className="h-4 w-4" />
+                Join as Technician
+              </Link>
+            )}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

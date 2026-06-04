@@ -4,7 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Music, Mail, Lock, Key } from "lucide-react";
+import { Mail, Lock, Key } from "lucide-react";
+import { PianoKeysIcon } from "@/components/ui/piano-logo";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -39,8 +40,8 @@ export default function SignInPage() {
     <div className="w-full max-w-sm rounded-2xl bg-card p-8 shadow-sm border border-border">
       {/* Logo */}
       <div className="flex flex-col items-center">
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary">
-          <Music className="h-7 w-7 text-primary-foreground" />
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-[#0f172a]">
+          <PianoKeysIcon className="h-8 w-8" />
           <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary">
             <Key className="h-3.5 w-3.5 text-primary-foreground" />
           </div>
