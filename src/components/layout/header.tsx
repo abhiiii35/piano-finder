@@ -10,6 +10,7 @@ import {
   LogOut,
   User,
   Briefcase,
+  BookOpen,
   Sparkles,
   Wrench,
   Menu,
@@ -43,6 +44,7 @@ const NAV_LINKS: NavLink[] = [
     hash: "for-technicians",
   },
   { href: "/jobs", label: "Job Board", icon: Briefcase },
+  { href: "/blog", label: "Blog", icon: BookOpen },
 ];
 
 export function Header() {

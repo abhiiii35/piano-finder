@@ -42,7 +42,7 @@
 - All tests use mocked Prisma (`__tests__/helpers/mocks.ts`) — no real database.
 - Mock `next-auth` via `vi.mock("next-auth", ...)` and `vi.mocked(getServerSession)`.
 - Mock `next/cache` `revalidatePath` globally in `vitest.setup.ts`.
-- Date/time tests: use `new Date(dateStr).setHours(h, m, 0, 0)` for local time, not UTC strings, to match how the app creates dates.
+- Date/time tests: construct local dates explicitly — `new Date(2026, 3, 14, 9, 0)` — never `new Date("yyyy-mm-dd")` (parses as UTC midnight, which is the previous local day in US timezones). Availability code parses `"yyyy-mm-dd"` strings as local dates (`parseLocalDate` in `src/actions/booking.ts`) to match how bookings are stored.
 
 ## File Organization
 ```

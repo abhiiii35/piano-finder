@@ -12,6 +12,9 @@ import {
   Users,
   Star,
   Search,
+  ClipboardCheck,
+  FileText,
+  Wallet,
 } from "lucide-react";
 
 const technicianLinks = [
@@ -21,6 +24,7 @@ const technicianLinks = [
   { href: "/dashboard/technician/availability", label: "Availability", icon: Clock },
   { href: "/dashboard/technician/bookings", label: "Bookings", icon: CalendarDays },
   { href: "/dashboard/technician/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/technician/finances", label: "Finances", icon: Wallet },
   { href: "/dashboard/technician/reviews", label: "Reviews", icon: Star },
 ];
 
@@ -30,9 +34,19 @@ const customerLinks = [
   { href: "/search", label: "Find a Tuner", icon: Search },
 ];
 
+const adminLinks = [
+  { href: "/dashboard/admin/submissions", label: "Submissions", icon: ClipboardCheck },
+  { href: "/dashboard/admin/posts", label: "Blog Posts", icon: FileText },
+];
+
 export function SidebarNav({ role }: { role: string }) {
   const pathname = usePathname();
-  const links = role === "TECHNICIAN" ? technicianLinks : customerLinks;
+  const links =
+    role === "TECHNICIAN"
+      ? technicianLinks
+      : role === "ADMIN"
+        ? adminLinks
+        : customerLinks;
 
   return (
     <nav className="flex flex-col gap-1">

@@ -28,6 +28,7 @@ model User {
   reviews    Review[]
   jobs       Job[]
   jobApplications JobApplication[]
+  posts      Post[]
   sentMessages    Message[] @relation("SentMessages")
   customerMessages Message[] @relation("CustomerMessages")
 }
@@ -86,6 +87,7 @@ model TechnicianProfile {
   zipCode         String?
   pianoTypes      String? // JSON array: ["Grand", "Upright", etc.]
   travelFeeCents  Int?
+  travelBufferMin Int     @default(30) // padding on each side of a job, on top of estimated travel time
   ptgMember       Boolean @default(false)
   stripeAccountId String?
   isVerified       Boolean @default(false)
@@ -102,6 +104,8 @@ model TechnicianProfile {
   bookings         Booking[]         @relation("TechnicianBookings")
   customerRecords  CustomerRecord[]
   messages         Message[]
+  expenses         Expense[]
+  mileageLogs      MileageLog[]
 }
 
 model Service {
@@ -141,6 +145,8 @@ model Booking {
   city           String
   state          String
   zipCode        String
+  latitude       Float?   // geocoded once at creation; travel feasibility is measured against these
+  longitude      Float?
   notes          String?
   pianoType      String?  // GRAND | UPRIGHT | DIGITAL | OTHER
   pianoMake      String?
@@ -155,6 +161,7 @@ model Booking {
   payment    Payment?
   review     Review?
   messages   Message[]
+  mileageLogs MileageLog[]
 }
 
 model BookingService {
@@ -181,6 +188,40 @@ model Payment {
   updatedAt         DateTime @updatedAt
 
   booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+// ─── Finances ────────────────────────────────────────────────────
+
+model Expense {
+  id           String   @id @default(cuid())
+  technicianId String
+  date         DateTime
+  category     String
+  amountCents  Int
+  vendor       String?
+  notes        String?
+  receiptUrl   String?
+  deductible   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@index([technicianId, date])
+}
+
+model MileageLog {
+  id           String   @id @default(cuid())
+  technicianId String
+  date         DateTime
+  miles        Float
+  purpose      String
+  bookingId    String?
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  booking    Booking?          @relation(fields: [bookingId], references: [id])
+
+  @@index([technicianId, date])
 }
 
 // ─── Reviews ─────────────────────────────────────────────────────
@@ -226,6 +267,29 @@ model JobApplication {
 
   job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
   technician User @relation(fields: [techId], references: [id])
+}
+
+// ─── Blog ────────────────────────────────────────────────────────
+
+model Post {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String
+  contentHtml    String
+  coverImageUrl  String?
+  category       String
+  tags           String    @default("[]") // JSON array stored as text
+  status         String    @default("DRAFT") // DRAFT | PUBLISHED
+  authorId       String
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  isHowTo        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  author User @relation(fields: [authorId], references: [id])
 }
 
 // ─── CRM / Customer Records ─────────────────────────────────────

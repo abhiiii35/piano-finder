@@ -39,6 +39,18 @@ async function main() {
     },
   });
 
+  // Admin
+  await prisma.user.create({
+    data: {
+      id: "test-admin",
+      name: "Test Admin",
+      email: "admin@test.com",
+      hashedPassword: password,
+      role: "ADMIN",
+      emailVerified: new Date(),
+    },
+  });
+
   // Technician user
   const techUser = await prisma.user.create({
     data: {
@@ -193,6 +205,30 @@ async function main() {
       totalCents: 17500,
       services: {
         create: { serviceId: "test-service-tuning", priceCents: 17500 },
+      },
+    },
+  });
+
+  // A confirmed booking far away (Worcester) used by travel-feasibility.spec:
+  // Monday 2026-08-03, 11:00-12:00. Boston<->Worcester is ~78 min at the
+  // assumed 30 mph average, so nearby Boston slots around it must disappear.
+  await prisma.booking.create({
+    data: {
+      id: "test-booking-travel",
+      customerId: "test-customer",
+      technicianId: profile.id,
+      status: "CONFIRMED",
+      scheduledAt: new Date("2026-08-03T11:00:00"),
+      durationMin: 60,
+      addressLine1: "100 Front St",
+      city: "Worcester",
+      state: "MA",
+      zipCode: "01608",
+      latitude: 42.2626,
+      longitude: -71.8023,
+      totalCents: 12500,
+      services: {
+        create: { serviceId: "test-service-repair", priceCents: 12500 },
       },
     },
   });
