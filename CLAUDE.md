@@ -23,6 +23,14 @@ Repo: `github.com/abhiiii35/piano-finder` — a remote exists; push there, don't
 
 Husky + `scripts/pre-deploy-check.sh` block `git push` when unit tests fail, statement coverage is under **90%**, or the build fails. A "blocked" push is the hook working — fix the failure; never bypass with `--no-verify`.
 
+## Parallel subagents (lessons from 2026-07-12 outage)
+
+- Implementation workers run on **Haiku**; expensive models orchestrate only. Four default-model agents in parallel exhausted the account session limit mid-build and all died at once.
+- `export PATH="/opt/homebrew/opt/node@20/bin:$PATH"` **before anything else** — it's documented in Commands above; don't burn tokens rediscovering it.
+- **Checkpoint-commit early and often**: commit each coherent unit as soon as it compiles. When the outage hit, 3 of 4 agents had zero commits — their work survived only because the worktrees happened to persist.
+- Be token-frugal: grep for what you need, read only relevant files, never dump large files, never re-read what you've already seen.
+- Workers never `git push` — the orchestrator reviews and merges worktree branches; the human owns the push (Definition of done #5 applies to the orchestrator/human, not workers).
+
 ## Environment / databases
 
 - `.env` (template: `.env.example`): local dev is SQLite `DATABASE_URL=file:./dev.db`; production is Turso (`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`) via the libsql adapter. Empty Turso vars = local mode — `src/lib/prisma.ts` does the switching.
