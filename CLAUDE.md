@@ -25,7 +25,8 @@ Husky + `scripts/pre-deploy-check.sh` block `git push` when unit tests fail, sta
 
 ## Parallel subagents (lessons from 2026-07-12 outage)
 
-- Implementation workers run on **Haiku**; expensive models orchestrate only. Four default-model agents in parallel exhausted the account session limit mid-build and all died at once.
+- **Always run parallel subagents when possible** — split independent work (typecheck vs. tests vs. lint, separate features, research vs. implementation) across concurrent agents to improve efficiency. Only serialize when tasks share files or genuinely depend on each other.
+- Implementation workers run on **Haiku**; expensive models orchestrate only. Four default-model agents in parallel exhausted the account session limit mid-build and all died at once. If Haiku cannot resolve a failure, escalate that task to Sonnet or Opus to review, test, verify, and fix.
 - `export PATH="/opt/homebrew/opt/node@20/bin:$PATH"` **before anything else** — it's documented in Commands above; don't burn tokens rediscovering it.
 - **Checkpoint-commit early and often**: commit each coherent unit as soon as it compiles. When the outage hit, 3 of 4 agents had zero commits — their work survived only because the worktrees happened to persist.
 - Be token-frugal: grep for what you need, read only relevant files, never dump large files, never re-read what you've already seen.
