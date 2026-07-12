@@ -10,7 +10,7 @@ Repo: `github.com/abhiiii35/piano-finder` — a remote exists; push there, don't
 
 ## Commands (run from `piano-finder/`)
 
-- `nvm use 20` — **FIRST, before any npm/npx**. The system default is Node 16, which crashes Prisma and Next.js.
+- `export PATH="/opt/homebrew/opt/node@20/bin:$PATH"` — **FIRST, before any npm/npx/git push**. No nvm on this machine; default Homebrew node is v24, whose `NODE_MODULE_VERSION` mismatches the `better-sqlite3` binary in node_modules (built for Node 20) — the build dies at sitemap prerender with `ERR_DLOPEN_FAILED`. Verified 2026-07-12: full suite + build pass on node@20 (v20.20.2).
 - `npm run dev` — http://localhost:3000. Seed logins: `customer@example.com` / `tech@example.com` / `admin@example.com`, password `password123` (run `npm run db:seed` if they don't exist).
 - `npm run db:migrate` / `npm run db:seed` / `npm run db:studio`
 - `npm run test:run` — unit tests (Vitest, mocked Prisma — no DB needed). `npm run test:coverage` for coverage.
@@ -97,4 +97,4 @@ __tests__/           # Vitest tests mirroring src/ structure
 2. Verified in the running app as **every role the feature touches** (customer and technician seed accounts), in light and dark mode, surviving reload and navigation.
 3. Date/availability logic gets a boundary test — local-date parsing is this codebase's recurring trap (see Testing).
 4. Date-stamped `CHANGELOG.md` entry (file doesn't exist yet — create it with your first change) and README kept current (it is still stock create-next-app boilerplate — replace it the first time you touch it).
-5. Commit + push to `abhiiii35/piano-finder`; closing message states the commit hash, changed routes, and the run command: `nvm use 20 && npm run dev` → http://localhost:3000.
+5. Commit + push to `abhiiii35/piano-finder`; closing message states the commit hash, changed routes, and the run command: `export PATH="/opt/homebrew/opt/node@20/bin:$PATH" && npm run dev` → http://localhost:3000.
