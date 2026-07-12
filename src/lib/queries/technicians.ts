@@ -198,7 +198,7 @@ export async function searchTechnicians(filters: {
       if (aHasAvail && !bHasAvail) return -1;
       if (!aHasAvail && bHasAvail) return 1;
       if (aHasAvail && bHasAvail) {
-        const dateCompare = a.nextAvailableAt.getTime() - b.nextAvailableAt.getTime();
+        const dateCompare = a.nextAvailableAt!.getTime() - b.nextAvailableAt!.getTime();
         if (dateCompare !== 0) return dateCompare;
       }
       return (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity);
@@ -216,7 +216,7 @@ export async function searchTechnicians(filters: {
       if (aHasAvail && !bHasAvail) return -1;
       if (!aHasAvail && bHasAvail) return 1;
       if (aHasAvail && bHasAvail) {
-        return a.nextAvailableAt.getTime() - b.nextAvailableAt.getTime();
+        return a.nextAvailableAt!.getTime() - b.nextAvailableAt!.getTime();
       }
       return 0;
     });
