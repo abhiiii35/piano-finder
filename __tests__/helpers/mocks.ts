@@ -38,6 +38,7 @@ export const prismaMock = {
   expense: createMockModel(),
   mileageLog: createMockModel(),
   post: createMockModel(),
+  tuneReminder: createMockModel(),
   // Interactive-transaction mock; tests typically override it to invoke the
   // callback with prismaMock itself (see booking.test.ts).
   $transaction: vi.fn(),
@@ -107,6 +108,7 @@ export const fixtures = {
     isActive: true,
     onboardingStatus: "APPROVED",
     rejectionReason: null,
+    portfolioPhotos: "[]",
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -283,6 +285,20 @@ export const fixtures = {
     seoTitle: null,
     seoDescription: null,
     isHowTo: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+
+  tuneReminder: {
+    id: "reminder-1",
+    technicianId: "tech-profile-1",
+    customerRecordId: "record-1",
+    customerEmail: "jane@example.com",
+    reminderType: "6_MONTH",
+    lastTuningDate: new Date("2025-12-15"),
+    dueDate: new Date("2026-06-15"),
+    sent: false,
+    sentAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
