@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { prismaMock, fixtures } from "../../helpers/mocks";
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
@@ -154,7 +154,22 @@ describe("getTechnicianById", () => {
 });
 
 describe("getNextAvailableSlot", () => {
-  beforeEach(() => vi.clearAllMocks());
+  // getNextAvailableSlot scans forward from "today", and "this-week" ends at
+  // Saturday of the CURRENT calendar week (see getWindowEndDate). These tests
+  // were previously flaky because they used the real wall clock — e.g. the
+  // only-Sunday "this-week" case passed on Sundays but returned null on any
+  // other day. Pin the clock (Date only, so async mocks and timers are
+  // unaffected) to a fixed Sunday so results are deterministic.
+  const FIXED_SUNDAY = new Date("2026-01-04T09:00:00"); // local time, Sunday
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ now: FIXED_SUNDAY, toFake: ["Date"] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it("returns null when technician has no availability slots", async () => {
     prismaMock.availabilitySlot.findMany.mockResolvedValue([]);
@@ -233,8 +248,8 @@ describe("getNextAvailableSlot", () => {
     expect(resultDateOnly.getTime()).toBe(todayOnly.getTime());
   });
 
-  it("respects availability window: this-week (within 7 days)", async () => {
-    // Only Sunday available (dayOfWeek = 0)
+  it("respects availability window: this-week (today through Saturday)", async () => {
+    // Today is Sunday; only Sunday available (dayOfWeek = 0)
     prismaMock.availabilitySlot.findMany.mockResolvedValue([
       { ...fixtures.availabilitySlot, dayOfWeek: 0 },
     ]);
@@ -245,14 +260,33 @@ describe("getNextAvailableSlot", () => {
       "this-week"
     );
 
+    // Today (Sunday) is inside the current week, so it should be found
     expect(result).not.toBeNull();
     expect(result?.getDay()).toBe(0); // Sunday
 
     const today = new Date();
     const daysDiff =
       (result!.getTime() - today.getTime()) / (24 * 60 * 60 * 1000);
-    // Should be within this week
     expect(daysDiff).toBeLessThanOrEqual(7);
+  });
+
+  it("this-week window ends at Saturday: next week's slot is not returned", async () => {
+    // Move the clock to Wednesday 2026-01-07. The current week ends
+    // Saturday 2026-01-10, so a Sunday-only technician has no availability
+    // "this-week" (next Sunday is 2026-01-11, outside the window).
+    vi.setSystemTime(new Date("2026-01-07T09:00:00"));
+
+    prismaMock.availabilitySlot.findMany.mockResolvedValue([
+      { ...fixtures.availabilitySlot, dayOfWeek: 0 },
+    ]);
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    const result = await getNextAvailableSlot(
+      "tech-profile-1",
+      "this-week"
+    );
+
+    expect(result).toBeNull();
   });
 
   it("returns earliest available when multiple days have slots", async () => {
