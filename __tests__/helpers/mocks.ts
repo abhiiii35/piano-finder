@@ -35,6 +35,13 @@ export const prismaMock = {
   jobApplication: createMockModel(),
   message: createMockModel(),
   verificationToken: createMockModel(),
+  expense: createMockModel(),
+  mileageLog: createMockModel(),
+  post: createMockModel(),
+  tuneReminder: createMockModel(),
+  // Interactive-transaction mock; tests typically override it to invoke the
+  // callback with prismaMock itself (see booking.test.ts).
+  $transaction: vi.fn(),
 };
 
 // ─── Session Helpers ─────────────────────────────────────────
@@ -94,12 +101,14 @@ export const fixtures = {
     zipCode: "02108",
     pianoTypes: null,
     travelFeeCents: null,
+    travelBufferMin: 30,
     ptgMember: false,
     stripeAccountId: null,
     isVerified: true,
     isActive: true,
     onboardingStatus: "APPROVED",
     rejectionReason: null,
+    portfolioPhotos: "[]",
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -136,6 +145,8 @@ export const fixtures = {
     city: "Boston",
     state: "MA",
     zipCode: "02215",
+    latitude: null,
+    longitude: null,
     notes: null,
     pianoType: "GRAND",
     pianoMake: "Steinway",
@@ -194,6 +205,29 @@ export const fixtures = {
     updatedAt: new Date(),
   },
 
+  expense: {
+    id: "expense-1",
+    technicianId: "tech-profile-1",
+    date: new Date(2026, 5, 2),
+    category: "Tools & Equipment",
+    amountCents: 4599,
+    vendor: "Schaff",
+    notes: null,
+    receiptUrl: null,
+    deductible: true,
+    createdAt: new Date(),
+  },
+
+  mileageLog: {
+    id: "mileage-1",
+    technicianId: "tech-profile-1",
+    date: new Date(2026, 5, 3),
+    miles: 24.6,
+    purpose: "Round trip to client",
+    bookingId: null,
+    createdAt: new Date(),
+  },
+
   availabilitySlot: {
     id: "slot-1",
     technicianId: "tech-profile-1",
@@ -234,6 +268,39 @@ export const fixtures = {
     content: "Hi, I wanted to confirm the appointment time.",
     isRead: false,
     createdAt: new Date(),
+  },
+
+  post: {
+    id: "post-1",
+    slug: "how-often-should-you-tune-your-piano",
+    title: "How Often Should You Tune Your Piano?",
+    excerpt: "Most pianos need tuning twice a year. Here's why.",
+    contentHtml: "<h2>Tuning frequency</h2><p>Most pianos need tuning twice a year.</p>",
+    coverImageUrl: null,
+    category: "Tuning",
+    tags: JSON.stringify(["tuning", "maintenance"]),
+    status: "PUBLISHED",
+    authorId: "admin-1",
+    publishedAt: new Date("2026-06-01T12:00:00Z"),
+    seoTitle: null,
+    seoDescription: null,
+    isHowTo: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+
+  tuneReminder: {
+    id: "reminder-1",
+    technicianId: "tech-profile-1",
+    customerRecordId: "record-1",
+    customerEmail: "jane@example.com",
+    reminderType: "6_MONTH",
+    lastTuningDate: new Date("2025-12-15"),
+    dueDate: new Date("2026-06-15"),
+    sent: false,
+    sentAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
 };
 

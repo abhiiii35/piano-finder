@@ -6,6 +6,11 @@ export const profileSchema = z.object({
   yearsExperience: z.coerce.number().int().min(0).max(100).optional(),
   certifications: z.string().optional(),
   serviceRadius: z.coerce.number().int().min(1).max(200).optional(),
+  // Blank string must mean "unchanged", not 0 (Number("") === 0)
+  travelBufferMin: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().min(0).max(240).optional()
+  ),
   addressLine1: z.string().max(200).optional(),
   city: z.string().max(100).optional(),
   state: z.string().max(2).optional(),

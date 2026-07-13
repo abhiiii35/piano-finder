@@ -70,6 +70,40 @@ describe("updateProfile", () => {
     expect(updateCall.data.longitude).toBe(-71.06);
   });
 
+  it("persists travelBufferMin", async () => {
+    setupTechSession();
+    prismaMock.technicianProfile.update.mockResolvedValue({});
+
+    const fd = makeFormData({ travelBufferMin: "45" });
+    const result = await updateProfile(fd);
+
+    expect(result.success).toBe(true);
+    const updateCall = prismaMock.technicianProfile.update.mock.calls[0][0];
+    expect(updateCall.data.travelBufferMin).toBe(45);
+  });
+
+  it("leaves travelBufferMin untouched when the field is blank", async () => {
+    setupTechSession();
+    prismaMock.technicianProfile.update.mockResolvedValue({});
+
+    const fd = makeFormData({ bio: "hi", travelBufferMin: "" });
+    const result = await updateProfile(fd);
+
+    expect(result.success).toBe(true);
+    const updateCall = prismaMock.technicianProfile.update.mock.calls[0][0];
+    expect(updateCall.data.travelBufferMin).toBeUndefined();
+  });
+
+  it("rejects an invalid travelBufferMin", async () => {
+    setupTechSession();
+
+    const fd = makeFormData({ travelBufferMin: "-5" });
+    const result = await updateProfile(fd);
+
+    expect(result.error).toBeDefined();
+    expect(prismaMock.technicianProfile.update).not.toHaveBeenCalled();
+  });
+
   it("rejects non-technician", async () => {
     mockGetSession.mockResolvedValue({
       user: { id: "u-1", role: "CUSTOMER", name: "Jane", email: "j@e.com" },

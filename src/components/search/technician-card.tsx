@@ -14,6 +14,7 @@ type Props = {
   services: { name: string }[];
   isVerified: boolean;
   distanceMiles?: number;
+  nextAvailableAt?: Date;
 };
 
 function getInitials(name: string | null, businessName: string | null): string {
@@ -54,12 +55,37 @@ export function TechnicianCard({
   services,
   isVerified,
   distanceMiles,
+  nextAvailableAt,
 }: Props) {
   const initials = getInitials(name, businessName);
   const displayName = name || businessName || "Piano Technician";
   const maxTags = 3;
   const visibleServices = services.slice(0, maxTags);
   const overflow = services.length - maxTags;
+
+  const formatNextAvailable = (date: Date): string => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateOnly = new Date(date);
+    dateOnly.setHours(0, 0, 0, 0);
+
+    const diffDays =
+      (dateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000);
+
+    let dayStr: string;
+    if (diffDays === 0) {
+      dayStr = "Today";
+    } else if (diffDays === 1) {
+      dayStr = "Tomorrow";
+    } else {
+      const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
+      dayStr = dayName;
+    }
+
+    return `Next available: ${dayStr}`;
+  };
 
   return (
     <Link href={`/technicians/${id}`} className="block">
@@ -111,11 +137,16 @@ export function TechnicianCard({
         </div>
 
         {/* Instant Book badge */}
-        <div className="mt-3">
+        <div className="mt-3 flex items-start justify-between">
           <span className="inline-flex items-center gap-1 text-xs font-medium text-accent">
             <Zap className="h-3 w-3" />
             Instant Book
           </span>
+          {nextAvailableAt && (
+            <span className="text-xs font-medium text-primary">
+              {formatNextAvailable(nextAvailableAt)}
+            </span>
+          )}
         </div>
 
         {/* Service tags */}

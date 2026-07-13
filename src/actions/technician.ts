@@ -55,6 +55,9 @@ export async function updateProfile(formData: FormData) {
       yearsExperience: data.yearsExperience ?? null,
       certifications: data.certifications ?? null,
       serviceRadius: data.serviceRadius ?? null,
+      ...(data.travelBufferMin !== undefined && {
+        travelBufferMin: data.travelBufferMin,
+      }),
       addressLine1: data.addressLine1 ?? null,
       city: data.city ?? null,
       state: data.state ?? null,
