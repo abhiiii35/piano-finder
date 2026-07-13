@@ -2,7 +2,7 @@
  * Script to seed trigger-moment guide blog posts into the database.
  *
  * Usage:
- *   npx tsx scripts/seed-blog-posts.ts [--publish]
+ *   npx tsx prisma/seed-blog-posts.ts [--publish]
  *
  * Flags:
  *   --publish  : Publish posts immediately (default: draft status)
