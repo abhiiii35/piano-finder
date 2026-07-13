@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   buildBookingConfirmationEmail,
   buildPostTuningEmail,
-  buildTuneDueReminderEmail,
 } from "@/lib/email-templates";
 
 describe("email-templates", () => {
@@ -97,61 +96,6 @@ describe("email-templates", () => {
       expect(html).toContain("humidifier");
       expect(html).toContain("direct sunlight");
       expect(html).toContain("pitch raise");
-    });
-  });
-
-  describe("buildTuneDueReminderEmail", () => {
-    it("renders 6-month reminder", () => {
-      const html = buildTuneDueReminderEmail({
-        customerName: "Alice Smith",
-        monthsOverdue: 6,
-        technicianName: "Bob Johnson",
-        bookingId: "booking-123",
-      });
-
-      expect(html).toContain("Alice Smith");
-      expect(html).toContain("6 months");
-      expect(html).toContain("Bob Johnson");
-      expect(html).toContain("Why regular tunings matter");
-      expect(html).toContain("Cost savings");
-    });
-
-    it("renders overdue 12+ months reminder", () => {
-      const html = buildTuneDueReminderEmail({
-        customerName: "Alice",
-        monthsOverdue: 14,
-        technicianName: "Tech",
-        bookingId: "booking-123",
-      });
-
-      expect(html).toContain("14 months");
-      expect(html).toContain("significantly overdue");
-      expect(html).toContain("noticeably flat");
-    });
-
-    it("handles missing technician name", () => {
-      const html = buildTuneDueReminderEmail({
-        customerName: "Alice",
-        monthsOverdue: 8,
-        bookingId: "booking-123",
-      });
-
-      expect(html).toContain("Alice");
-      expect(html).toContain("8 months");
-      expect(html).toContain("our website");
-      expect(html).toContain("Book with the same technician");
-    });
-
-    it("includes rebook encouragement", () => {
-      const html = buildTuneDueReminderEmail({
-        customerName: "Test",
-        monthsOverdue: 7,
-        technicianName: "Tech",
-        lastTuningDate: "Dec 2024",
-      });
-
-      expect(html).toContain("Book with the same technician");
-      expect(html).toContain("consistent results");
     });
   });
 });

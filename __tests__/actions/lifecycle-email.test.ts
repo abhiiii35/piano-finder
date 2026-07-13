@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   sendBookingConfirmationEmail,
   sendPostTuningEmail,
-  sendTuneDueReminderEmail,
 } from "@/actions/lifecycle-email";
 import * as emailModule from "@/lib/email";
 
@@ -93,51 +92,6 @@ describe("lifecycle-email actions", () => {
       const call = sendEmailSpy.mock.calls[0][0];
       expect(call.html).toContain("January");
       expect(call.html).toContain("next tuning");
-    });
-  });
-
-  describe("sendTuneDueReminderEmail", () => {
-    it("sends 6-month reminder", async () => {
-      const sendEmailSpy = vi.spyOn(emailModule, "sendEmail");
-
-      await sendTuneDueReminderEmail("customer@example.com", {
-        customerName: "Alice",
-        monthsOverdue: 6,
-        technicianName: "Bob",
-      });
-
-      expect(sendEmailSpy).toHaveBeenCalledOnce();
-      const call = sendEmailSpy.mock.calls[0][0];
-      expect(call.to).toBe("customer@example.com");
-      expect(call.subject).toContain("piano tuning");
-      expect(call.html).toContain("6 months");
-    });
-
-    it("sends overdue reminder for 12+ months", async () => {
-      const sendEmailSpy = vi.spyOn(emailModule, "sendEmail");
-
-      await sendTuneDueReminderEmail("test@example.com", {
-        customerName: "Test",
-        monthsOverdue: 14,
-        technicianName: "Tech",
-      });
-
-      const call = sendEmailSpy.mock.calls[0][0];
-      expect(call.subject).toContain("overdue");
-      expect(call.html).toContain("14 months");
-    });
-
-    it("handles missing technician", async () => {
-      const sendEmailSpy = vi.spyOn(emailModule, "sendEmail");
-
-      await sendTuneDueReminderEmail("test@example.com", {
-        customerName: "Test",
-        monthsOverdue: 8,
-      });
-
-      expect(sendEmailSpy).toHaveBeenCalledOnce();
-      const call = sendEmailSpy.mock.calls[0][0];
-      expect(call.html).toContain("8 months");
     });
   });
 });

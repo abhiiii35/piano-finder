@@ -2,7 +2,9 @@
  * Email templates for lifecycle events (Pillar 3: Reminder & lifecycle email)
  * - Booking confirmation
  * - Post-tuning thank you + care tips
- * - Tune-due reminders (6 and 12 months)
+ *
+ * Note: tune-due reminder emails live in src/lib/emails/tuneReminder.ts and are
+ * sent via the TuneReminder cron pipeline (src/actions/reminders.ts).
  */
 
 export interface BookingConfirmationEmailData {
@@ -23,14 +25,6 @@ export interface PostTuningEmailData {
   nextTuneDueDate: string;
   nextTuneDueMonth: string;
   bookingId: string;
-}
-
-export interface TuneDueReminderEmailData {
-  customerName: string;
-  monthsOverdue: number;
-  technicianName?: string;
-  lastTuningDate?: string;
-  bookingId?: string;
 }
 
 /**
@@ -106,37 +100,5 @@ export function buildPostTuningEmail(data: PostTuningEmailData): string {
 <p>Many piano owners set a calendar reminder 2–3 months before the due date, so they can book their technician early — good techs book up during peak seasons.</p>
 
 <p>Thank you for choosing Book A Piano Tuner. We're here to help you keep your piano in great shape!</p>
-  `;
-}
-
-/**
- * Tune-due reminder — sent at 6 months or 12 months after last tuning.
- * Encourages rebook with the same technician.
- */
-export function buildTuneDueReminderEmail(data: TuneDueReminderEmailData): string {
-  const urgency =
-    data.monthsOverdue > 12
-      ? "Your piano is now significantly overdue for tuning and likely noticeably flat."
-      : data.monthsOverdue > 6
-        ? "If you haven't tuned recently, now's a good time to schedule."
-        : "Piano tunings are more effective when spaced consistently.";
-
-  return `
-<h2>Time for your piano tuning</h2>
-<p>Hi ${data.customerName},</p>
-
-<p>It's been <strong>${data.monthsOverdue} months</strong> since your last piano tuning. ${urgency}</p>
-
-<h3>Why regular tunings matter</h3>
-<ul>
-  <li><strong>Cost savings:</strong> A piano that drifts too far may need a pitch raise, adding $50–$100 to the bill. Regular tunings keep the cost predictable.</li>
-  <li><strong>Sound quality:</strong> A piano in tune is more enjoyable to play and easier to practice on.</li>
-  <li><strong>String health:</strong> Regular tuning puts less stress on the strings and structure than trying to correct months of drift at once.</li>
-</ul>
-
-<h3>Book with the same technician</h3>
-<p>${data.technicianName ? `Your last tuning was done by ${data.technicianName}, who knows your piano and can give you consistent results. Reach out directly to reschedule, or use our website to find them again.` : "Use our website to find and book a piano technician near you."}</p>
-
-<p>A quick appointment now saves money, frustration, and keeps your piano sounding great.</p>
   `;
 }

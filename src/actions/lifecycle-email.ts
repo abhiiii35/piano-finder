@@ -4,10 +4,8 @@ import { sendEmail, buildEmailHtml } from "@/lib/email";
 import {
   buildBookingConfirmationEmail,
   buildPostTuningEmail,
-  buildTuneDueReminderEmail,
   type BookingConfirmationEmailData,
   type PostTuningEmailData,
-  type TuneDueReminderEmailData,
 } from "@/lib/email-templates";
 
 /**
@@ -46,29 +44,6 @@ export async function sendPostTuningEmail(
   await sendEmail({
     to: customerEmail,
     subject: "Piano tuning complete — care tips and next appointment reminder",
-    html,
-  });
-}
-
-/**
- * Send tune-due reminder email to customer at 6 or 12 months after last tuning.
- * Call this from a background job/cron that checks for overdue bookings.
- */
-export async function sendTuneDueReminderEmail(
-  customerEmail: string,
-  data: TuneDueReminderEmailData
-): Promise<void> {
-  const bodyHtml = buildTuneDueReminderEmail(data);
-  const subject =
-    data.monthsOverdue > 6
-      ? "Your piano tuning is overdue"
-      : "Time for your piano tuning";
-
-  const html = buildEmailHtml(subject, bodyHtml);
-
-  await sendEmail({
-    to: customerEmail,
-    subject,
     html,
   });
 }
