@@ -102,6 +102,7 @@ model TechnicianProfile {
   bookings         Booking[]         @relation("TechnicianBookings")
   customerRecords  CustomerRecord[]
   messages         Message[]
+  tuneReminders    TuneReminder[]
 }
 
 model Service {
@@ -244,7 +245,8 @@ model CustomerRecord {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  technician    TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  tuneReminders TuneReminder[]
 
   @@unique([technicianId, customerEmail])
 }
@@ -268,4 +270,27 @@ model Message {
   customer   User              @relation("CustomerMessages", fields: [customerId], references: [id])
 
   @@index([threadId, createdAt])
+}
+
+// ─── Tune Reminders ────────────────────────────────────────────────
+
+model TuneReminder {
+  id               String   @id @default(cuid())
+  technicianId     String
+  customerRecordId String
+  customerEmail    String
+  reminderType     String   @default("6_MONTH") // 6_MONTH | 12_MONTH
+  lastTuningDate   DateTime
+  dueDate          DateTime
+  sent             Boolean  @default(false)
+  sentAt           DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  technician   TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  customerRecord CustomerRecord   @relation(fields: [customerRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([customerRecordId, reminderType])
+  @@index([technicianId, sent])
+  @@index([dueDate, sent])
 }
