@@ -41,6 +41,7 @@ describe("reminders", () => {
         customerRecord: fixtures.customerRecord,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findMany.mockResolvedValue([dueReminder] as any);
 
       const result = await getDueReminders(100);
@@ -89,11 +90,13 @@ describe("reminders", () => {
         customerRecord: fixtures.customerRecord,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findUnique.mockResolvedValue(reminderData as any);
       prismaMock.tuneReminder.update.mockResolvedValue({
         ...reminderData,
         sent: true,
         sentAt: new Date(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       mockSendEmail.mockResolvedValue(undefined);
 
@@ -136,6 +139,7 @@ describe("reminders", () => {
         customerRecord: fixtures.customerRecord,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findUnique.mockResolvedValue(reminderData as any);
 
       const result = await sendTuneReminder("reminder-1", "http://example.com/book");
@@ -155,6 +159,7 @@ describe("reminders", () => {
         },
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findUnique.mockResolvedValue(reminderData as any);
 
       const result = await sendTuneReminder("reminder-1", "http://example.com/book");
@@ -170,6 +175,7 @@ describe("reminders", () => {
         customerRecord: fixtures.customerRecord,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findUnique.mockResolvedValue(reminderData as any);
       mockSendEmail.mockRejectedValue(new Error("Email service down"));
 
@@ -191,12 +197,15 @@ describe("reminders", () => {
         customerRecord: fixtures.customerRecord,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findMany.mockResolvedValue([reminder1] as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       prismaMock.tuneReminder.findUnique.mockResolvedValue(reminder1 as any);
       prismaMock.tuneReminder.update.mockResolvedValue({
         ...reminder1,
         sent: true,
         sentAt: new Date(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       mockSendEmail.mockResolvedValue(undefined);
 
