@@ -24,7 +24,7 @@ test.describe("Booking Flow", () => {
     await page.locator("label", { hasText: "Standard Tuning" }).click();
     await page.locator("button", { hasText: "Next" }).click();
 
-    // Step 2: Date & Time should appear
-    await expect(page.locator("text=Pick a Date")).toBeVisible();
+    // Step 2: Address comes before date & time so slots can be travel-filtered
+    await expect(page.locator("text=Your Details")).toBeVisible();
   });
 });

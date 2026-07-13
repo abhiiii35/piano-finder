@@ -22,6 +22,11 @@ describe("bookingCreatedEmail", () => {
     expect(html).toContain("123 Main St");
     expect(html).toContain("$175.00");
   });
+  it("includes cancellation policy", () => {
+    const { html } = bookingCreatedEmail(sampleBooking, "Mike Tuner", sampleServices);
+    expect(html).toContain("Cancellation Policy");
+    expect(html).toContain("24 hours");
+  });
 });
 
 describe("bookingReceivedEmail", () => {

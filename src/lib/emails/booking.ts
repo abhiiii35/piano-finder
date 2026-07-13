@@ -23,7 +23,11 @@ export function bookingCreatedEmail(booking: BookingInfo, technicianName: string
         <tr><td style="padding:8px 0;color:#64748b;">Date</td><td style="padding:8px 0;">${dateStr}</td></tr>
         <tr><td style="padding:8px 0;color:#64748b;">Location</td><td style="padding:8px 0;">${booking.addressLine1}, ${booking.city}, ${booking.state}</td></tr>
         <tr><td style="padding:8px 0;color:#64748b;">Total</td><td style="padding:8px 0;font-weight:600;">${formatCents(booking.totalCents)}</td></tr>
-      </table>`),
+      </table>
+      <div style="background-color:#f5f5f5;padding:12px;border-radius:6px;margin:16px 0;font-size:13px;">
+        <p style="margin:0 0 8px;font-weight:600;color:#1e293b;">Cancellation Policy</p>
+        <p style="margin:0;color:#475569;line-height:1.5;">Cancellations must be made at least 24 hours before your scheduled appointment. Cancellations within 24 hours may be subject to a cancellation fee.</p>
+      </div>`),
   };
 }
 

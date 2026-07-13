@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Music } from "lucide-react";
+import { PianoLogoMark } from "@/components/ui/piano-logo";
 
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      <Music className="h-12 w-12 text-muted-foreground" />
+      <PianoLogoMark className="h-14 w-14" iconClassName="h-9 w-9" />
       <h1 className="mt-4 text-3xl font-bold">Page Not Found</h1>
       <p className="mt-2 text-muted-foreground">
         The page you&apos;re looking for doesn&apos;t exist or has been moved.

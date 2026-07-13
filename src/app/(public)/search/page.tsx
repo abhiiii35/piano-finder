@@ -8,7 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; radius?: string; sort?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    radius?: string;
+    sort?: string;
+    availability?: string;
+  }>;
 }) {
   const params = await searchParams;
 
@@ -32,7 +37,12 @@ export default async function SearchPage({
 async function SearchResults({
   filters,
 }: {
-  filters: { q?: string; radius?: string; sort?: string };
+  filters: {
+    q?: string;
+    radius?: string;
+    sort?: string;
+    availability?: string;
+  };
 }) {
   let lat: number | undefined;
   let lng: number | undefined;
@@ -45,20 +55,41 @@ async function SearchResults({
   }
 
   const radiusMiles = filters.radius ? parseInt(filters.radius) : undefined;
+  const availabilityWindow = filters.availability as
+    | "today"
+    | "this-week"
+    | "this-weekend"
+    | "next-2-weeks"
+    | undefined;
 
   const technicians = await searchTechnicians({
     q: filters.q,
     lat,
     lng,
     radiusMiles,
+    availabilityWindow,
   });
 
-  if (technicians.length === 0) {
+  // Filter to only available technicians if availability window is active
+  const displayTechnicians =
+    availabilityWindow && technicians.length > 0
+      ? technicians.filter((t) => "nextAvailableAt" in t && t.nextAvailableAt)
+      : technicians;
+
+  const emptyMessage =
+    availabilityWindow && technicians.length > 0 && displayTechnicians.length === 0
+      ? `No tuners free ${availabilityWindow.replace("-", " ")} — showing next available`
+      : "No technicians found";
+
+  const messageTechnicians =
+    availabilityWindow && technicians.length > 0 && displayTechnicians.length === 0
+      ? technicians
+      : displayTechnicians;
+
+  if (messageTechnicians.length === 0) {
     return (
       <div className="mt-16 text-center">
-        <p className="text-lg font-medium text-foreground">
-          No technicians found
-        </p>
+        <p className="text-lg font-medium text-foreground">{emptyMessage}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           Try adjusting your search filters or broadening your location
         </p>
@@ -69,12 +100,12 @@ async function SearchResults({
   return (
     <>
       <p className="mt-4 text-sm text-muted-foreground">
-        {technicians.length} technician{technicians.length !== 1 ? "s" : ""}{" "}
-        available
+        {messageTechnicians.length} technician{messageTechnicians.length !== 1 ? "s" : ""}{" "}
+        {availabilityWindow ? "available" : "found"}
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {technicians.map((tech) => (
+        {messageTechnicians.map((tech) => (
           <TechnicianCard
             key={tech.id}
             id={tech.id}
@@ -89,6 +120,7 @@ async function SearchResults({
             services={tech.services.map((s) => ({ name: s.name }))}
             isVerified={tech.isVerified}
             distanceMiles={tech.distanceMiles}
+            nextAvailableAt={"nextAvailableAt" in tech ? tech.nextAvailableAt : undefined}
           />
         ))}
       </div>

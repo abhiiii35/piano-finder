@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { StarRating } from "./star-rating";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { PhotoLightbox } from "@/components/ui/photo-lightbox";
 import { formatDistanceToNow } from "date-fns";
 
@@ -48,10 +49,13 @@ export function ReviewCard({
         </AvatarFallback>
       </Avatar>
       <div className="flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm">
             {review.author.name ?? "Anonymous"}
           </span>
+          <Badge variant="secondary" className="text-xs">
+            Verified booking
+          </Badge>
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(review.createdAt), {
               addSuffix: true,

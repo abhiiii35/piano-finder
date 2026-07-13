@@ -194,14 +194,31 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="serviceRadius">Service Radius (miles)</Label>
-              <Input
-                id="serviceRadius"
-                name="serviceRadius"
-                type="number"
-                defaultValue={profile.serviceRadius ?? ""}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="serviceRadius">Service Radius (miles)</Label>
+                <Input
+                  id="serviceRadius"
+                  name="serviceRadius"
+                  type="number"
+                  defaultValue={profile.serviceRadius ?? ""}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="travelBufferMin">Travel Buffer (minutes)</Label>
+                <Input
+                  id="travelBufferMin"
+                  name="travelBufferMin"
+                  type="number"
+                  min={0}
+                  max={240}
+                  defaultValue={profile.travelBufferMin ?? 30}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Padding added on each side of a job on top of estimated drive
+                  time, when offering time slots to customers.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
