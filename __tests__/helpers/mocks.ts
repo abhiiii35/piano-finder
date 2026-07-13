@@ -35,6 +35,7 @@ export const prismaMock = {
   jobApplication: createMockModel(),
   message: createMockModel(),
   verificationToken: createMockModel(),
+  tuneReminder: createMockModel(),
 };
 
 // ─── Session Helpers ─────────────────────────────────────────
@@ -94,12 +95,14 @@ export const fixtures = {
     zipCode: "02108",
     pianoTypes: null,
     travelFeeCents: null,
+    travelBufferMin: 30,
     ptgMember: false,
     stripeAccountId: null,
     isVerified: true,
     isActive: true,
     onboardingStatus: "APPROVED",
     rejectionReason: null,
+    portfolioPhotos: "[]",
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -234,6 +237,20 @@ export const fixtures = {
     content: "Hi, I wanted to confirm the appointment time.",
     isRead: false,
     createdAt: new Date(),
+  },
+
+  tuneReminder: {
+    id: "reminder-1",
+    technicianId: "tech-profile-1",
+    customerRecordId: "record-1",
+    customerEmail: "jane@example.com",
+    reminderType: "6_MONTH",
+    lastTuningDate: new Date("2025-12-15"),
+    dueDate: new Date("2026-06-15"),
+    sent: false,
+    sentAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
 };
 
