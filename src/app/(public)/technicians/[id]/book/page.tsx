@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, ShieldCheck, Info } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { PitchRaiseDisclosure } from "@/components/profile/pitch-raise-disclosure";
 
 type Service = {
   id: string;
@@ -562,6 +563,16 @@ export default function BookingPage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <PitchRaiseDisclosure />
+
+              {/* Cancellation Policy */}
+              <div className="rounded-lg border border-border bg-muted/50 p-4 text-sm">
+                <p className="font-medium text-foreground mb-2">Cancellation Policy</p>
+                <p className="text-muted-foreground">
+                  Cancellations must be made at least 24 hours before your scheduled appointment. Cancellations within 24 hours may be subject to a cancellation fee.
+                </p>
               </div>
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => { setConflictSlots(null); setStep(3); }}>

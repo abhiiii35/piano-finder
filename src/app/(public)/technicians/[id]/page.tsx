@@ -15,6 +15,7 @@ import { MessageButton } from "@/components/messages/message-button";
 import { PortfolioGallery } from "@/components/profile/portfolio-gallery";
 import { BookingCalendar } from "@/components/profile/booking-calendar";
 import { ServiceAreaMap } from "@/components/profile/service-area-map";
+import { PitchRaiseDisclosure } from "@/components/profile/pitch-raise-disclosure";
 
 export default async function TechnicianProfilePage({
   params,
@@ -180,6 +181,8 @@ export default async function TechnicianProfilePage({
             )}
           </CardContent>
         </Card>
+
+        <PitchRaiseDisclosure />
 
         <Card>
           <CardHeader>
