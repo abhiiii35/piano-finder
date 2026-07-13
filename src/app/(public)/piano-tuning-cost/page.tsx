@@ -5,6 +5,7 @@ import { buttonVariants } from "@/lib/button-variants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ArrowRight, MapPin } from "lucide-react";
+import { siteUrl } from "@/lib/site";
 import {
   CITY_COSTS,
   NATIONAL_HIGH,
@@ -13,9 +14,34 @@ import {
   PITCH_RAISE_LOW,
   formatRange,
 } from "@/lib/seo/city-cost-data";
+import {
+  buildFaqPageSchema,
+  buildPianoTuningServiceSchema,
+} from "@/lib/seo/schema";
 
 const YEAR = new Date().getFullYear();
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+
+const hubFaqs = [
+  {
+    question: "How much does piano tuning cost?",
+    answer: `A standard piano tuning across the US costs ${formatRange(NATIONAL_LOW, NATIONAL_HIGH)}. Prices vary by region based on local cost of living, travel time, and technician expertise. Big coastal metros like New York and San Francisco run higher than the national average.`,
+  },
+  {
+    question: "What is a pitch raise and why does it cost extra?",
+    answer: `A pitch raise is needed when a piano has drifted significantly below standard pitch, usually from years without tuning. It's a rough preliminary pass that pulls all strings slightly above target pitch so the structure can settle, followed by fine tuning. This adds ${formatRange(PITCH_RAISE_LOW, PITCH_RAISE_HIGH)} and typically 30–45 minutes to the appointment.`,
+  },
+  {
+    question: "How often should I tune my piano?",
+    answer:
+      "Once a year is the practical minimum for any piano that gets played. New pianos or recently-moved pianos need 2–4 tunings in the first year while strings settle. Homes with big seasonal humidity swings may benefit from twice-yearly tuning.",
+  },
+  {
+    question: "Do you charge extra for travel?",
+    answer:
+      "Travel costs and time are included in the quoted price range. In some spread-out metros, technicians may add travel fees for very distant locations, but upfront technicians will quote the all-in price when you book.",
+  },
+];
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -31,8 +57,25 @@ export const metadata: Metadata = {
 };
 
 export default function PianoTuningCostIndexPage() {
+  const faqSchema = buildFaqPageSchema(hubFaqs);
+  const serviceSchema = buildPianoTuningServiceSchema({
+    name: "Piano Tuning Service",
+    description:
+      "Professional piano tuning and pitch raise services across the United States.",
+    priceLow: NATIONAL_LOW,
+    priceHigh: NATIONAL_HIGH,
+  });
+
   return (
     <article className="mx-auto max-w-4xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
       <header>
         <Badge variant="secondary">Pricing Guide · {YEAR}</Badge>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">

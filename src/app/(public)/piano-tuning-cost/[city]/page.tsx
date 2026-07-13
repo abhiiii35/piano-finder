@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CalendarCheck, Droplets, Piano, TrendingUp } from "lucide-react";
+import { siteUrl } from "@/lib/site";
 import {
   CITY_COSTS,
   PITCH_RAISE_HIGH,
@@ -15,6 +16,11 @@ import {
   formatRange,
   getCityBySlug,
 } from "@/lib/seo/city-cost-data";
+import {
+  buildFaqPageSchema,
+  buildLocalBusinessSchema,
+  buildPianoTuningServiceSchema,
+} from "@/lib/seo/schema";
 
 const YEAR = new Date().getFullYear();
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
@@ -62,21 +68,36 @@ export default async function CityCostPage({
   const pitchRange = formatRange(PITCH_RAISE_LOW, PITCH_RAISE_HIGH);
   const faqs = buildCityFaqs(city);
 
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: { "@type": "Answer", text: faq.answer },
-    })),
-  };
+  const faqSchema = buildFaqPageSchema(faqs);
+  const serviceSchema = buildPianoTuningServiceSchema({
+    name: `Piano Tuning in ${city.name}`,
+    description: `Professional piano tuning services in ${city.name}, ${city.state}. Standard tuning, pitch raises, and regular maintenance for all piano types.`,
+    priceLow: city.priceLow,
+    priceHigh: city.priceHigh,
+    areaServed: `${city.name}, ${city.state}`,
+  });
+  const localBusinessSchema = buildLocalBusinessSchema({
+    name: `Piano Tuning Services - ${city.name}, ${city.state}`,
+    description: `Find piano tuners and technicians in ${city.name}. Real prices, transparent quotes, and online booking.`,
+    city: city.name,
+    state: city.state,
+    priceLow: city.priceLow,
+    priceHigh: city.priceHigh,
+  });
 
   return (
     <article className="mx-auto max-w-3xl">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
       />
 
       <header>
@@ -247,13 +268,23 @@ export default async function CityCostPage({
         </Link>
       </section>
 
-      <nav className="mt-10 text-sm text-muted-foreground">
-        <Link
-          href="/piano-tuning-cost"
-          className="underline underline-offset-4 hover:text-foreground"
-        >
-          ← Piano tuning costs in other cities
-        </Link>
+      <nav className="mt-10 space-y-2 text-sm text-muted-foreground">
+        <div>
+          <Link
+            href="/piano-tuning-cost"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            ← Piano tuning costs in other cities
+          </Link>
+        </div>
+        <div>
+          <Link
+            href="/piano-tuning-cost/pitch-raise"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            ← Pitch raise explained
+          </Link>
+        </div>
       </nav>
     </article>
   );

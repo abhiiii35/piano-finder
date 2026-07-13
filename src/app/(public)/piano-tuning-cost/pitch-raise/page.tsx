@@ -11,9 +11,36 @@ import {
   PITCH_RAISE_LOW,
   formatRange,
 } from "@/lib/seo/city-cost-data";
+import { buildFaqPageSchema } from "@/lib/seo/schema";
 
 const YEAR = new Date().getFullYear();
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+
+const pitchRaiseFaqs = [
+  {
+    question: "What is a pitch raise?",
+    answer: `A pitch raise is a preliminary rough pass that raises all strings of a flat piano slightly above target pitch. It's necessary when a piano has drifted significantly below standard pitch (A440). The technician then performs a fine tuning on top of this raised base, making it two passes in one appointment, typically adding ${formatRange(PITCH_RAISE_LOW, PITCH_RAISE_HIGH)} and 30–45 minutes to the standard tuning.`,
+  },
+  {
+    question: "Why is a pitch raise necessary?",
+    answer:
+      "When a piano is severely flat, fine-tuning it in one pass doesn't work. Pulling all 230 strings up to correct tension in a single fine pass would compress the soundboard and cause all the strings you've already tuned to slip back down. The pitch raise settles the structure under new tension so the fine tuning can hold.",
+  },
+  {
+    question: "Do I always need a pitch raise?",
+    answer: `No. If your piano was tuned within the last year and stays close to pitch, you need only a standard tuning. A pitch raise is likely if 2–4 years have passed since the last tuning, especially in homes with dry winter heat. For pianos tuned more than 5 years ago, recently moved, or inherited, budget for a pitch raise and possibly a follow-up tuning a few weeks later.`,
+  },
+  {
+    question: "How can I avoid paying for a pitch raise?",
+    answer:
+      "Tune on schedule. An annual tuning keeps your piano close enough to pitch that only a standard tuning is needed. One skipped decade costs more than ten years of regular tunings combined — and your piano sounds worse the whole time.",
+  },
+  {
+    question: "Will one pitch raise fix a severely flat piano?",
+    answer:
+      "Sometimes not completely. After a pitch raise, newly-raised strings keep stretching for a few weeks. For pianos that have been silent for years or severely neglected, the tuning may not hold perfectly until a follow-up tuning 2–4 weeks later. A good technician will be honest about this upfront.",
+  },
+];
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -30,9 +57,14 @@ export const metadata: Metadata = {
 
 export default function PitchRaisePage() {
   const pitchRange = formatRange(PITCH_RAISE_LOW, PITCH_RAISE_HIGH);
+  const faqSchema = buildFaqPageSchema(pitchRaiseFaqs);
 
   return (
     <article className="mx-auto max-w-3xl">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <header>
         <Badge variant="secondary">Pricing Guide</Badge>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
@@ -148,13 +180,15 @@ export default function PitchRaisePage() {
         </Link>
       </section>
 
-      <nav className="mt-10 text-sm text-muted-foreground">
-        <Link
-          href="/piano-tuning-cost"
-          className="underline underline-offset-4 hover:text-foreground"
-        >
-          ← Piano tuning costs by city
-        </Link>
+      <nav className="mt-10 space-y-2 text-sm text-muted-foreground">
+        <div>
+          <Link
+            href="/piano-tuning-cost"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            ← Piano tuning costs by city
+          </Link>
+        </div>
       </nav>
     </article>
   );
