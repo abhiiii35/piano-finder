@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Date-dependent test flake (2026-07-13)**: `getNextAvailableSlot` tests now pin the clock with `vi.useFakeTimers({ toFake: ["Date"] })`; "this-week" test corrected to match calendar-week (ends Saturday) semantics, plus a new midweek boundary test. See `docs/sessions/2026-07-13-availability-flake-fix.md`.
+
 ### Added
 - **Trust & transparency messaging (2026-07-13)**: Salvaged from a stale branch and adapted to current UI
   - `PitchRaiseDisclosure` component on technician profile sidebar and booking step 4 (confirm), reusing the existing `PITCH_RAISE_LOW`/`PITCH_RAISE_HIGH` cost constants and linking to `/piano-tuning-cost/pitch-raise`
