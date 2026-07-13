@@ -18,9 +18,10 @@
 
 ## Key decisions
 - Kept implementation's "week ends Saturday" behavior; flagged as a possible product question (should "this-week" mean "next 7 days" in search filter UX?).
+- **Decided 2026-07-13**: "this-week" stays "current calendar week, through Saturday" — no code change. The search filter label is the generic "This week" (`src/components/search/search-filters.tsx`), which reads naturally as "the rest of the current week," not "the next 7 days." No further action needed on this item.
 - Pinned clock to a Sunday specifically because the "returns earliest available (Mon+Fri) → Monday" test is only valid when scanning starts Sunday or Monday.
 
 ## Open items
 - Push `test/fix-availability-date-flake` to origin and open a PR (awaiting user go-ahead).
 - Local `main` is ~26 commits ahead of `origin/main` from earlier salvage/merge work — unpushed.
-- Product decision on "this-week" semantics.
+- ~~Product decision on "this-week" semantics.~~ Resolved above.
