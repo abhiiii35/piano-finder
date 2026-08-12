@@ -6,6 +6,7 @@
 - Per-user troubleshooting page: profile, services, availability, recent bookings, reviews, verification status.
 - Account actions: suspend/reactivate (suspended accounts vanish from search and cannot sign in; nothing is deleted), resend verification email, send password reset.
 - New public forgot-password flow: `/forgot-password` + emailed single-use, 1-hour link to `/reset-password/[token]`.
+- Suspension enforced globally via proxy (all routes), not just the dashboard.
 
 ## 2026-08-12 — Code review fixes (security/audit-2026-07-15 branch)
 

@@ -61,3 +61,4 @@ No other fix rounds were needed across Tasks 1, 3, 4, 7, 8 — each passed task-
 - Pagination on the admin users list beyond the 200-user cap.
 - Admin audit log (who suspended/reset what, when).
 - Admin impersonation ("sign in as user" for support).
+- Final whole-branch review deferred follow-ups: session revocation on password reset (tokenVersion via the 15-min JWT recheck), admin audit log, pagination past the 200-user cap, branch-coverage lift, admin reset-toast rate-limit honesty, PENDING+role filter combo, forgot-password try/finally.

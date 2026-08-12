@@ -10,7 +10,9 @@ import { PianoKeysIcon } from "@/components/ui/piano-logo";
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const suspendedParam = searchParams.get("error") === "suspended";
+  const suspendedParam =
+    searchParams.get("error") === "suspended" ||
+    searchParams.get("error") === "AccessDenied";
   const resetSuccess = searchParams.get("reset") === "success";
   const [error, setError] = useState<string | null>(
     suspendedParam
