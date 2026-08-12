@@ -99,7 +99,7 @@ Never expose `latitude`/`longitude`/`addressLine1` (use them only server-side fo
 
 **File:** `next.config.ts` (empty config)
 
-No `Content-Security-Policy`, `X-Frame-Established`/`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, or `Permissions-Policy` are set anywhere (checked `next.config.ts`, `proxy.ts`, and all route handlers — none set response headers).
+No `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, or `Permissions-Policy` are set anywhere (checked `next.config.ts`, `proxy.ts`, and all route handlers — none set response headers).
 
 **Confirmed absent**, exploitability is context-dependent (defense-in-depth against XSS/clickjacking, not a standalone bug).
 

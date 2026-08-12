@@ -1,24 +1,15 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## 2026-08-12 — Code review fixes (security/audit-2026-07-15 branch)
 
-## [Unreleased]
+- Fixed missing `afterEach` import in `__tests__/lib/queries/technicians.test.ts` that failed `tsc --noEmit` and blocked the Husky push gate.
+- Hoisted fake-timer setup (clock pinned to 2026-07-15) into the `getNextAvailableSlot` describe's `beforeEach`, making all seven tests in the block deterministic instead of two.
+- Restored lost test coverage: Saturday inclusive end-of-window boundary for the `this-week` filter, and nearest-day selection when the nearer slot has a lower dayOfWeek.
+- Split the combined this-week window test into separate found/null tests and renamed titles to match the actual end-of-calendar-week (Saturday) semantics, not "within 7 days".
+- Corrected fabricated header name `X-Frame-Established` → `X-Frame-Options` in SECURITY.md.
+- Created CHANGELOG.md and session summary (this file and docs/sessions/2026-08-12-security-audit-review-fixes.md).
 
-### Added
-- **Trust & transparency messaging (2026-07-13)**: Salvaged from a stale branch and adapted to current UI
-  - `PitchRaiseDisclosure` component on technician profile sidebar and booking step 4 (confirm), reusing the existing `PITCH_RAISE_LOW`/`PITCH_RAISE_HIGH` cost constants and linking to `/piano-tuning-cost/pitch-raise`
-  - 24-hour cancellation policy notice in booking step 4 and in the booking-confirmed email
-  - "Verified booking" badge on review cards (all reviews already require a completed booking server-side)
-  - Additional review-gating test for a customer attempting to review someone else's booking
-- **Tune reminder email feature (2026-07-13)**: Automated piano tuning reminders for customers
-  - New `TuneReminder` database model with idempotent sending to prevent double-emails
-  - Email templates for 6-month and 12-month tuning reminders
-  - Cron endpoint (`POST /api/cron/tune-reminders`) for scheduled reminder dispatches
-  - Server actions (`src/actions/reminders.ts`) for selecting due reminders and sending emails
-  - Comprehensive unit tests covering selection, send logic, idempotency, and error handling
-  - CRON_SECRET environment variable for securing cron endpoint access
+## 2026-07-15 — Security audit & deterministic tests
 
-## Project Setup
-
-- **Stack**: Next.js 16.2 + React 19 + Prisma 7 + Resend (email)
-- **Database**: SQLite (dev), Turso (production)
+- Added SECURITY.md: full security audit and hardening guide (commit 14875ae).
+- Pinned availability-window tests to a fixed clock to stop midnight/day-of-week flakes (commit 47c655b).

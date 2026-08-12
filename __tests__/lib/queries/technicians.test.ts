@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { prismaMock, fixtures } from "../../helpers/mocks";
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
@@ -154,7 +154,13 @@ describe("getTechnicianById", () => {
 });
 
 describe("getNextAvailableSlot", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Pin the clock so every test in this block is deterministic:
+    // Wednesday, July 15, 2026 at 9:00 AM local time.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 6, 15, 9, 0));
+  });
   afterEach(() => vi.useRealTimers());
 
   it("returns null when technician has no availability slots", async () => {
@@ -234,12 +240,8 @@ describe("getNextAvailableSlot", () => {
     expect(resultDateOnly.getTime()).toBe(todayOnly.getTime());
   });
 
-  it("respects availability window: this-week (within 7 days)", async () => {
-    // Mock the clock to Wednesday, July 15, 2026 at 9:00 AM
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 6, 15, 9, 0));
-
-    // Test 1: Friday availability (within this-week window, which ends Saturday) should be found
+  it("respects availability window: this-week (ends Saturday)", async () => {
+    // Friday availability falls inside the window (Wed Jul 15 → Sat Jul 18)
     prismaMock.availabilitySlot.findMany.mockResolvedValue([
       { ...fixtures.availabilitySlot, dayOfWeek: 5 }, // Friday
     ]);
@@ -253,23 +255,35 @@ describe("getNextAvailableSlot", () => {
     expect(result?.getMonth()).toBe(6); // July (0-indexed)
     expect(result?.getDate()).toBe(17);
     expect(result?.getDay()).toBe(5); // Friday
+  });
 
-    // Test 2: Sunday availability (after this-week window) should return null
+  it("includes Saturday, the final day of the this-week window", async () => {
+    prismaMock.availabilitySlot.findMany.mockResolvedValue([
+      { ...fixtures.availabilitySlot, dayOfWeek: 6 }, // Saturday
+    ]);
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    const result = await getNextAvailableSlot("tech-profile-1", "this-week");
+
+    // Saturday, July 18, 2026 — the window's inclusive end (d <= endDate)
+    expect(result).not.toBeNull();
+    expect(result?.getDate()).toBe(18);
+    expect(result?.getDay()).toBe(6); // Saturday
+  });
+
+  it("returns null when the only slot falls after the this-week window", async () => {
+    // Sunday is only 4 days away but past Saturday, the end of the calendar week
     prismaMock.availabilitySlot.findMany.mockResolvedValue([
       { ...fixtures.availabilitySlot, dayOfWeek: 0 }, // Sunday
     ]);
     prismaMock.booking.findMany.mockResolvedValue([]);
 
-    const resultSunday = await getNextAvailableSlot("tech-profile-1", "this-week");
+    const result = await getNextAvailableSlot("tech-profile-1", "this-week");
 
-    expect(resultSunday).toBeNull();
+    expect(result).toBeNull();
   });
 
   it("returns earliest available when multiple days have slots", async () => {
-    // Mock the clock to Wednesday, July 15, 2026 at 9:00 AM
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 6, 15, 9, 0));
-
     // Both Monday and Friday available; from Wednesday, Friday is the earliest calendar date
     prismaMock.availabilitySlot.findMany.mockResolvedValue([
       { ...fixtures.availabilitySlot, dayOfWeek: 1 }, // Monday
@@ -286,6 +300,24 @@ describe("getNextAvailableSlot", () => {
     expect(result?.getMonth()).toBe(6); // July (0-indexed)
     expect(result?.getDate()).toBe(17);
     expect(result?.getDay()).toBe(5); // Friday
+  });
+
+  it("picks the lower dayOfWeek when it is the nearest calendar date", async () => {
+    // From Sunday, Monday (dayOfWeek 1) is nearer than Friday (dayOfWeek 5)
+    vi.setSystemTime(new Date(2026, 6, 19, 9, 0)); // Sunday, July 19, 2026
+
+    prismaMock.availabilitySlot.findMany.mockResolvedValue([
+      { ...fixtures.availabilitySlot, dayOfWeek: 1 }, // Monday
+      { ...fixtures.availabilitySlot, dayOfWeek: 5 }, // Friday
+    ]);
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    const result = await getNextAvailableSlot("tech-profile-1");
+
+    expect(result).not.toBeNull();
+    // Monday, July 20, 2026 — not Friday, July 24
+    expect(result?.getDate()).toBe(20);
+    expect(result?.getDay()).toBe(1); // Monday
   });
 
   it("skips booked days and finds next available", async () => {
