@@ -11,6 +11,7 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const suspendedParam = searchParams.get("error") === "suspended";
+  const resetSuccess = searchParams.get("reset") === "success";
   const [error, setError] = useState<string | null>(
     suspendedParam
       ? "This account has been suspended. Please contact support."
@@ -86,6 +87,11 @@ function SignInForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {resetSuccess && (
+          <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            Password updated. Sign in with your new password.
+          </div>
+        )}
         {error && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
             {error}
@@ -123,6 +129,12 @@ function SignInForm() {
             />
           </div>
         </div>
+
+        <p className="text-right text-sm">
+          <Link href="/forgot-password" className="text-muted-foreground hover:text-foreground hover:underline">
+            Forgot password?
+          </Link>
+        </p>
 
         <button
           type="submit"
