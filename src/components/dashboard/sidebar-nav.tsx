@@ -35,6 +35,7 @@ const customerLinks = [
 ];
 
 const adminLinks = [
+  { href: "/dashboard/admin/users", label: "Users", icon: Users },
   { href: "/dashboard/admin/submissions", label: "Submissions", icon: ClipboardCheck },
   { href: "/dashboard/admin/posts", label: "Blog Posts", icon: FileText },
 ];

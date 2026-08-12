@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, Key } from "lucide-react";
 import { PianoKeysIcon } from "@/components/ui/piano-logo";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const suspendedParam =
+    searchParams.get("error") === "suspended" ||
+    searchParams.get("error") === "AccessDenied";
+  const resetSuccess = searchParams.get("reset") === "success";
+  const [error, setError] = useState<string | null>(
+    suspendedParam
+      ? "This account has been suspended. Please contact support."
+      : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -28,7 +37,11 @@ export default function SignInPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(
+        result.error === "SUSPENDED"
+          ? "This account has been suspended. Please contact support."
+          : "Invalid email or password"
+      );
       return;
     }
 
@@ -76,6 +89,11 @@ export default function SignInPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {resetSuccess && (
+          <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            Password updated. Sign in with your new password.
+          </div>
+        )}
         {error && (
           <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
             {error}
@@ -114,6 +132,12 @@ export default function SignInPage() {
           </div>
         </div>
 
+        <p className="text-right text-sm">
+          <Link href="/forgot-password" className="text-muted-foreground hover:text-foreground hover:underline">
+            Forgot password?
+          </Link>
+        </p>
+
         <button
           type="submit"
           disabled={loading}
@@ -124,17 +148,20 @@ export default function SignInPage() {
       </form>
 
       {/* Footer */}
-      <div className="mt-6 flex items-center justify-between text-sm">
-        <button type="button" className="text-muted-foreground hover:text-foreground">
-          Forgot password?
-        </button>
-        <span className="text-muted-foreground">
-          Need an account?{" "}
-          <Link href="/sign-up" className="font-medium text-foreground hover:underline">
-            Sign up
-          </Link>
-        </span>
+      <div className="mt-6 text-center text-sm text-muted-foreground">
+        Need an account?{" "}
+        <Link href="/sign-up" className="font-medium text-foreground hover:underline">
+          Sign up
+        </Link>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInForm />
+    </Suspense>
   );
 }

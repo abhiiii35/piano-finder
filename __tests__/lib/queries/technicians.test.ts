@@ -66,6 +66,18 @@ describe("searchTechnicians", () => {
     const results = await searchTechnicians({});
     expect(results[0].minPrice).toBe(0);
   });
+
+  it("excludes suspended technicians via the where clause", async () => {
+    prismaMock.technicianProfile.findMany.mockResolvedValue([]);
+    await searchTechnicians({});
+    expect(prismaMock.technicianProfile.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          user: expect.objectContaining({ suspendedAt: null }),
+        }),
+      })
+    );
+  });
 });
 
 describe("searchTechnicians with location", () => {
@@ -149,6 +161,22 @@ describe("getTechnicianById", () => {
   it("returns null for non-existent technician", async () => {
     prismaMock.technicianProfile.findUnique.mockResolvedValue(null);
     const result = await getTechnicianById("nonexistent");
+    expect(result).toBeNull();
+  });
+
+  it("returns null for a suspended technician", async () => {
+    prismaMock.technicianProfile.findUnique.mockResolvedValue({
+      ...fixtures.technicianProfile,
+      user: {
+        name: "Suspended Tech",
+        image: null,
+        email: "s@example.com",
+        suspendedAt: new Date(2026, 7, 1),
+      },
+      services: [],
+      availabilitySlots: [],
+    });
+    const result = await getTechnicianById("tech-profile-1");
     expect(result).toBeNull();
   });
 });

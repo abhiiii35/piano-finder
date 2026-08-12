@@ -24,15 +24,26 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Only run auth checks on protected routes
+  const token = await getToken({ req: request });
+
+  // Suspended accounts are signed out everywhere, not just the dashboard
+  if (
+    token?.suspended &&
+    !pathname.startsWith("/sign-in") &&
+    !pathname.startsWith("/api/auth")
+  ) {
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set("error", "suspended");
+    return NextResponse.redirect(signInUrl);
+  }
+
+  // Only run the remaining auth checks on protected routes
   if (
     !pathname.startsWith("/dashboard") &&
     !pathname.startsWith("/onboarding")
   ) {
     return NextResponse.next();
   }
-
-  const token = await getToken({ req: request });
 
   if (!token) {
     const signInUrl = new URL("/sign-in", request.url);
