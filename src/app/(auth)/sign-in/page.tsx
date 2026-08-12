@@ -146,16 +146,11 @@ function SignInForm() {
       </form>
 
       {/* Footer */}
-      <div className="mt-6 flex items-center justify-between text-sm">
-        <button type="button" className="text-muted-foreground hover:text-foreground">
-          Forgot password?
-        </button>
-        <span className="text-muted-foreground">
-          Need an account?{" "}
-          <Link href="/sign-up" className="font-medium text-foreground hover:underline">
-            Sign up
-          </Link>
-        </span>
+      <div className="mt-6 text-center text-sm text-muted-foreground">
+        Need an account?{" "}
+        <Link href="/sign-up" className="font-medium text-foreground hover:underline">
+          Sign up
+        </Link>
       </div>
     </div>
   );
