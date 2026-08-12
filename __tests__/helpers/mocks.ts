@@ -35,6 +35,7 @@ export const prismaMock = {
   jobApplication: createMockModel(),
   message: createMockModel(),
   verificationToken: createMockModel(),
+  passwordResetToken: createMockModel(),
   expense: createMockModel(),
   mileageLog: createMockModel(),
   post: createMockModel(),
