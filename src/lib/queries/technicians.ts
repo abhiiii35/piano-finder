@@ -115,6 +115,7 @@ export async function searchTechnicians(filters: {
 }) {
   const where: Record<string, unknown> = {
     isActive: true,
+    user: { suspendedAt: null },
   };
 
   if (filters.city) where.city = filters.city;
@@ -229,13 +230,15 @@ export async function getTechnicianById(id: string) {
   const profile = await prisma.technicianProfile.findUnique({
     where: { id },
     include: {
-      user: { select: { name: true, image: true, email: true } },
+      user: { select: { name: true, image: true, email: true, suspendedAt: true } },
       services: { where: { isActive: true }, orderBy: { priceCents: "asc" } },
       availabilitySlots: { orderBy: { dayOfWeek: "asc" } },
     },
   });
 
   if (!profile) return null;
+
+  if (profile.user.suspendedAt) return null;
 
   const reviews = await prisma.review.findMany({
     where: { booking: { technicianId: profile.id } },
@@ -248,5 +251,6 @@ export async function getTechnicianById(id: string) {
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
 
-  return { ...profile, reviews, avgRating, reviewCount: reviews.length };
+  const { suspendedAt: _, ...userWithoutSuspendedAt } = profile.user;
+  return { ...profile, user: userWithoutSuspendedAt, reviews, avgRating, reviewCount: reviews.length };
 }
