@@ -40,6 +40,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
+  // Suspended accounts are signed out of protected areas
+  if (token.suspended) {
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set("error", "suspended");
+    return NextResponse.redirect(signInUrl);
+  }
+
   // Redirect technician-only routes for non-technicians
   if (pathname.startsWith("/dashboard/technician") && token.role !== "TECHNICIAN") {
     return NextResponse.redirect(new URL("/dashboard", request.url));

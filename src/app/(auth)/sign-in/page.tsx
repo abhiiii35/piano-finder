@@ -2,14 +2,20 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, Key } from "lucide-react";
 import { PianoKeysIcon } from "@/components/ui/piano-logo";
 
 export default function SignInPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const suspendedParam = searchParams.get("error") === "suspended";
+  const [error, setError] = useState<string | null>(
+    suspendedParam
+      ? "This account has been suspended. Please contact support."
+      : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -28,7 +34,11 @@ export default function SignInPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(
+        result.error === "SUSPENDED"
+          ? "This account has been suspended. Please contact support."
+          : "Invalid email or password"
+      );
       return;
     }
 
