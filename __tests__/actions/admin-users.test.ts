@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { prismaMock } from "../helpers/mocks";
+import { prismaMock, fixtures } from "../helpers/mocks";
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/email", () => ({
@@ -8,13 +8,20 @@ vi.mock("@/lib/email", () => ({
 }));
 vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/actions/auth", () => ({
+  resendVerification: vi.fn(),
+  requestPasswordReset: vi.fn(),
+}));
 
 import { getServerSession } from "next-auth";
+import { resendVerification, requestPasswordReset } from "@/actions/auth";
 import {
   getUsers,
   getUserDetail,
   suspendUser,
   reactivateUser,
+  adminResendVerification,
+  adminSendPasswordReset,
 } from "@/actions/admin";
 
 const adminSession = {
@@ -131,5 +138,72 @@ describe("getUserDetail", () => {
   it("returns error for unknown user", async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
     expect(await getUserDetail("nope")).toEqual({ error: "User not found" });
+  });
+
+  it("strips hashedPassword from the returned user", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ ...fixtures.user });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    prismaMock.review.findMany.mockResolvedValue([]);
+
+    const result = await getUserDetail(fixtures.user.id);
+    expect("error" in result).toBe(false);
+    if ("error" in result) return;
+    expect("hashedPassword" in result.user).toBe(false);
+  });
+});
+
+describe("adminResendVerification", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getServerSession).mockResolvedValue(adminSession as never);
+  });
+
+  it("rejects non-admins", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({
+      user: { id: "u1", role: "TECHNICIAN" },
+    } as never);
+    expect(await adminResendVerification("u2")).toEqual({ error: "Unauthorized" });
+  });
+
+  it("returns error for unknown user", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    expect(await adminResendVerification("nope")).toEqual({ error: "User not found" });
+  });
+
+  it("delegates to resendVerification with the user's email", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ ...fixtures.user, id: "u2" });
+    vi.mocked(resendVerification).mockResolvedValue({ success: true });
+
+    const result = await adminResendVerification("u2");
+    expect(resendVerification).toHaveBeenCalledWith(fixtures.user.email);
+    expect(result).toEqual({ success: true });
+  });
+});
+
+describe("adminSendPasswordReset", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getServerSession).mockResolvedValue(adminSession as never);
+  });
+
+  it("rejects non-admins", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({
+      user: { id: "u1", role: "TECHNICIAN" },
+    } as never);
+    expect(await adminSendPasswordReset("u2")).toEqual({ error: "Unauthorized" });
+  });
+
+  it("returns error for unknown user", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    expect(await adminSendPasswordReset("nope")).toEqual({ error: "User not found" });
+  });
+
+  it("delegates to requestPasswordReset with the user's email", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ ...fixtures.user, id: "u2" });
+    vi.mocked(requestPasswordReset).mockResolvedValue({ success: true });
+
+    const result = await adminSendPasswordReset("u2");
+    expect(requestPasswordReset).toHaveBeenCalledWith(fixtures.user.email);
+    expect(result).toEqual({ success: true });
   });
 });
