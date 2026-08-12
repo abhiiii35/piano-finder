@@ -1,11 +1,14 @@
 "use server";
 
-import { randomUUID } from "crypto";
+import { randomUUID, createHash } from "crypto";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { verificationEmail } from "@/lib/emails/verification";
-import { signUpSchema } from "@/lib/validations/auth";
+import { passwordResetEmail } from "@/lib/emails/passwordReset";
+import { signUpSchema, resetPasswordSchema } from "@/lib/validations/auth";
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export async function signUp(formData: FormData) {
   const raw = {
@@ -112,4 +115,65 @@ export async function resendVerification(email: string) {
   await sendEmail({ to: email, subject, html });
 
   return { success: true };
+}
+
+export async function requestPasswordReset(email: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  // Silent success either way — never reveal whether an account exists
+  if (!user) return { success: true as const };
+
+  // Rate limit: a token expiring >59 min from now was created <60s ago
+  const rateLimitThreshold = new Date(Date.now() + 59 * 60 * 1000);
+  const recentToken = await prisma.passwordResetToken.findFirst({
+    where: { identifier: email, expires: { gt: rateLimitThreshold } },
+  });
+  if (recentToken) return { success: true as const };
+
+  await prisma.passwordResetToken.deleteMany({ where: { identifier: email } });
+
+  const rawToken = randomUUID();
+  await prisma.passwordResetToken.create({
+    data: {
+      identifier: email,
+      token: createHash("sha256").update(rawToken).digest("hex"),
+      expires: new Date(Date.now() + RESET_TOKEN_TTL_MS),
+    },
+  });
+
+  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const { subject, html } = passwordResetEmail(
+    `${baseUrl}/reset-password/${rawToken}`
+  );
+  await sendEmail({ to: email, subject, html });
+
+  return { success: true as const };
+}
+
+export async function resetPassword(
+  token: string,
+  password: string,
+  confirmPassword: string
+) {
+  const parsed = resetPasswordSchema.safeParse({ password, confirmPassword });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const hashedToken = createHash("sha256").update(token).digest("hex");
+  const record = await prisma.passwordResetToken.findFirst({
+    where: { token: hashedToken, expires: { gt: new Date() } },
+  });
+  if (!record) {
+    return { error: "This link has expired. Please request a new one." };
+  }
+
+  const hashedPassword = await hash(parsed.data.password, 12);
+  await prisma.user.update({
+    where: { email: record.identifier },
+    data: { hashedPassword },
+  });
+  // Single use: remove all reset tokens for this account
+  await prisma.passwordResetToken.deleteMany({
+    where: { identifier: record.identifier },
+  });
+
+  return { success: true as const };
 }
