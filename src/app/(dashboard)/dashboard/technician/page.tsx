@@ -8,14 +8,22 @@ import { BookingFilter } from "@/components/dashboard/booking-filter";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import Link from "next/link";
-import { Calendar, type CalendarBooking } from "@/components/dashboard/calendar";
+import { Calendar, type CalendarBooking, type CalendarException } from "@/components/dashboard/calendar";
 import { OnboardingBanner } from "@/components/onboarding/banner";
 import { ONBOARDING_STATUS } from "@/lib/constants";
 
 export default async function TechnicianDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; filter?: string; view?: string; date?: string }>;
+  searchParams: Promise<{
+    tab?: string;
+    filter?: string;
+    view?: string;
+    date?: string;
+    service?: string;
+    customer?: string;
+    city?: string;
+  }>;
 }) {
   const params = await searchParams;
   const session = await getServerSession(authOptions);
@@ -121,8 +129,37 @@ export default async function TechnicianDashboardPage({
     status: b.status,
     customerName: b.customer.name ?? b.customer.email ?? "Customer",
     serviceName: b.services.map((s) => s.service.name).join(", "),
+    services: b.services.map((s) => s.service.name),
+    city: b.city,
     totalCents: b.totalCents,
   }));
+
+  // Time-off blocks overlapping the visible range — mirrors the bookings
+  // range query above. Queried directly (not via listAvailabilityExceptions,
+  // which only returns future entries) so past dates the technician browses
+  // back to still show their time-off history.
+  const calendarExceptions: CalendarException[] = (
+    await prisma.availabilityException.findMany({
+      where: {
+        technicianId: profile.id,
+        startsAt: { lte: dateEnd },
+        endsAt: { gt: dateStart },
+      },
+      orderBy: { startsAt: "asc" },
+    })
+  ).map((e) => ({
+    id: e.id,
+    startsAt: e.startsAt.toISOString(),
+    endsAt: e.endsAt.toISOString(),
+    allDay: e.allDay,
+    reason: e.reason,
+  }));
+
+  const initialFilters = {
+    service: params.service ?? "",
+    customer: params.customer ?? "",
+    city: params.city ?? "",
+  };
 
   // Customers for tab
   const tabCustomers =
@@ -202,8 +239,10 @@ export default async function TechnicianDashboardPage({
       <div className="mt-8">
         <Calendar
           bookings={calendarBookings}
+          exceptions={calendarExceptions}
           initialDate={format(calendarDate, "yyyy-MM-dd")}
           initialView={calendarView}
+          initialFilters={initialFilters}
         />
       </div>
 

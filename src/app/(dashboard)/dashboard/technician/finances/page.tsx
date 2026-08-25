@@ -26,6 +26,7 @@ import {
 import { ExpenseForm } from "@/components/finances/expense-form";
 import { MileageForm } from "@/components/finances/mileage-form";
 import { DeleteEntryButton } from "@/components/finances/delete-entry-button";
+import { EditMileageButton } from "@/components/finances/edit-mileage-button";
 import { Download, Receipt } from "lucide-react";
 
 const TABS = [
@@ -361,7 +362,16 @@ async function MileageTab({
                 <TableCell>{l.purpose}</TableCell>
                 <TableCell className="text-right">{l.miles}</TableCell>
                 <TableCell className="text-right">
-                  <DeleteEntryButton id={l.id} kind="mileage" />
+                  <div className="flex items-center justify-end gap-1">
+                    <EditMileageButton
+                      mileageId={l.id}
+                      date={l.date}
+                      miles={l.miles}
+                      purpose={l.purpose}
+                      autoCaptured={l.autoCaptured}
+                    />
+                    <DeleteEntryButton id={l.id} kind="mileage" />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

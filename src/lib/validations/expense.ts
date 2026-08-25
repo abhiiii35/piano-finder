@@ -64,7 +64,8 @@ export const mileageLogSchema = z.object({
     .string()
     .regex(/^\d+(\.\d+)?$/, "Enter miles as a number")
     .transform(Number)
-    .refine((n) => n > 0, "Miles must be greater than zero"),
+    .refine((n) => n > 0, "Miles must be greater than zero")
+    .refine((n) => n <= 1000, "Miles must be 1000 or less"),
   purpose: z.string().min(1, "Purpose is required"),
   bookingId: z.string().optional(),
 });

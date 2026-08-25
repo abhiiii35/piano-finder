@@ -10,6 +10,7 @@ import { getTravelTimeProvider, type LatLng } from "@/lib/travel-time";
 import { filterFeasibleSlots, type DayStop } from "@/lib/travel-feasibility";
 import { sendEmail } from "@/lib/email";
 import { bookingCreatedEmail, bookingReceivedEmail, bookingStatusEmail, bookingCancelledEmail } from "@/lib/emails/booking";
+import { captureAutoMileage } from "@/lib/mileage-capture";
 
 export async function createBooking(data: {
   technicianId: string;
@@ -127,6 +128,24 @@ export async function createBooking(data: {
         if (newStart.getTime() < conflictEnd && newEnd.getTime() > conflictStart) {
           throw new Error("CONFLICT");
         }
+      }
+
+      // Reject a slot that falls inside a technician time-off block.
+      const dayExceptions =
+        (await tx.availabilityException.findMany({
+          where: {
+            technicianId,
+            startsAt: { lt: dayEnd },
+            endsAt: { gt: dayStart },
+          },
+        })) ?? [];
+      const blockedByTimeOff = dayExceptions.some(
+        (ex) =>
+          newStart.getTime() < new Date(ex.endsAt).getTime() &&
+          newEnd.getTime() > new Date(ex.startsAt).getTime()
+      );
+      if (blockedByTimeOff) {
+        throw new Error("CONFLICT");
       }
 
       return tx.booking.create({
@@ -293,6 +312,12 @@ export async function updateBookingStatus(
     } catch (error) {
       console.error("[CRM] Failed to auto-populate customer record:", error);
     }
+
+    try {
+      await captureAutoMileage(bookingId);
+    } catch (error) {
+      console.error("[MILEAGE] Failed to auto-capture mileage:", error);
+    }
   }
 
   revalidatePath(`/dashboard/customer/bookings/${bookingId}`);
@@ -351,6 +376,23 @@ async function getActiveDayBookings(technicianId: string, date: string) {
       status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
     },
   });
+}
+
+// Time-off blocks overlapping this local day. `?? []` guards test mocks that
+// don't stub this model; production Prisma always returns an array.
+async function getDayExceptions(technicianId: string, date: string) {
+  const dayStart = parseLocalDate(date);
+  const dayEnd = parseLocalDate(date);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const exceptions = await prisma.availabilityException.findMany({
+    where: {
+      technicianId,
+      startsAt: { lt: dayEnd },
+      endsAt: { gt: dayStart },
+    },
+  });
+  return exceptions ?? [];
 }
 
 type DayBookingRow = {
@@ -419,6 +461,7 @@ async function computeAvailableSlots(
   if (!slot) return [];
 
   const existingBookings = await getActiveDayBookings(technicianId, date);
+  const exceptions = await getDayExceptions(technicianId, date);
 
   // Generate 30-min slots, checking if the full duration fits
   const startMin = toMinutes(slot.startTime);
@@ -431,6 +474,7 @@ async function computeAvailableSlots(
     if (m + durationMin > endMin) continue;
 
     // Check if the full duration window overlaps with any existing booking
+    // or a technician time-off block.
     const slotStart = midnight + m * 60 * 1000;
     const slotEnd = slotStart + durationMin * 60 * 1000;
     const isBooked = existingBookings.some((b) => {
@@ -438,8 +482,13 @@ async function computeAvailableSlots(
       const bookingEnd = bookingStart + b.durationMin * 60 * 1000;
       return slotStart < bookingEnd && slotEnd > bookingStart;
     });
+    const isBlocked = exceptions.some((ex) => {
+      const exStart = new Date(ex.startsAt).getTime();
+      const exEnd = new Date(ex.endsAt).getTime();
+      return slotStart < exEnd && slotEnd > exStart;
+    });
 
-    if (!isBooked) candidates.push(m);
+    if (!isBooked && !isBlocked) candidates.push(m);
   }
 
   // Travel feasibility: with a customer location, drop slots the technician

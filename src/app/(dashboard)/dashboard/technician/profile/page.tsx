@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { ImagePlus, X, Loader2 } from "lucide-react";
 
@@ -23,6 +24,7 @@ export default function ProfilePage() {
   const [portfolioPhotos, setPortfolioPhotos] = useState<
     { url: string; publicId: string }[]
   >([]);
+  const [proposeTimesEnabled, setProposeTimesEnabled] = useState(false);
 
   useEffect(() => {
     fetch("/api/technician/profile")
@@ -30,6 +32,7 @@ export default function ProfilePage() {
       .then((data) => {
         if (data.profile) {
           setProfile(data.profile);
+          setProposeTimesEnabled(!!data.profile.proposeTimesEnabled);
           try {
             const stored = JSON.parse(data.profile.portfolioPhotos || "[]");
             // stored is an array of {url, publicId} objects or plain URL strings
@@ -80,6 +83,7 @@ export default function ProfilePage() {
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     formData.set("portfolioPhotos", JSON.stringify(portfolioPhotos));
+    formData.set("proposeTimesEnabled", String(proposeTimesEnabled));
     const result = await updateProfile(formData);
     setLoading(false);
     if (result.error) {
@@ -219,6 +223,44 @@ export default function ProfilePage() {
                   time, when offering time slots to customers.
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Rescheduling</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="rescheduleCutoffHours">
+                Client reschedule notice (hours)
+              </Label>
+              <Input
+                id="rescheduleCutoffHours"
+                name="rescheduleCutoffHours"
+                type="number"
+                min={0}
+                max={336}
+                defaultValue={profile.rescheduleCutoffHours ?? 48}
+              />
+              <p className="text-xs text-muted-foreground">
+                How far in advance clients can reschedule their own appointment
+                online. After this window, they&apos;ll need to contact you directly.
+              </p>
+            </div>
+            <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+              <div>
+                <p className="font-medium">Offer suggested times when rescheduling</p>
+                <p className="text-sm text-muted-foreground">
+                  When you need to move a booking, send the client 2-4 times to
+                  choose from instead of asking them to pick from your full schedule.
+                </p>
+              </div>
+              <Switch
+                checked={proposeTimesEnabled}
+                onCheckedChange={(checked) => setProposeTimesEnabled(!!checked)}
+              />
             </div>
           </CardContent>
         </Card>

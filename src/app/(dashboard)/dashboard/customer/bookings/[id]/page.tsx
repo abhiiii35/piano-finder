@@ -10,6 +10,7 @@ import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
 import { PayButton } from "@/components/booking/payment-actions";
 import { MessageThread } from "@/components/messages/message-thread";
+import { isProposalPending } from "@/lib/validations/reschedule";
 import Link from "next/link";
 
 export default async function CustomerBookingDetailPage({
@@ -36,6 +37,14 @@ export default async function CustomerBookingDetailPage({
   if (!booking) notFound();
 
   const stripeEnabled = !!process.env.STRIPE_SECRET_KEY;
+
+  const pendingProposal = await prisma.rescheduleProposal.findFirst({
+    where: { bookingId: booking.id, status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+  });
+  const pendingProposalSlotCount: number = pendingProposal
+    ? (JSON.parse(pendingProposal.slots) as string[]).length
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -100,11 +109,28 @@ export default async function CustomerBookingDetailPage({
         </Card>
       </div>
 
+      {pendingProposal && isProposalPending(pendingProposal) && (
+        <Card className="border-accent">
+          <CardContent className="pt-6 text-sm">
+            Your technician offered {pendingProposalSlotCount} new{" "}
+            {pendingProposalSlotCount === 1 ? "time" : "times"} for this appointment.{" "}
+            <Link href={`/reschedule/${pendingProposal.token}`} className="underline">
+              Pick one
+            </Link>
+            .
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex gap-3 flex-wrap">
         <BookingStatusButtons
           bookingId={booking.id}
           currentStatus={booking.status}
           role="CUSTOMER"
+          technicianId={booking.technicianId}
+          durationMin={booking.durationMin}
+          scheduledAt={booking.scheduledAt}
+          rescheduleCutoffHours={booking.technician.rescheduleCutoffHours}
         />
         {booking.payment?.status !== "SUCCEEDED" && booking.status !== "CANCELLED" && (
           stripeEnabled ? (

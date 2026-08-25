@@ -15,6 +15,7 @@ import {
   ClipboardCheck,
   FileText,
   Wallet,
+  Navigation,
 } from "lucide-react";
 
 const technicianLinks = [
@@ -23,6 +24,7 @@ const technicianLinks = [
   { href: "/dashboard/technician/services", label: "Services", icon: Wrench },
   { href: "/dashboard/technician/availability", label: "Availability", icon: Clock },
   { href: "/dashboard/technician/bookings", label: "Bookings", icon: CalendarDays },
+  { href: "/dashboard/technician/route", label: "Route", icon: Navigation },
   { href: "/dashboard/technician/customers", label: "Customers", icon: Users },
   { href: "/dashboard/technician/finances", label: "Finances", icon: Wallet },
   { href: "/dashboard/technician/reviews", label: "Reviews", icon: Star },

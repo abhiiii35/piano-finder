@@ -40,6 +40,8 @@ describe("createBooking", () => {
       ...fixtures.user,
       emailVerified: new Date(),
     });
+    // Default: no time-off blocks; individual tests override as needed.
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
   });
 
   it("creates a booking with selected services", async () => {
@@ -212,6 +214,41 @@ describe("createBooking", () => {
     expect(result.error).toContain("no longer available");
     expect(result.availableSlots).toBeDefined();
     expect(Array.isArray(result.availableSlots)).toBe(true);
+  });
+
+  it("rejects booking creation when the requested slot falls inside a time-off block", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.service.findMany.mockResolvedValue([fixtures.service]); // 90 min
+
+    prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
+      return cb(prismaMock);
+    });
+    prismaMock.booking.findFirst.mockResolvedValue(null); // no booking conflict
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 15, 9, 0), endsAt: new Date(2026, 3, 15, 12, 0) },
+    ]);
+
+    // For the rejection response's alternative-slots lookup
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-15T10:00:00",
+      addressLine1: "123 Main St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.error).toContain("no longer available");
+    expect(prismaMock.booking.create).not.toHaveBeenCalled();
+    // The suggested alternatives also exclude the blocked window (09:00-12:00).
+    expect(result.availableSlots).not.toContain("10:00");
   });
 
   it("creates booking inside a transaction when no conflict", async () => {
@@ -460,6 +497,80 @@ describe("getAvailableSlots", () => {
   });
 });
 
+describe("getAvailableSlots with time-off exceptions", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("excludes every slot on a day fully covered by an all-day exception", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    // All-day block for Apr 14: stored as [Apr14 00:00, Apr15 00:00)
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 0, 0), endsAt: new Date(2026, 3, 15, 0, 0) },
+    ]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-14");
+    expect(slots).toEqual([]);
+  });
+
+  it("blocks every day a multi-day range spans and not the day after", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    // Multi-day all-day block: Apr14 00:00 -> Apr17 00:00 (covers Apr14-16 inclusive)
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 0, 0), endsAt: new Date(2026, 3, 17, 0, 0) },
+    ]);
+    expect(await getAvailableSlots("tech-1", "2026-04-14")).toEqual([]);
+    expect(await getAvailableSlots("tech-1", "2026-04-15")).toEqual([]);
+    expect(await getAvailableSlots("tech-1", "2026-04-16")).toEqual([]);
+
+    // Day after the range: a real query would no longer return this exception
+    // (endsAt Apr17 00:00 is not > Apr17's dayStart), simulated here directly.
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
+    expect(await getAvailableSlots("tech-1", "2026-04-17")).toEqual([
+      "09:00", "09:30", "10:00", "10:30",
+    ]);
+  });
+
+  it("boundary: an exception ending exactly at local midnight does not block that day", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    // Exception spans Apr14 00:00 -> Apr16 00:00 (blocks Apr14-15 only).
+    // Even if still returned for Apr16 by a looser query, the precise
+    // per-slot overlap check (slotStart < ex.endsAt) must not exclude it.
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 0, 0), endsAt: new Date(2026, 3, 16, 0, 0) },
+    ]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-16");
+    expect(slots).toEqual(["09:00", "09:30"]);
+  });
+
+  it("removes only the slots overlapping a timed block", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "12:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    // Timed block 10:00-11:00
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 10, 0), endsAt: new Date(2026, 3, 14, 11, 0) },
+    ]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-14", 30);
+    expect(slots).toEqual(["09:00", "09:30", "11:00", "11:30"]);
+  });
+});
+
 describe("getAvailableSlots with a customer address (travel feasibility)", () => {
   // Technician home base = fixtures.technicianProfile (Boston 42.36, -71.06).
   // Existing 60-min booking 12:00-13:00 in Worcester (~38.6 mi away):
@@ -476,6 +587,7 @@ describe("getAvailableSlots with a customer address (travel feasibility)", () =>
       startTime: "09:00",
       endTime: "17:00",
     });
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
     const worcesterNoon = new Date(2026, 3, 14, 12, 0, 0, 0); // local noon
     prismaMock.booking.findMany.mockResolvedValue([
       {
@@ -560,6 +672,7 @@ describe("createBooking travel feasibility and geocoding", () => {
       ...fixtures.technicianProfile,
       user: { name: "Mike Tuner", email: "tech@example.com" },
     });
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
   });
 
   it("geocodes the address once and stores coordinates on the booking", async () => {

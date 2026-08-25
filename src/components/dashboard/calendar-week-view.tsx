@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
+import {
+  EXCEPTION_CLASSES,
+  EXCEPTION_HATCH_STYLE,
+  getExceptionsForDay,
+  type CalendarException,
+} from "./calendar-utils";
 
 export type CalendarBooking = {
   id: string;
@@ -28,9 +34,15 @@ const STATUS_COLORS: Record<string, string> = {
 export function CalendarWeekView({
   date,
   bookings,
+  exceptions,
+  onSlotClick,
+  onExceptionClick,
 }: {
   date: Date;
   bookings: CalendarBooking[];
+  exceptions: CalendarException[];
+  onSlotClick: (date: Date) => void;
+  onExceptionClick: (exception: CalendarException) => void;
 }) {
   const weekStart = startOfWeek(date, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -77,14 +89,35 @@ export function CalendarWeekView({
 
         {days.map((day) => {
           const dayBookings = getBookingsForDay(day);
+          const dayExceptions = getExceptionsForDay(exceptions, day);
+          const allDayExceptions = dayExceptions.filter((e) => e.allDay);
+          const timedExceptions = dayExceptions.filter((e) => !e.allDay);
+
           return (
             <div key={day.toISOString()} className="relative border-l border-border">
               {hours.map((hour) => (
-                <div
+                <button
                   key={hour}
-                  className="absolute w-full border-t border-border"
+                  type="button"
+                  onClick={() =>
+                    onSlotClick(new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, 0))
+                  }
+                  className="absolute w-full cursor-pointer border-t border-border text-left hover:bg-secondary/40"
                   style={{ top: `${(hour - START_HOUR) * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
+                  aria-label={`Add time off ${format(day, "MMM d")} at ${format(new Date(2026, 0, 1, hour, 0), "h a")}`}
                 />
+              ))}
+
+              {allDayExceptions.map((exception) => (
+                <button
+                  key={exception.id}
+                  type="button"
+                  onClick={() => onExceptionClick(exception)}
+                  className={`absolute inset-x-0.5 top-0 bottom-0 rounded border px-1 py-0.5 text-left text-[10px] font-medium ${EXCEPTION_CLASSES}`}
+                  style={EXCEPTION_HATCH_STYLE}
+                >
+                  {exception.reason || "Unavailable"}
+                </button>
               ))}
 
               {dayBookings.map((booking) => {
@@ -107,6 +140,30 @@ export function CalendarWeekView({
                     <p className="font-semibold truncate">{booking.customerName}</p>
                     <p className="truncate">{booking.serviceName}</p>
                   </Link>
+                );
+              })}
+
+              {timedExceptions.map((exception) => {
+                const start = new Date(exception.startsAt);
+                const end = new Date(exception.endsAt);
+                const startMin = start.getHours() * 60 + start.getMinutes();
+                const topPx = ((startMin - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+                const heightPx = ((end.getTime() - start.getTime()) / 60000 / 60) * HOUR_HEIGHT;
+
+                return (
+                  <button
+                    key={exception.id}
+                    type="button"
+                    onClick={() => onExceptionClick(exception)}
+                    className={`absolute inset-x-0.5 rounded border px-1 py-0.5 text-left text-[10px] leading-tight overflow-hidden ${EXCEPTION_CLASSES}`}
+                    style={{
+                      top: `${Math.max(topPx, 0)}px`,
+                      height: `${Math.max(heightPx, 16)}px`,
+                      ...EXCEPTION_HATCH_STYLE,
+                    }}
+                  >
+                    <p className="font-semibold truncate">{exception.reason || "Unavailable"}</p>
+                  </button>
                 );
               })}
             </div>

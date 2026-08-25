@@ -26,6 +26,7 @@ export const prismaMock = {
   technicianProfile: createMockModel(),
   service: createMockModel(),
   availabilitySlot: createMockModel(),
+  availabilityException: createMockModel(),
   booking: createMockModel(),
   bookingService: createMockModel(),
   payment: createMockModel(),
@@ -40,6 +41,7 @@ export const prismaMock = {
   mileageLog: createMockModel(),
   post: createMockModel(),
   tuneReminder: createMockModel(),
+  rescheduleProposal: createMockModel(),
   // Interactive-transaction mock; tests typically override it to invoke the
   // callback with prismaMock itself (see booking.test.ts).
   $transaction: vi.fn(),
@@ -235,6 +237,16 @@ export const fixtures = {
     dayOfWeek: 1, // Monday
     startTime: "09:00",
     endTime: "17:00",
+  },
+
+  availabilityException: {
+    id: "exception-1",
+    technicianId: "tech-profile-1",
+    startsAt: new Date(2026, 3, 14, 0, 0),
+    endsAt: new Date(2026, 3, 15, 0, 0),
+    allDay: true,
+    reason: "Vacation",
+    createdAt: new Date(),
   },
 
   job: {

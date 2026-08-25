@@ -18,6 +18,7 @@ import {
   deleteExpense,
   createMileageLog,
   deleteMileageLog,
+  updateMileageLog,
 } from "@/actions/expense";
 
 const mockGetSession = vi.mocked(getServerSession);
@@ -174,6 +175,184 @@ describe("createMileageLog", () => {
     );
     expect(result.error).toBeDefined();
     expect(prismaMock.mileageLog.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateMileageLog", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("updates miles for a technician's own log", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+    prismaMock.mileageLog.update.mockResolvedValue(fixtures.mileageLog);
+
+    const result = await updateMileageLog("mileage-1", { miles: "35.2" });
+
+    expect(result.success).toBe(true);
+    expect(prismaMock.mileageLog.update).toHaveBeenCalledWith({
+      where: { id: "mileage-1" },
+      data: { miles: 35.2 },
+    });
+  });
+
+  it("updates date for a technician's own log", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+    prismaMock.mileageLog.update.mockResolvedValue(fixtures.mileageLog);
+
+    const result = await updateMileageLog("mileage-1", { date: "2026-01-10" });
+
+    expect(result.success).toBe(true);
+    const updateCall = prismaMock.mileageLog.update.mock.calls[0][0];
+    expect(updateCall.data.date).toEqual(new Date(2026, 0, 10));
+  });
+
+  it("updates purpose for a technician's own log", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+    prismaMock.mileageLog.update.mockResolvedValue(fixtures.mileageLog);
+
+    const result = await updateMileageLog("mileage-1", {
+      purpose: "Multiple client visits",
+    });
+
+    expect(result.success).toBe(true);
+    expect(prismaMock.mileageLog.update).toHaveBeenCalledWith({
+      where: { id: "mileage-1" },
+      data: { purpose: "Multiple client visits" },
+    });
+  });
+
+  it("rejects update for zero miles", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+
+    const result = await updateMileageLog("mileage-1", { miles: "0" });
+
+    expect(result.error).toBeDefined();
+    expect(prismaMock.mileageLog.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects update for negative miles", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+
+    const result = await updateMileageLog("mileage-1", { miles: "-10" });
+
+    expect(result.error).toBeDefined();
+    expect(prismaMock.mileageLog.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects update for miles > 1000", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+
+    const result = await updateMileageLog("mileage-1", { miles: "1001" });
+
+    expect(result.error).toBeDefined();
+    expect(prismaMock.mileageLog.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects update when log does not belong to technician", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "other-tech-id",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+
+    const result = await updateMileageLog("mileage-1", { miles: "35" });
+
+    expect(result.error).toBe("Mileage log not found");
+    expect(prismaMock.mileageLog.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects update when log does not exist", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue(null);
+
+    const result = await updateMileageLog("nonexistent", { miles: "35" });
+
+    expect(result.error).toBe("Mileage log not found");
+    expect(prismaMock.mileageLog.update).not.toHaveBeenCalled();
+  });
+
+  it("is a no-op when no updates are provided", async () => {
+    setupTechSession();
+    prismaMock.mileageLog.findUnique.mockResolvedValue({
+      id: "mileage-1",
+      technicianId: "tech-profile-1",
+      date: new Date(2026, 0, 9),
+      miles: 24.6,
+      purpose: "Client visit",
+      bookingId: null,
+      autoCaptured: false,
+      createdAt: new Date(),
+    });
+
+    const result = await updateMileageLog("mileage-1", {});
+
+    expect(result.success).toBe(true);
+    expect(prismaMock.mileageLog.update).not.toHaveBeenCalled();
   });
 });
 

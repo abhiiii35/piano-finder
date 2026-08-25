@@ -10,6 +10,7 @@ import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
 import { MarkCashButton } from "@/components/booking/payment-actions";
 import { MessageThread } from "@/components/messages/message-thread";
+import { isProposalPending } from "@/lib/validations/reschedule";
 import Link from "next/link";
 
 export default async function TechnicianBookingDetailPage({
@@ -36,6 +37,14 @@ export default async function TechnicianBookingDetailPage({
   });
 
   if (!booking) notFound();
+
+  const pendingProposal = await prisma.rescheduleProposal.findFirst({
+    where: { bookingId: booking.id, status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+  });
+  const pendingProposalSlotCount: number = pendingProposal
+    ? (JSON.parse(pendingProposal.slots) as string[]).length
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -109,11 +118,21 @@ export default async function TechnicianBookingDetailPage({
         </Card>
       </div>
 
+      {pendingProposal && isProposalPending(pendingProposal) && (
+        <Badge variant="secondary">
+          Waiting on client — {pendingProposalSlotCount} {pendingProposalSlotCount === 1 ? "time" : "times"} offered
+        </Badge>
+      )}
+
       <div className="flex gap-3 flex-wrap">
         <BookingStatusButtons
           bookingId={booking.id}
           currentStatus={booking.status}
           role="TECHNICIAN"
+          technicianId={profile.id}
+          durationMin={booking.durationMin}
+          scheduledAt={booking.scheduledAt}
+          proposeTimesEnabled={profile.proposeTimesEnabled}
         />
         {booking.payment?.status !== "SUCCEEDED" && (
           <MarkCashButton bookingId={booking.id} />

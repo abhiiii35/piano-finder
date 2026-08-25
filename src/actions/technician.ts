@@ -58,6 +58,10 @@ export async function updateProfile(formData: FormData) {
       ...(data.travelBufferMin !== undefined && {
         travelBufferMin: data.travelBufferMin,
       }),
+      ...(data.rescheduleCutoffHours !== undefined && {
+        rescheduleCutoffHours: data.rescheduleCutoffHours,
+      }),
+      proposeTimesEnabled: data.proposeTimesEnabled ?? false,
       addressLine1: data.addressLine1 ?? null,
       city: data.city ?? null,
       state: data.state ?? null,

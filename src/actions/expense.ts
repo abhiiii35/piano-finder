@@ -88,6 +88,61 @@ export async function createMileageLog(formData: FormData) {
   return { success: true };
 }
 
+export async function updateMileageLog(
+  mileageLogId: string,
+  updates: { date?: string; miles?: string; purpose?: string }
+) {
+  const profile = await getTechnicianProfile();
+
+  // Build update object from non-empty fields
+  const updateData: { date?: Date; miles?: number; purpose?: string } = {};
+
+  if (updates.date) {
+    const result = mileageLogSchema.pick({ date: true }).safeParse({ date: updates.date });
+    if (!result.success) {
+      return { error: result.error.issues[0].message };
+    }
+    updateData.date = result.data.date;
+  }
+
+  if (updates.miles) {
+    const result = mileageLogSchema.pick({ miles: true }).safeParse({ miles: updates.miles });
+    if (!result.success) {
+      return { error: result.error.issues[0].message };
+    }
+    updateData.miles = result.data.miles;
+  }
+
+  if (updates.purpose) {
+    const result = mileageLogSchema.pick({ purpose: true }).safeParse({ purpose: updates.purpose });
+    if (!result.success) {
+      return { error: result.error.issues[0].message };
+    }
+    updateData.purpose = result.data.purpose;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return { success: true }; // no-op if no valid updates
+  }
+
+  // Verify ownership and update
+  const log = await prisma.mileageLog.findUnique({
+    where: { id: mileageLogId },
+  });
+
+  if (!log || log.technicianId !== profile.id) {
+    return { error: "Mileage log not found" };
+  }
+
+  await prisma.mileageLog.update({
+    where: { id: mileageLogId },
+    data: updateData,
+  });
+
+  revalidatePath(FINANCES_PATH);
+  return { success: true };
+}
+
 export async function deleteMileageLog(mileageLogId: string) {
   const profile = await getTechnicianProfile();
 

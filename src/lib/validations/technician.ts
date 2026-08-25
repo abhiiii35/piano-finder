@@ -16,6 +16,12 @@ export const profileSchema = z.object({
   state: z.string().max(2).optional(),
   zipCode: z.string().max(10).optional(),
   phone: z.string().max(20).optional(),
+  // Blank string must mean "unchanged", not 0 (Number("") === 0)
+  rescheduleCutoffHours: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().min(0).max(336).optional()
+  ),
+  proposeTimesEnabled: z.preprocess((v) => v === "true", z.boolean().optional()),
 });
 
 export const serviceSchema = z.object({
