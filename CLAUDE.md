@@ -32,6 +32,17 @@ Husky + `scripts/pre-deploy-check.sh` block `git push` when unit tests fail, sta
 - Be token-frugal: grep for what you need, read only relevant files, never dump large files, never re-read what you've already seen.
 - Workers never `git push` — the orchestrator reviews and merges worktree branches; the human owns the push (Definition of done #5 applies to the orchestrator/human, not workers).
 
+### Conflict-free parallel dispatch (mandatory, added 2026-08-25)
+
+Before dispatching ANY parallel workers, the orchestrator pauses and writes an explicit ownership matrix, then reviews it for overlap:
+
+1. **Disjoint file ownership** — every worker prompt lists the exact files/dirs it OWNS and an explicit do-NOT-touch list naming the other workers' files. Two workers may never own the same file. Cross-feature seams are joined by the orchestrator after integration, or by URL-route/function-signature contracts — never by two agents editing one file.
+2. **Shared files are orchestrator-owned** — `prisma/schema.prisma` + migrations, `package.json`/lock (deps installed by the orchestrator BEFORE dispatch), shared config. Exception: `__tests__/helpers/mocks.ts` may take strictly additive appends from workers.
+3. **Shared-state bans for workers** — no `pkill`/killing processes they didn't start; no dev server on port 3000 (high port only, kill own PID after); no `npm install`, `prisma migrate`, or `db:seed`; no mutating `dev.db` beyond an explicitly assigned task; clean up any test rows they created.
+4. **Verification scope** — workers verify with `tsc --noEmit`, `npm run test:run`, and lint on their files. Live app walkthroughs are the orchestrator's integration step, on a single dev server it controls.
+5. **Worktree isolation** — for workers whose file sets can't be made cleanly disjoint, dispatch with `isolation: "worktree"` (Agent tool) instead of the shared tree; note better-sqlite3/node_modules are per-tree, so prefer disjoint ownership in the shared tree when the split is clean, worktrees when it isn't.
+6. **Mid-flight scope changes** — if new work arrives while workers run, the orchestrator re-reviews the matrix before dispatching more agents, and messages running workers when guardrails change rather than assuming they'll infer them.
+
 ## Environment / databases
 
 - `.env` (template: `.env.example`): local dev is SQLite `DATABASE_URL=file:./dev.db`; production is Turso (`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`) via the libsql adapter. Empty Turso vars = local mode — `src/lib/prisma.ts` does the switching.
