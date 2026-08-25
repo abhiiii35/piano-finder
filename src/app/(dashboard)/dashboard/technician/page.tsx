@@ -12,6 +12,13 @@ import { Calendar, type CalendarBooking, type CalendarException } from "@/compon
 import { OnboardingBanner } from "@/components/onboarding/banner";
 import { ONBOARDING_STATUS } from "@/lib/constants";
 
+// "yyyy-mm-dd" is a LOCAL date here — new Date("yyyy-mm-dd") would be UTC
+// midnight, i.e. the previous local day in US timezones.
+function parseLocalDateParam(date: string): Date {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 export default async function TechnicianDashboardPage({
   searchParams,
 }: {
@@ -82,7 +89,7 @@ export default async function TechnicianDashboardPage({
   const filter = params.filter ?? "upcoming";
 
   const calendarView = (params.view ?? "week") as "day" | "week" | "month";
-  const calendarDate = params.date ? new Date(params.date) : new Date();
+  const calendarDate = params.date ? parseLocalDateParam(params.date) : new Date();
 
   // Bookings for the tab
   let dateStart: Date;
