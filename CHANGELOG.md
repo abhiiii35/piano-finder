@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-08-25 — Competitor gap analysis PRD
+- Added `docs/prd-competitor-gap-2026-08-25.md`: deep research on Cantus (getcantus.com) and PianoOps (pianoops.com) — feature comparison tables vs Book A Piano Tuner, prioritized gap specs in 8 epics (recall engine, piano health records, CRM depth, calendar upgrades, business insights, client-facing piano page, payments/Stripe Connect, platform), and a 23-question PM/developer checklist. Research + docs only; no code changes.
+
 ## 2026-08-12 — Admin user portal
 
 - Admin → Users: searchable list of all tuner and customer accounts with role/status filters (`/dashboard/admin/users`).
