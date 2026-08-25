@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus, Piano } from "lucide-react";
+import { Plus, Piano, Upload } from "lucide-react";
 
 export default async function CustomersPage() {
   const session = await getServerSession(authOptions);
@@ -30,12 +30,20 @@ export default async function CustomersPage() {
             Track your customers and their pianos
           </p>
         </div>
-        <Link href="/dashboard/technician/customers/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Customer
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/technician/customers/import">
+            <Button variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Import
+            </Button>
+          </Link>
+          <Link href="/dashboard/technician/customers/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Customer
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 space-y-4">

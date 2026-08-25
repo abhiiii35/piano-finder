@@ -18,6 +18,7 @@ model User {
   image          String?
   phone          String?
   role           String    @default("CUSTOMER") // CUSTOMER | TECHNICIAN | ADMIN
+  suspendedAt    DateTime? // null = active; set = hidden from search + blocked from sign-in
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -28,6 +29,7 @@ model User {
   reviews    Review[]
   jobs       Job[]
   jobApplications JobApplication[]
+  posts      Post[]
   sentMessages    Message[] @relation("SentMessages")
   customerMessages Message[] @relation("CustomerMessages")
 }
@@ -68,6 +70,14 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PasswordResetToken {
+  identifier String   // user email
+  token      String   @unique // sha256 hash of the emailed token
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 // ─── Technician ──────────────────────────────────────────────────
 
 model TechnicianProfile {
@@ -86,6 +96,14 @@ model TechnicianProfile {
   zipCode         String?
   pianoTypes      String? // JSON array: ["Grand", "Upright", etc.]
   travelFeeCents  Int?
+  travelBufferMin Int     @default(30) // padding on each side of a job, on top of estimated travel time
+  rescheduleCutoffHours Int @default(48) // customers may self-reschedule until this many hours before the appointment
+  proposeTimesEnabled   Boolean @default(false) // opt-in: offer suggested times to the customer when rescheduling
+  reminderMode    String  @default("REVIEW") // AUTO (send due reminders automatically) | REVIEW (queue for one-click send)
+  historyViewPrefs String @default("{}") // JSON: technician's own service-history display preferences
+  clientViewPrefs  String @default("{}") // JSON: which history sections clients can see (readings, photos, recommendations, prices)
+  invoiceLogoUrl  String? // Cloudinary URL rendered on branded invoice PDFs
+  calendarToken   String? @unique // unguessable token for the read-only ICS feed
   ptgMember       Boolean @default(false)
   stripeAccountId String?
   isVerified       Boolean @default(false)
@@ -99,9 +117,13 @@ model TechnicianProfile {
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   services         Service[]
   availabilitySlots AvailabilitySlot[]
+  availabilityExceptions AvailabilityException[]
   bookings         Booking[]         @relation("TechnicianBookings")
   customerRecords  CustomerRecord[]
   messages         Message[]
+  expenses         Expense[]
+  mileageLogs      MileageLog[]
+  tuneReminders    TuneReminder[]
 }
 
 model Service {
@@ -127,6 +149,20 @@ model AvailabilitySlot {
   technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
 }
 
+model AvailabilityException {
+  id           String   @id @default(cuid())
+  technicianId String
+  startsAt     DateTime // local wall-clock instants, same convention as Booking.scheduledAt
+  endsAt       DateTime
+  allDay       Boolean  @default(false)
+  reason       String?  // optional label, e.g. "Vacation", "Dentist"
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@index([technicianId, startsAt])
+}
+
 // ─── Bookings ────────────────────────────────────────────────────
 
 model Booking {
@@ -141,6 +177,8 @@ model Booking {
   city           String
   state          String
   zipCode        String
+  latitude       Float?   // geocoded once at creation; travel feasibility is measured against these
+  longitude      Float?
   notes          String?
   pianoType      String?  // GRAND | UPRIGHT | DIGITAL | OTHER
   pianoMake      String?
@@ -155,6 +193,24 @@ model Booking {
   payment    Payment?
   review     Review?
   messages   Message[]
+  mileageLogs MileageLog[]
+  rescheduleProposals RescheduleProposal[]
+}
+
+model RescheduleProposal {
+  id        String   @id @default(cuid())
+  bookingId String
+  token     String   @unique // unguessable; emailed to the customer, no login required
+  slots     String   // JSON array of ISO datetime strings offered by the technician
+  status    String   @default("PENDING") // PENDING | ACCEPTED | EXPIRED | CANCELLED
+  chosenSlot DateTime? // set when the customer accepts one of the offered slots
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, status])
 }
 
 model BookingService {
@@ -181,6 +237,41 @@ model Payment {
   updatedAt         DateTime @updatedAt
 
   booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+// ─── Finances ────────────────────────────────────────────────────
+
+model Expense {
+  id           String   @id @default(cuid())
+  technicianId String
+  date         DateTime
+  category     String
+  amountCents  Int
+  vendor       String?
+  notes        String?
+  receiptUrl   String?
+  deductible   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@index([technicianId, date])
+}
+
+model MileageLog {
+  id           String   @id @default(cuid())
+  technicianId String
+  date         DateTime
+  miles        Float
+  purpose      String
+  bookingId    String?
+  autoCaptured Boolean  @default(false) // created automatically at booking completion; still editable
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  booking    Booking?          @relation(fields: [bookingId], references: [id])
+
+  @@index([technicianId, date])
 }
 
 // ─── Reviews ─────────────────────────────────────────────────────
@@ -228,6 +319,29 @@ model JobApplication {
   technician User @relation(fields: [techId], references: [id])
 }
 
+// ─── Blog ────────────────────────────────────────────────────────
+
+model Post {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String
+  contentHtml    String
+  coverImageUrl  String?
+  category       String
+  tags           String    @default("[]") // JSON array stored as text
+  status         String    @default("DRAFT") // DRAFT | PUBLISHED
+  authorId       String
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  isHowTo        Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  author User @relation(fields: [authorId], references: [id])
+}
+
 // ─── CRM / Customer Records ─────────────────────────────────────
 
 model CustomerRecord {
@@ -236,17 +350,122 @@ model CustomerRecord {
   customerName   String
   customerEmail  String?
   customerPhone  String?
+  // Legacy single-piano fields — superseded by the Piano model; kept until backfill completes
   pianoMake      String?
   pianoModel     String?
   serialNumber   String?
   pianoLocation  String?
   notes          String?
+  billingAddressLine1 String? // optional; when unset, invoices use the service location
+  billingCity    String?
+  billingState   String?
+  billingZip     String?
+  shareToken     String?  @unique // unguessable token for the no-login client page
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  technician    TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  tuneReminders TuneReminder[]
+  pianos        Piano[]
+  contacts      Contact[]
+  serviceLocations ServiceLocation[]
 
   @@unique([technicianId, customerEmail])
+}
+
+model Contact {
+  id               String  @id @default(cuid())
+  customerRecordId String
+  name             String
+  email            String?
+  phone            String?
+  role             String? // e.g. "Facilities manager", "Billing"
+  isPrimary        Boolean @default(false)
+  createdAt        DateTime @default(now())
+
+  customerRecord CustomerRecord @relation(fields: [customerRecordId], references: [id], onDelete: Cascade)
+
+  @@index([customerRecordId])
+}
+
+model ServiceLocation {
+  id               String  @id @default(cuid())
+  customerRecordId String
+  label            String  // e.g. "Home", "Sanctuary", "Recital hall"
+  addressLine1     String?
+  city             String?
+  state            String?
+  zipCode          String?
+  latitude         Float?
+  longitude        Float?
+  isPrimary        Boolean @default(false)
+  createdAt        DateTime @default(now())
+
+  customerRecord CustomerRecord @relation(fields: [customerRecordId], references: [id], onDelete: Cascade)
+  pianos         Piano[]
+
+  @@index([customerRecordId])
+}
+
+model Piano {
+  id               String  @id @default(cuid())
+  customerRecordId String
+  serviceLocationId String?
+  type             String? // GRAND | UPRIGHT | DIGITAL | OTHER
+  make             String?
+  model            String?
+  serialNumber     String?
+  year             Int?
+  roomLocation     String? // e.g. "Living room", "Stage left"
+  tuningFrequencyMonths Int @default(6)
+  damppChaserInstalled  Boolean @default(false)
+  notes            String?
+  photos           String  @default("[]") // JSON array of Cloudinary URLs
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  customerRecord  CustomerRecord   @relation(fields: [customerRecordId], references: [id], onDelete: Cascade)
+  serviceLocation ServiceLocation? @relation(fields: [serviceLocationId], references: [id])
+  serviceRecords  ServiceRecord[]
+
+  @@index([customerRecordId])
+}
+
+model ServiceRecord {
+  id             String   @id @default(cuid())
+  pianoId        String
+  technicianId   String
+  bookingId      String?  // set when the entry came from a platform booking
+  date           DateTime
+  workPerformed  String?
+  pitchOffsetCents Float? // measured deviation from A440 before service
+  humidityPct    Float?
+  temperatureF   Float?
+  recommendations String? // client-visible suggestions
+  notes          String?  // internal — never shown to clients
+  photos         String   @default("[]") // JSON array of Cloudinary URLs (images or PDFs)
+  source         String   @default("MANUAL") // PLATFORM | MANUAL | IMPORT
+  clientVisible  Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  piano Piano @relation(fields: [pianoId], references: [id], onDelete: Cascade)
+
+  @@index([pianoId, date])
+  @@index([technicianId, date])
+}
+
+model MessageTemplate {
+  id           String  @id @default(cuid())
+  technicianId String
+  type         String  // RECALL | APPT_REMINDER
+  subject      String
+  body         String  // placeholders: {customerName} {pianoMake} {lastServiceDate} {bookingTime} {technicianName}
+  sendOffsetHours Int? // APPT_REMINDER: hours before the appointment (e.g. 24, 48)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([technicianId, type])
 }
 
 // ─── Messages ────────────────────────────────────────────────
@@ -268,4 +487,27 @@ model Message {
   customer   User              @relation("CustomerMessages", fields: [customerId], references: [id])
 
   @@index([threadId, createdAt])
+}
+
+// ─── Tune Reminders ────────────────────────────────────────────────
+
+model TuneReminder {
+  id               String   @id @default(cuid())
+  technicianId     String
+  customerRecordId String
+  customerEmail    String
+  reminderType     String   @default("6_MONTH") // 6_MONTH | 12_MONTH
+  lastTuningDate   DateTime
+  dueDate          DateTime
+  sent             Boolean  @default(false)
+  sentAt           DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  technician   TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  customerRecord CustomerRecord   @relation(fields: [customerRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([customerRecordId, reminderType])
+  @@index([technicianId, sent])
+  @@index([dueDate, sent])
 }

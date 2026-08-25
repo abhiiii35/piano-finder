@@ -73,6 +73,10 @@ export async function updateCustomerRecord(
       serialNumber: result.data.serialNumber || null,
       pianoLocation: result.data.pianoLocation || null,
       notes: result.data.notes || null,
+      billingAddressLine1: result.data.billingAddressLine1 || null,
+      billingCity: result.data.billingCity || null,
+      billingState: result.data.billingState || null,
+      billingZip: result.data.billingZip || null,
     },
   });
 

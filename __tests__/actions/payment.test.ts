@@ -10,13 +10,14 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("next-auth", () => ({
   getServerSession: vi.fn(),
 }));
+const mockCreateCheckoutSession = vi.fn().mockResolvedValue({
+  url: "https://checkout.stripe.com/test",
+});
 vi.mock("@/lib/stripe", () => ({
   getStripe: () => ({
     checkout: {
       sessions: {
-        create: vi.fn().mockResolvedValue({
-          url: "https://checkout.stripe.com/test",
-        }),
+        create: mockCreateCheckoutSession,
       },
     },
   }),
@@ -68,6 +69,77 @@ describe("createCheckoutSession", () => {
     mockGetSession.mockResolvedValue(null);
     const result = await createCheckoutSession("booking-1");
     expect(result.error).toContain("Unauthorized");
+  });
+
+  it("accepts a tip within range and adds it as a separate line item", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.booking.findFirst.mockResolvedValue({
+      ...fixtures.booking,
+      totalCents: 17500,
+      services: [{ service: fixtures.service, priceCents: 17500 }],
+      payment: null,
+    });
+
+    const result = await createCheckoutSession("booking-1", 2625); // 15%
+    expect(result.url).toBe("https://checkout.stripe.com/test");
+
+    const call = mockCreateCheckoutSession.mock.calls[0][0];
+    expect(call.metadata).toEqual({ bookingId: "booking-1", tipCents: "2625" });
+    expect(call.line_items).toHaveLength(2);
+    expect(call.line_items[1]).toMatchObject({
+      price_data: {
+        currency: "usd",
+        product_data: { name: "Tip for your technician" },
+        unit_amount: 2625,
+      },
+      quantity: 1,
+    });
+  });
+
+  it("omits the tip line item when tipCents is 0", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.booking.findFirst.mockResolvedValue({
+      ...fixtures.booking,
+      totalCents: 17500,
+      services: [{ service: fixtures.service, priceCents: 17500 }],
+      payment: null,
+    });
+
+    await createCheckoutSession("booking-1");
+
+    const call = mockCreateCheckoutSession.mock.calls[0][0];
+    expect(call.line_items).toHaveLength(1);
+    expect(call.metadata).toEqual({ bookingId: "booking-1", tipCents: "0" });
+  });
+
+  it("rejects a tip over 100% of the booking total", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.booking.findFirst.mockResolvedValue({
+      ...fixtures.booking,
+      totalCents: 17500,
+      services: [{ service: fixtures.service, priceCents: 17500 }],
+      payment: null,
+    });
+
+    const result = await createCheckoutSession("booking-1", 17501);
+    expect(result.error).toContain("Invalid tip amount");
+  });
+
+  it("rejects a negative or non-integer tip", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.booking.findFirst.mockResolvedValue({
+      ...fixtures.booking,
+      totalCents: 17500,
+      services: [{ service: fixtures.service, priceCents: 17500 }],
+      payment: null,
+    });
+
+    expect((await createCheckoutSession("booking-1", -100)).error).toContain(
+      "Invalid tip amount"
+    );
+    expect((await createCheckoutSession("booking-1", 100.5)).error).toContain(
+      "Invalid tip amount"
+    );
   });
 });
 

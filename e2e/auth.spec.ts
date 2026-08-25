@@ -4,7 +4,7 @@ import { signIn, signUp } from "./helpers";
 test.describe("Authentication", () => {
   test("sign-in page renders", async ({ page }) => {
     await page.goto("/sign-in");
-    await expect(page.locator("h1")).toContainText("Welcome to PianoTune");
+    await expect(page.locator("h1")).toContainText("Welcome to PianoTuner");
     await expect(page.locator('input[name="email"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
   });

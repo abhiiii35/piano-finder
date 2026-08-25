@@ -38,6 +38,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        if (user.suspendedAt) {
+          // Surfaced to the sign-in page as result.error === "SUSPENDED"
+          throw new Error("SUSPENDED");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -53,15 +58,24 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            authorization: {
+              params: {
+                // Default NextAuth scopes (openid email profile) plus
+                // read-only Contacts access for the customer-import wizard.
+                scope:
+                  "openid email profile https://www.googleapis.com/auth/contacts.readonly",
+              },
+            },
           }),
         ]
       : []),
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // Auto-verify OAuth users — the provider already verified their email
       if (account?.provider === "google" && user.id) {
         const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        if (dbUser?.suspendedAt) return false;
+        // Auto-verify OAuth users — the provider already verified their email
         if (dbUser && !dbUser.emailVerified) {
           await prisma.user.update({
             where: { id: user.id },
@@ -76,6 +90,20 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.emailVerified = user.emailVerified ?? null;
+        token.suspended = false;
+        token.suspendedCheckedAt = Date.now();
+        return token;
+      }
+      // Re-check suspension against the DB at most every 15 minutes
+      const RECHECK_MS = 15 * 60 * 1000;
+      const checkedAt = token.suspendedCheckedAt ?? 0;
+      if (Date.now() - checkedAt > RECHECK_MS) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { suspendedAt: true },
+        });
+        token.suspended = Boolean(dbUser?.suspendedAt);
+        token.suspendedCheckedAt = Date.now();
       }
       return token;
     },

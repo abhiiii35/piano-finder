@@ -9,6 +9,10 @@ export const customerRecordSchema = z.object({
   serialNumber: z.string().optional(),
   pianoLocation: z.string().optional(),
   notes: z.string().optional(),
+  billingAddressLine1: z.string().optional(),
+  billingCity: z.string().optional(),
+  billingState: z.string().optional(),
+  billingZip: z.string().optional(),
 });
 
 export type CustomerRecordInput = z.infer<typeof customerRecordSchema>;

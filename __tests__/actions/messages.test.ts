@@ -17,7 +17,7 @@ vi.mock("@/lib/email", () => ({
 
 import { getServerSession } from "next-auth";
 import { sendEmail } from "@/lib/email";
-import { sendMessage, getMessages, getOrCreateThread } from "@/actions/messages";
+import { sendMessage, getMessages, getOrCreateThread, getInboxThreads } from "@/actions/messages";
 
 const mockGetSession = vi.mocked(getServerSession);
 const mockSendEmail = vi.mocked(sendEmail);
@@ -212,5 +212,110 @@ describe("getOrCreateThread", () => {
 
     const result = await getOrCreateThread("tech-profile-1", "booking-1");
     expect(result.error).toContain("Not authorized");
+  });
+});
+
+describe("getInboxThreads", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("groups messages by thread, counts only the other party's unread, sorted latest-first", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession()); // customer-1
+    prismaMock.technicianProfile.findUnique.mockResolvedValue(null); // not a technician
+
+    const threadA = [
+      {
+        ...fixtures.message,
+        id: "m1",
+        threadId: "customer-1:tech-profile-1:general",
+        senderId: "customer-1",
+        isRead: true,
+        content: "Hi, when are you free?",
+        createdAt: new Date(2026, 0, 1, 9, 0),
+        customer: { name: "Jane Doe" },
+        technician: { user: { name: "Mike Tuner" } },
+      },
+      {
+        ...fixtures.message,
+        id: "m2",
+        threadId: "customer-1:tech-profile-1:general",
+        senderId: "tech-user-1",
+        isRead: false,
+        content: "Sure, see you then",
+        createdAt: new Date(2026, 0, 1, 10, 0),
+        customer: { name: "Jane Doe" },
+        technician: { user: { name: "Mike Tuner" } },
+      },
+    ];
+    const threadB = [
+      {
+        ...fixtures.message,
+        id: "m3",
+        threadId: "customer-1:tech-profile-2:booking-9",
+        bookingId: "booking-9",
+        technicianId: "tech-profile-2",
+        senderId: "customer-1",
+        isRead: false,
+        content: "Confirming Tuesday",
+        createdAt: new Date(2026, 0, 2, 8, 0),
+        customer: { name: "Jane Doe" },
+        technician: { user: { name: "Alice Smith" } },
+      },
+    ];
+    prismaMock.message.findMany.mockResolvedValue([...threadA, ...threadB]);
+
+    const result = await getInboxThreads();
+
+    expect(result.threads).toHaveLength(2);
+
+    // threadB is latest (Jan 2) and comes first
+    const [first, second] = result.threads!;
+    expect(first.threadId).toBe("customer-1:tech-profile-2:booking-9");
+    expect(first.otherPartyName).toBe("Alice Smith");
+    expect(first.bookingId).toBe("booking-9");
+    // m3 was sent by me (customer-1), so it never counts as unread to me
+    expect(first.unreadCount).toBe(0);
+
+    expect(second.threadId).toBe("customer-1:tech-profile-1:general");
+    expect(second.otherPartyName).toBe("Mike Tuner");
+    expect(second.lastMessage).toBe("Sure, see you then");
+    // m2 is from the technician and unread -> counts; m1 is mine (read) -> doesn't
+    expect(second.unreadCount).toBe(1);
+  });
+
+  it("scopes to the technician's own threads and names the customer as the other party", async () => {
+    mockGetSession.mockResolvedValue(mockTechnicianSession()); // tech-user-1
+    prismaMock.technicianProfile.findUnique.mockResolvedValue({ id: "tech-profile-1" });
+    prismaMock.message.findMany.mockResolvedValue([
+      {
+        ...fixtures.message,
+        senderId: "customer-1",
+        isRead: false,
+        customer: { name: "Jane Doe" },
+        technician: { user: { name: "Mike Tuner" } },
+      },
+    ]);
+
+    const result = await getInboxThreads();
+    expect(prismaMock.message.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { technicianId: "tech-profile-1" } })
+    );
+    expect(result.threads![0].otherPartyName).toBe("Jane Doe");
+    // sender is the customer, not me (the technician) -> unread counts
+    expect(result.threads![0].unreadCount).toBe(1);
+  });
+
+  it("returns an empty list when there are no messages", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.technicianProfile.findUnique.mockResolvedValue(null);
+    prismaMock.message.findMany.mockResolvedValue([]);
+
+    const result = await getInboxThreads();
+    expect(result.threads).toEqual([]);
+  });
+
+  it("rejects unauthenticated user", async () => {
+    mockGetSession.mockResolvedValue(null);
+    const result = await getInboxThreads();
+    expect(result.error).toBeDefined();
   });
 });

@@ -19,21 +19,21 @@ test.describe("Stripe Integration", () => {
     await page.locator("label", { hasText: "Standard Tuning" }).click();
     await page.locator("button", { hasText: "Next" }).click();
 
-    // Step 2: Pick a date — use a Wednesday to avoid timezone edge cases
-    await expect(page.locator("text=Pick a Date")).toBeVisible();
-    await page.locator("input#date").fill("2026-06-03"); // Wednesday
-    // Wait for slots to appear
-    const slotButton = page.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).first();
-    await slotButton.waitFor({ state: "visible", timeout: 10000 });
-    await slotButton.click();
-    await page.locator("button", { hasText: "Next" }).click();
-
-    // Step 3: Fill address info
+    // Step 2: Fill address info (before date & time, so slots are travel-filtered)
     await expect(page.locator("text=Your Details")).toBeVisible();
     await page.locator("input#addressLine1").fill("123 Test St");
     await page.locator("input#city").fill("Boston");
     await page.locator("input#state").fill("MA");
     await page.locator("input#zipCode").fill("02108");
+    await page.locator("button", { hasText: "Next" }).click();
+
+    // Step 3: Pick a date — a Wednesday with no other appointments
+    await expect(page.locator("text=Pick a Date")).toBeVisible();
+    await page.locator("input#date").fill("2026-06-03"); // Wednesday
+    // Wait for slots to appear (live geocoding adds latency)
+    const slotButton = page.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).first();
+    await slotButton.waitFor({ state: "visible", timeout: 20000 });
+    await slotButton.click();
     await page.locator("button", { hasText: "Review" }).click();
 
     // Step 4: Confirm heading and booking button visible

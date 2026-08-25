@@ -46,6 +46,7 @@ export async function updateProfile(formData: FormData) {
   }
 
   const portfolioPhotos = formData.get("portfolioPhotos") as string | null;
+  const invoiceLogoUrl = formData.get("invoiceLogoUrl") as string | null;
 
   await prisma.technicianProfile.update({
     where: { id: profile.id },
@@ -55,6 +56,13 @@ export async function updateProfile(formData: FormData) {
       yearsExperience: data.yearsExperience ?? null,
       certifications: data.certifications ?? null,
       serviceRadius: data.serviceRadius ?? null,
+      ...(data.travelBufferMin !== undefined && {
+        travelBufferMin: data.travelBufferMin,
+      }),
+      ...(data.rescheduleCutoffHours !== undefined && {
+        rescheduleCutoffHours: data.rescheduleCutoffHours,
+      }),
+      proposeTimesEnabled: data.proposeTimesEnabled ?? false,
       addressLine1: data.addressLine1 ?? null,
       city: data.city ?? null,
       state: data.state ?? null,
@@ -62,6 +70,7 @@ export async function updateProfile(formData: FormData) {
       latitude,
       longitude,
       ...(portfolioPhotos !== null && { portfolioPhotos }),
+      ...(invoiceLogoUrl !== null && { invoiceLogoUrl: invoiceLogoUrl || null }),
     },
   });
 

@@ -5,8 +5,14 @@ import { revalidatePath } from "next/cache";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { bookingSchema } from "@/lib/validations/booking";
+import { geocode } from "@/lib/geocoding";
+import { getTravelTimeProvider, type LatLng } from "@/lib/travel-time";
+import { filterFeasibleSlots, type DayStop } from "@/lib/travel-feasibility";
 import { sendEmail } from "@/lib/email";
 import { bookingCreatedEmail, bookingReceivedEmail, bookingStatusEmail, bookingCancelledEmail } from "@/lib/emails/booking";
+import { captureAutoMileage } from "@/lib/mileage-capture";
+import { generateRemindersForBooking } from "@/actions/reminders";
+import { createServiceRecordFromBooking } from "@/actions/service-record";
 
 export async function createBooking(data: {
   technicianId: string;
@@ -56,6 +62,48 @@ export async function createBooking(data: {
 
   const newStart = new Date(scheduledAt);
   const newEnd = new Date(newStart.getTime() + durationMin * 60 * 1000);
+  const dateStr = scheduledAt.split("T")[0];
+
+  // Geocode the job address once; coordinates are stored on the booking so
+  // later feasibility checks against it never re-geocode.
+  const customerCoords = await geocodeBookingAddress(address);
+
+  // Server-side travel feasibility: never accept a slot the technician can't
+  // reach (or leave) in time around neighboring appointments. Skipped when we
+  // have no coordinates to judge with (fail open).
+  if (customerCoords) {
+    const window = await prisma.availabilitySlot.findFirst({
+      where: { technicianId, dayOfWeek: newStart.getDay() },
+    });
+    if (window) {
+      const dayBookings = await getActiveDayBookings(technicianId, dateStr);
+      const ctx = await buildFeasibilityContext({
+        technicianId,
+        date: dateStr,
+        durationMin,
+        customer: customerCoords,
+        windowStartMin: toMinutes(window.startTime),
+        windowEndMin: toMinutes(window.endTime),
+        dayBookings,
+      });
+      const requestedStartMin =
+        newStart.getHours() * 60 + newStart.getMinutes();
+      const feasible = await filterFeasibleSlots([requestedStartMin], ctx);
+      if (feasible.length === 0) {
+        const availableSlots = await computeAvailableSlots(
+          technicianId,
+          dateStr,
+          durationMin,
+          customerCoords
+        );
+        return {
+          error:
+            "That time doesn't leave enough travel time around the technician's other appointments",
+          availableSlots,
+        };
+      }
+    }
+  }
 
   // Conflict check + create inside a transaction
   let booking;
@@ -84,6 +132,24 @@ export async function createBooking(data: {
         }
       }
 
+      // Reject a slot that falls inside a technician time-off block.
+      const dayExceptions =
+        (await tx.availabilityException.findMany({
+          where: {
+            technicianId,
+            startsAt: { lt: dayEnd },
+            endsAt: { gt: dayStart },
+          },
+        })) ?? [];
+      const blockedByTimeOff = dayExceptions.some(
+        (ex) =>
+          newStart.getTime() < new Date(ex.endsAt).getTime() &&
+          newEnd.getTime() > new Date(ex.startsAt).getTime()
+      );
+      if (blockedByTimeOff) {
+        throw new Error("CONFLICT");
+      }
+
       return tx.booking.create({
         data: {
           customerId: session.user.id,
@@ -97,6 +163,8 @@ export async function createBooking(data: {
           city: address.city,
           state: address.state,
           zipCode: address.zipCode,
+          latitude: customerCoords?.lat ?? null,
+          longitude: customerCoords?.lng ?? null,
           pianoType: address.pianoType ?? null,
           pianoMake: address.pianoMake ?? null,
           pianoModel: address.pianoModel ?? null,
@@ -112,9 +180,8 @@ export async function createBooking(data: {
     });
   } catch (error) {
     if (error instanceof Error && error.message === "CONFLICT") {
-      // Fetch alternative slots for the same day
-      const dateStr = scheduledAt.split("T")[0];
-      const availableSlots = await getAvailableSlots(technicianId, dateStr, durationMin);
+      // Fetch alternative slots for the same day, travel-filtered when possible
+      const availableSlots = await computeAvailableSlots(technicianId, dateStr, durationMin, customerCoords);
       return {
         error: "This time slot is no longer available",
         availableSlots,
@@ -247,6 +314,24 @@ export async function updateBookingStatus(
     } catch (error) {
       console.error("[CRM] Failed to auto-populate customer record:", error);
     }
+
+    try {
+      await generateRemindersForBooking(bookingId);
+    } catch (error) {
+      console.error("[REMINDERS] Failed to generate tune reminders:", error);
+    }
+
+    try {
+      await createServiceRecordFromBooking(bookingId);
+    } catch (error) {
+      console.error("[RECORDS] Failed to create service record:", error);
+    }
+
+    try {
+      await captureAutoMileage(bookingId);
+    } catch (error) {
+      console.error("[MILEAGE] Failed to auto-capture mileage:", error);
+    }
   }
 
   revalidatePath(`/dashboard/customer/bookings/${bookingId}`);
@@ -256,8 +341,132 @@ export async function updateBookingStatus(
   return { success: true };
 }
 
-export async function getAvailableSlots(technicianId: string, date: string, durationMin: number = 30) {
-  const dayOfWeek = new Date(date).getDay();
+// ─── Availability & travel feasibility ──────────────────────────
+
+// Parse a "yyyy-mm-dd" date string as a LOCAL date. new Date("yyyy-mm-dd")
+// parses as UTC midnight, which lands on the previous local day in negative
+// offsets and would compare slots against the wrong day's bookings.
+function parseLocalDate(date: string): Date {
+  const [y, mo, d] = date.split("-").map(Number);
+  return new Date(y, mo - 1, d);
+}
+
+function toMinutes(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function formatSlot(m: number): string {
+  const h = Math.floor(m / 60);
+  const min = m % 60;
+  return `${h.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+}
+
+type BookingAddress = {
+  addressLine1: string;
+  city: string;
+  state: string;
+  zipCode: string;
+};
+
+// Geocode a job address through the existing free geocoding path, falling
+// back to a city-level lookup when the street address doesn't resolve.
+async function geocodeBookingAddress(a: BookingAddress): Promise<LatLng | null> {
+  const geo =
+    (await geocode(`${a.addressLine1}, ${a.city}, ${a.state} ${a.zipCode}`)) ??
+    (await geocode(`${a.city}, ${a.state} ${a.zipCode}`));
+  return geo ? { lat: geo.lat, lng: geo.lng } : null;
+}
+
+async function getActiveDayBookings(technicianId: string, date: string) {
+  const dayStart = parseLocalDate(date);
+  const dayEnd = parseLocalDate(date);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  return prisma.booking.findMany({
+    where: {
+      technicianId,
+      scheduledAt: { gte: dayStart, lte: dayEnd },
+      status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
+    },
+  });
+}
+
+// Time-off blocks overlapping this local day. `?? []` guards test mocks that
+// don't stub this model; production Prisma always returns an array.
+async function getDayExceptions(technicianId: string, date: string) {
+  const dayStart = parseLocalDate(date);
+  const dayEnd = parseLocalDate(date);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const exceptions = await prisma.availabilityException.findMany({
+    where: {
+      technicianId,
+      startsAt: { lt: dayEnd },
+      endsAt: { gt: dayStart },
+    },
+  });
+  return exceptions ?? [];
+}
+
+type DayBookingRow = {
+  scheduledAt: Date;
+  durationMin: number;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+function toDayStops(bookings: DayBookingRow[], date: string): DayStop[] {
+  const midnight = parseLocalDate(date).getTime();
+  return bookings.map((b) => {
+    const startMin = Math.round(
+      (new Date(b.scheduledAt).getTime() - midnight) / 60000
+    );
+    return {
+      startMin,
+      endMin: startMin + b.durationMin,
+      location:
+        b.latitude != null && b.longitude != null
+          ? { lat: b.latitude, lng: b.longitude }
+          : null,
+    };
+  });
+}
+
+async function buildFeasibilityContext(opts: {
+  technicianId: string;
+  date: string;
+  durationMin: number;
+  customer: LatLng;
+  windowStartMin: number;
+  windowEndMin: number;
+  dayBookings: DayBookingRow[];
+}) {
+  const profile = await prisma.technicianProfile.findUnique({
+    where: { id: opts.technicianId },
+  });
+  return {
+    durationMin: opts.durationMin,
+    windowStartMin: opts.windowStartMin,
+    windowEndMin: opts.windowEndMin,
+    customer: opts.customer,
+    homeBase:
+      profile?.latitude != null && profile?.longitude != null
+        ? { lat: profile.latitude, lng: profile.longitude }
+        : null,
+    bufferMin: profile?.travelBufferMin ?? 30,
+    stops: toDayStops(opts.dayBookings, opts.date),
+    provider: getTravelTimeProvider(),
+  };
+}
+
+async function computeAvailableSlots(
+  technicianId: string,
+  date: string,
+  durationMin: number,
+  customer: LatLng | null
+): Promise<string[]> {
+  const dayOfWeek = parseLocalDate(date).getDay();
 
   const slot = await prisma.availabilitySlot.findFirst({
     where: { technicianId, dayOfWeek },
@@ -265,52 +474,65 @@ export async function getAvailableSlots(technicianId: string, date: string, dura
 
   if (!slot) return [];
 
-  // Get existing bookings for this date
-  const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(date);
-  dayEnd.setHours(23, 59, 59, 999);
-
-  const existingBookings = await prisma.booking.findMany({
-    where: {
-      technicianId,
-      scheduledAt: { gte: dayStart, lte: dayEnd },
-      status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
-    },
-  });
+  const existingBookings = await getActiveDayBookings(technicianId, date);
+  const exceptions = await getDayExceptions(technicianId, date);
 
   // Generate 30-min slots, checking if the full duration fits
-  const [startH, startM] = slot.startTime.split(":").map(Number);
-  const [endH, endM] = slot.endTime.split(":").map(Number);
-  const startMin = startH * 60 + startM;
-  const endMin = endH * 60 + endM;
+  const startMin = toMinutes(slot.startTime);
+  const endMin = toMinutes(slot.endTime);
+  const midnight = parseLocalDate(date).getTime();
 
-  const slots: string[] = [];
+  const candidates: number[] = [];
   for (let m = startMin; m < endMin; m += 30) {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-
     // Check if the full duration fits within availability
     if (m + durationMin > endMin) continue;
 
-    const timeStr = `${h.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
-
-    const slotTime = new Date(date);
-    slotTime.setHours(h, min, 0, 0);
-
     // Check if the full duration window overlaps with any existing booking
+    // or a technician time-off block.
+    const slotStart = midnight + m * 60 * 1000;
+    const slotEnd = slotStart + durationMin * 60 * 1000;
     const isBooked = existingBookings.some((b) => {
       const bookingStart = new Date(b.scheduledAt).getTime();
       const bookingEnd = bookingStart + b.durationMin * 60 * 1000;
-      const slotStart = slotTime.getTime();
-      const slotEnd = slotStart + durationMin * 60 * 1000;
       return slotStart < bookingEnd && slotEnd > bookingStart;
     });
+    const isBlocked = exceptions.some((ex) => {
+      const exStart = new Date(ex.startsAt).getTime();
+      const exEnd = new Date(ex.endsAt).getTime();
+      return slotStart < exEnd && slotEnd > exStart;
+    });
 
-    if (!isBooked) {
-      slots.push(timeStr);
-    }
+    if (!isBooked && !isBlocked) candidates.push(m);
   }
 
-  return slots;
+  // Travel feasibility: with a customer location, drop slots the technician
+  // couldn't reach (or leave) in time around neighboring appointments.
+  let feasible = candidates;
+  if (customer && candidates.length > 0) {
+    const ctx = await buildFeasibilityContext({
+      technicianId,
+      date,
+      durationMin,
+      customer,
+      windowStartMin: startMin,
+      windowEndMin: endMin,
+      dayBookings: existingBookings,
+    });
+    feasible = await filterFeasibleSlots(candidates, ctx);
+  }
+
+  return feasible.map(formatSlot);
+}
+
+export async function getAvailableSlots(
+  technicianId: string,
+  date: string,
+  durationMin: number = 30,
+  customerAddress?: BookingAddress
+) {
+  let customer: LatLng | null = null;
+  if (customerAddress?.addressLine1 && customerAddress.city) {
+    customer = await geocodeBookingAddress(customerAddress);
+  }
+  return computeAvailableSlots(technicianId, date, durationMin, customer);
 }

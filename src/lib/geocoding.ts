@@ -34,7 +34,7 @@ export async function geocode(query: string): Promise<GeoResult | null> {
     url.searchParams.set("countrycodes", "us");
 
     const res = await fetch(url.toString(), {
-      headers: { "User-Agent": "PianoTune/1.0" },
+      headers: { "User-Agent": "PianoTuner/1.0" },
     });
 
     if (!res.ok) return null;

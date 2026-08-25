@@ -80,4 +80,21 @@ describe("createReview", () => {
     const call = prismaMock.review.create.mock.calls[0][0];
     expect(call.data.comment).toBeNull();
   });
+
+  it("rejects review by a customer who didn't make the booking", async () => {
+    mockGetSession.mockResolvedValue({
+      user: { id: "other-customer-2", role: "CUSTOMER" },
+    });
+    // The query filters by customerId, so a non-matching customer gets null back.
+    prismaMock.booking.findFirst.mockResolvedValue(null);
+
+    const result = await createReview({
+      bookingId: "booking-1",
+      rating: 5,
+      comment: "Not my booking",
+    });
+
+    expect(result.error).toContain("not found or not completed");
+    expect(prismaMock.review.create).not.toHaveBeenCalled();
+  });
 });

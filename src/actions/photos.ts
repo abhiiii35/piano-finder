@@ -2,7 +2,7 @@
 
 import { cloudinary } from "@/lib/cloudinary";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 export async function uploadPhoto(formData: FormData) {
@@ -12,7 +12,7 @@ export async function uploadPhoto(formData: FormData) {
   if (!file) return { error: "No file provided" };
 
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return { error: "Invalid file type. Only JPEG, PNG, and WebP are allowed." };
+    return { error: "Invalid file type. Only JPEG, PNG, WebP, and PDF are allowed." };
   }
 
   if (file.size > MAX_SIZE) {

@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, ShieldCheck, Info } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { PitchRaiseDisclosure } from "@/components/profile/pitch-raise-disclosure";
 
 type Service = {
   id: string;
@@ -140,11 +141,39 @@ export default function BookingPage() {
       .then((data) => setTechnician(data.technician));
   }, [params.id]);
 
+  // Fetch slots once the customer reaches the date step, so the server can
+  // filter them for travel feasibility against the entered address.
   useEffect(() => {
-    if (selectedDate && params.id) {
-      getAvailableSlots(params.id as string, selectedDate, totalDuration || 30).then(setAvailableSlots);
-    }
-  }, [selectedDate, params.id, totalDuration]);
+    if (step !== 3 || !selectedDate || !params.id) return;
+    const customerAddress =
+      address.addressLine1 && address.city && address.state && address.zipCode
+        ? {
+            addressLine1: address.addressLine1,
+            city: address.city,
+            state: address.state,
+            zipCode: address.zipCode,
+          }
+        : undefined;
+    getAvailableSlots(
+      params.id as string,
+      selectedDate,
+      totalDuration || 30,
+      customerAddress
+    ).then((slots) => {
+      setAvailableSlots(slots);
+      // A prefilled time (e.g. from a rebook link) may no longer be feasible
+      setSelectedTime((t) => (t && !slots.includes(t) ? "" : t));
+    });
+  }, [
+    step,
+    selectedDate,
+    params.id,
+    totalDuration,
+    address.addressLine1,
+    address.city,
+    address.state,
+    address.zipCode,
+  ]);
 
   if (!session) {
     return (
@@ -295,8 +324,8 @@ export default function BookingPage() {
           </Card>
         )}
 
-        {/* Step 2: Date & Time */}
-        {step === 2 && (
+        {/* Step 3: Date & Time (after address, so slots are travel-filtered) */}
+        {step === 3 && (
           <Card>
             <CardHeader>
               <CardTitle>Pick a Date & Time</CardTitle>
@@ -337,23 +366,29 @@ export default function BookingPage() {
                   No available slots on this day
                 </p>
               )}
+              {selectedDate && availableSlots.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Times shown fit the technician&apos;s schedule, including
+                  travel time to your address.
+                </p>
+              )}
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(1)}>
+                <Button variant="outline" onClick={() => setStep(2)}>
                   Back
                 </Button>
                 <Button
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                   disabled={!selectedTime}
                 >
-                  Next
+                  Review
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Step 3: Address & Piano Info */}
-        {step === 3 && (
+        {/* Step 2: Address & Piano Info */}
+        {step === 2 && (
           <Card>
             <CardHeader>
               <CardTitle>Your Details</CardTitle>
@@ -452,14 +487,14 @@ export default function BookingPage() {
                 />
               </div>
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(2)}>
+                <Button variant="outline" onClick={() => setStep(1)}>
                   Back
                 </Button>
                 <Button
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(3)}
                   disabled={!address.addressLine1 || !address.city || !address.state || !address.zipCode}
                 >
-                  Review
+                  Next
                 </Button>
               </div>
             </CardContent>
@@ -528,6 +563,16 @@ export default function BookingPage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <PitchRaiseDisclosure />
+
+              {/* Cancellation Policy */}
+              <div className="rounded-lg border border-border bg-muted/50 p-4 text-sm">
+                <p className="font-medium text-foreground mb-2">Cancellation Policy</p>
+                <p className="text-muted-foreground">
+                  Cancellations must be made at least 24 hours before your scheduled appointment. Cancellations within 24 hours may be subject to a cancellation fee.
+                </p>
               </div>
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => { setConflictSlots(null); setStep(3); }}>

@@ -41,6 +41,7 @@ export async function emailInvoice(bookingId: string) {
       city: profile.city,
       state: profile.state,
       zipCode: profile.zipCode,
+      logoUrl: profile.invoiceLogoUrl,
     },
     customer: {
       name: booking.customer.name ?? "Customer",
@@ -53,6 +54,7 @@ export async function emailInvoice(bookingId: string) {
       priceCents: bs.priceCents,
     })),
     totalCents: booking.totalCents,
+    tipCents: booking.payment?.tipCents ?? 0,
     isPaid: booking.payment?.status === "SUCCEEDED",
   };
 

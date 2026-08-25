@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   format,
@@ -14,6 +14,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CalendarDayView } from "./calendar-day-view";
 import { CalendarWeekView } from "./calendar-week-view";
 import { CalendarMonthView } from "./calendar-month-view";
+import { CalendarFilterBar } from "./calendar-filter-bar";
+import {
+  CalendarExceptionDialog,
+  type ExceptionDialogState,
+} from "./calendar-exception-dialog";
+import { applyFilters, EMPTY_FILTERS, type CalendarException, type CalendarFilters } from "./calendar-utils";
 
 export type CalendarBooking = {
   id: string;
@@ -22,57 +28,90 @@ export type CalendarBooking = {
   status: string;
   customerName: string;
   serviceName: string;
+  services: string[];
+  city: string;
   totalCents: number;
 };
+
+export type { CalendarException };
 
 type View = "day" | "week" | "month";
 
 export function Calendar({
   bookings,
+  exceptions,
   initialDate,
   initialView,
+  initialFilters,
 }: {
   bookings: CalendarBooking[];
+  exceptions: CalendarException[];
   initialDate: string;
   initialView: View;
+  initialFilters?: CalendarFilters;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [view, setView] = useState<View>(initialView);
   const [date, setDate] = useState(new Date(initialDate));
+  const [filters, setFilters] = useState<CalendarFilters>(initialFilters ?? EMPTY_FILTERS);
+  const [dialogState, setDialogState] = useState<ExceptionDialogState | null>(null);
+
+  const visibleBookings = useMemo(() => applyFilters(bookings, filters), [bookings, filters]);
+
+  function pushState(newDate: Date, newView: View, newFilters: CalendarFilters) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "bookings");
+    params.set("view", newView);
+    params.set("date", format(newDate, "yyyy-MM-dd"));
+    for (const key of ["service", "customer", "city"] as const) {
+      if (newFilters[key]) params.set(key, newFilters[key]);
+      else params.delete(key);
+    }
+    router.push(`/dashboard/technician?${params.toString()}`);
+  }
 
   function navigate(direction: -1 | 1) {
     let newDate: Date;
     if (view === "day") newDate = addDays(date, direction);
     else if (view === "week") newDate = addWeeks(date, direction);
     else newDate = addMonths(date, direction);
-    updateUrl(newDate, view);
+    pushState(newDate, view, filters);
     setDate(newDate);
-  }
-
-  function updateUrl(newDate: Date, newView: View) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", "bookings");
-    params.set("view", newView);
-    params.set("date", format(newDate, "yyyy-MM-dd"));
-    router.push(`/dashboard/technician?${params.toString()}`);
   }
 
   function changeView(newView: View) {
     setView(newView);
-    updateUrl(date, newView);
+    pushState(date, newView, filters);
   }
 
   function goToday() {
     const today = new Date();
     setDate(today);
-    updateUrl(today, view);
+    pushState(today, view, filters);
   }
 
   function handleMonthDayClick(day: Date) {
     setDate(day);
     setView("day");
-    updateUrl(day, "day");
+    pushState(day, "day", filters);
+  }
+
+  function handleFiltersChange(newFilters: CalendarFilters) {
+    setFilters(newFilters);
+    pushState(date, view, newFilters);
+  }
+
+  function handleSlotClick(clicked: Date) {
+    setDialogState({
+      mode: "create",
+      date: format(clicked, "yyyy-MM-dd"),
+      startTime: format(clicked, "HH:mm"),
+    });
+  }
+
+  function handleExceptionClick(exception: CalendarException) {
+    setDialogState({ mode: "view", exception });
   }
 
   function getDateLabel(): string {
@@ -129,15 +168,37 @@ export function Calendar({
         </div>
       </div>
 
-      {view === "day" && <CalendarDayView date={date} bookings={bookings} />}
-      {view === "week" && <CalendarWeekView date={date} bookings={bookings} />}
+      <CalendarFilterBar bookings={bookings} filters={filters} onChange={handleFiltersChange} />
+
+      {view === "day" && (
+        <CalendarDayView
+          date={date}
+          bookings={visibleBookings}
+          exceptions={exceptions}
+          onSlotClick={handleSlotClick}
+          onExceptionClick={handleExceptionClick}
+        />
+      )}
+      {view === "week" && (
+        <CalendarWeekView
+          date={date}
+          bookings={visibleBookings}
+          exceptions={exceptions}
+          onSlotClick={handleSlotClick}
+          onExceptionClick={handleExceptionClick}
+        />
+      )}
       {view === "month" && (
         <CalendarMonthView
           date={date}
-          bookings={bookings}
+          bookings={visibleBookings}
+          exceptions={exceptions}
           onDayClick={handleMonthDayClick}
+          onExceptionClick={handleExceptionClick}
         />
       )}
+
+      <CalendarExceptionDialog state={dialogState} onClose={() => setDialogState(null)} />
     </div>
   );
 }

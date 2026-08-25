@@ -14,12 +14,20 @@ vi.mock("@/lib/email", () => ({
   sendEmail: vi.fn(),
   buildEmailHtml: vi.fn((heading: string, bodyHtml: string) => `<html>${heading}${bodyHtml}</html>`),
 }));
+// Mock only geocode (network call); keep haversineDistance real so the free
+// travel-time provider runs its actual math.
+vi.mock("@/lib/geocoding", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/geocoding")>();
+  return { ...actual, geocode: vi.fn() };
+});
 
 import { getServerSession } from "next-auth";
 import { sendEmail } from "@/lib/email";
+import { geocode } from "@/lib/geocoding";
 import { createBooking, updateBookingStatus, getAvailableSlots } from "@/actions/booking";
 
 const mockGetSession = vi.mocked(getServerSession);
+const mockGeocode = vi.mocked(geocode);
 
 describe("createBooking", () => {
   beforeEach(() => {
@@ -32,6 +40,8 @@ describe("createBooking", () => {
       ...fixtures.user,
       emailVerified: new Date(),
     });
+    // Default: no time-off blocks; individual tests override as needed.
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
   });
 
   it("creates a booking with selected services", async () => {
@@ -204,6 +214,41 @@ describe("createBooking", () => {
     expect(result.error).toContain("no longer available");
     expect(result.availableSlots).toBeDefined();
     expect(Array.isArray(result.availableSlots)).toBe(true);
+  });
+
+  it("rejects booking creation when the requested slot falls inside a time-off block", async () => {
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.service.findMany.mockResolvedValue([fixtures.service]); // 90 min
+
+    prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
+      return cb(prismaMock);
+    });
+    prismaMock.booking.findFirst.mockResolvedValue(null); // no booking conflict
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 15, 9, 0), endsAt: new Date(2026, 3, 15, 12, 0) },
+    ]);
+
+    // For the rejection response's alternative-slots lookup
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-15T10:00:00",
+      addressLine1: "123 Main St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.error).toContain("no longer available");
+    expect(prismaMock.booking.create).not.toHaveBeenCalled();
+    // The suggested alternatives also exclude the blocked window (09:00-12:00).
+    expect(result.availableSlots).not.toContain("10:00");
   });
 
   it("creates booking inside a transaction when no conflict", async () => {
@@ -387,8 +432,7 @@ describe("getAvailableSlots", () => {
     });
 
     // Create a booking at 09:00 local time on the target date
-    const bookingDate = new Date("2026-04-14");
-    bookingDate.setHours(9, 0, 0, 0);
+    const bookingDate = new Date(2026, 3, 14, 9, 0, 0, 0);
 
     prismaMock.booking.findMany.mockResolvedValue([
       { scheduledAt: bookingDate, durationMin: 90 },
@@ -409,8 +453,7 @@ describe("getAvailableSlots", () => {
     });
 
     // Existing booking at 10:30 for 60 min (occupies 10:30-11:30)
-    const bookingDate = new Date("2026-04-14");
-    bookingDate.setHours(10, 30, 0, 0);
+    const bookingDate = new Date(2026, 3, 14, 10, 30, 0, 0);
 
     prismaMock.booking.findMany.mockResolvedValue([
       { scheduledAt: bookingDate, durationMin: 60 },
@@ -451,5 +494,278 @@ describe("getAvailableSlots", () => {
 
     const slots = await getAvailableSlots("tech-1", "2026-04-14");
     expect(slots).toEqual(["09:00", "09:30", "10:00", "10:30"]);
+  });
+});
+
+describe("getAvailableSlots with time-off exceptions", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("excludes every slot on a day fully covered by an all-day exception", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    // All-day block for Apr 14: stored as [Apr14 00:00, Apr15 00:00)
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 0, 0), endsAt: new Date(2026, 3, 15, 0, 0) },
+    ]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-14");
+    expect(slots).toEqual([]);
+  });
+
+  it("blocks every day a multi-day range spans and not the day after", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "11:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+
+    // Multi-day all-day block: Apr14 00:00 -> Apr17 00:00 (covers Apr14-16 inclusive)
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 0, 0), endsAt: new Date(2026, 3, 17, 0, 0) },
+    ]);
+    expect(await getAvailableSlots("tech-1", "2026-04-14")).toEqual([]);
+    expect(await getAvailableSlots("tech-1", "2026-04-15")).toEqual([]);
+    expect(await getAvailableSlots("tech-1", "2026-04-16")).toEqual([]);
+
+    // Day after the range: a real query would no longer return this exception
+    // (endsAt Apr17 00:00 is not > Apr17's dayStart), simulated here directly.
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
+    expect(await getAvailableSlots("tech-1", "2026-04-17")).toEqual([
+      "09:00", "09:30", "10:00", "10:30",
+    ]);
+  });
+
+  it("boundary: an exception ending exactly at local midnight does not block that day", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "10:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    // Exception spans Apr14 00:00 -> Apr16 00:00 (blocks Apr14-15 only).
+    // Even if still returned for Apr16 by a looser query, the precise
+    // per-slot overlap check (slotStart < ex.endsAt) must not exclude it.
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 0, 0), endsAt: new Date(2026, 3, 16, 0, 0) },
+    ]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-16");
+    expect(slots).toEqual(["09:00", "09:30"]);
+  });
+
+  it("removes only the slots overlapping a timed block", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "12:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    // Timed block 10:00-11:00
+    prismaMock.availabilityException.findMany.mockResolvedValue([
+      { startsAt: new Date(2026, 3, 14, 10, 0), endsAt: new Date(2026, 3, 14, 11, 0) },
+    ]);
+
+    const slots = await getAvailableSlots("tech-1", "2026-04-14", 30);
+    expect(slots).toEqual(["09:00", "09:30", "11:00", "11:30"]);
+  });
+});
+
+describe("getAvailableSlots with a customer address (travel feasibility)", () => {
+  // Technician home base = fixtures.technicianProfile (Boston 42.36, -71.06).
+  // Existing 60-min booking 12:00-13:00 in Worcester (~38.6 mi away):
+  // haversine at 30 mph => 78 min travel, +30 buffer = 108 min per leg.
+  const CUSTOMER_ADDRESS = {
+    addressLine1: "10 Beacon St",
+    city: "Boston",
+    state: "MA",
+    zipCode: "02108",
+  };
+
+  function seedDay(travelBufferMin = 30) {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
+    const worcesterNoon = new Date(2026, 3, 14, 12, 0, 0, 0); // local noon
+    prismaMock.booking.findMany.mockResolvedValue([
+      {
+        scheduledAt: worcesterNoon,
+        durationMin: 60,
+        latitude: 42.2626,
+        longitude: -71.8023,
+      },
+    ]);
+    prismaMock.technicianProfile.findUnique.mockResolvedValue({
+      ...fixtures.technicianProfile,
+      travelBufferMin,
+    });
+    // Customer geocodes to the technician's home base (0 min home leg)
+    mockGeocode.mockResolvedValue({
+      lat: 42.36,
+      lng: -71.06,
+      displayName: "Boston, MA",
+    });
+  }
+
+  beforeEach(() => vi.clearAllMocks());
+
+  it("removes slots the technician cannot reach in time, server-side", async () => {
+    seedDay();
+    const slots = await getAvailableSlots("tech-profile-1", "2026-04-14", 90, CUSTOMER_ADDRESS);
+    // Morning slots (09:00-10:30) all end too close to the Worcester noon
+    // booking (need 108 min after). Afternoon slots must start >= 13:00 + 108
+    // => 15:00, but the home-base end anchor caps starts at 15:00. Only 15:00
+    // survives.
+    expect(slots).toEqual(["15:00"]);
+  });
+
+  it("makes no paid API call when billing is disabled", async () => {
+    seedDay();
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    await getAvailableSlots("tech-profile-1", "2026-04-14", 90, CUSTOMER_ADDRESS);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it("widening travelBufferMin removes more slots", async () => {
+    seedDay(45);
+    const slots = await getAvailableSlots("tech-profile-1", "2026-04-14", 90, CUSTOMER_ADDRESS);
+    expect(slots).toEqual([]);
+  });
+
+  it("narrowing travelBufferMin restores slots", async () => {
+    seedDay(0);
+    const slots = await getAvailableSlots("tech-profile-1", "2026-04-14", 90, CUSTOMER_ADDRESS);
+    // With no buffer, 09:00 (ends 10:30, 90 min ≥ 78 min drive to Worcester)
+    // and three afternoon slots become reachable.
+    expect(slots).toEqual(["09:00", "14:30", "15:00", "15:30"]);
+  });
+
+  it("returns unfiltered slots when the address cannot be geocoded", async () => {
+    seedDay();
+    mockGeocode.mockResolvedValue(null);
+    const slots = await getAvailableSlots("tech-profile-1", "2026-04-14", 90, CUSTOMER_ADDRESS);
+    // Fail open: base availability (overlap + window checks) still applies
+    expect(slots).toEqual([
+      "09:00", "09:30", "10:00", "10:30",
+      "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+    ]);
+  });
+});
+
+describe("createBooking travel feasibility and geocoding", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.$transaction = vi.fn(async (cb: (tx: typeof prismaMock) => Promise<unknown>) => {
+      return cb(prismaMock);
+    });
+    prismaMock.user.findUnique.mockResolvedValue({
+      ...fixtures.user,
+      emailVerified: new Date(),
+    });
+    mockGetSession.mockResolvedValue(mockCustomerSession());
+    prismaMock.service.findMany.mockResolvedValue([fixtures.service]); // 90 min
+    prismaMock.technicianProfile.findUnique.mockResolvedValue({
+      ...fixtures.technicianProfile,
+      user: { name: "Mike Tuner", email: "tech@example.com" },
+    });
+    prismaMock.availabilityException.findMany.mockResolvedValue([]);
+  });
+
+  it("geocodes the address once and stores coordinates on the booking", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    prismaMock.booking.findFirst.mockResolvedValue(null);
+    prismaMock.booking.create.mockResolvedValue({ id: "new-booking" });
+    mockGeocode.mockResolvedValue({
+      lat: 42.35,
+      lng: -71.07,
+      displayName: "10 Beacon St, Boston",
+    });
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-14T10:00:00",
+      addressLine1: "10 Beacon St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.success).toBe(true);
+    expect(mockGeocode).toHaveBeenCalledTimes(1);
+    const createCall = prismaMock.booking.create.mock.calls[0][0];
+    expect(createCall.data.latitude).toBe(42.35);
+    expect(createCall.data.longitude).toBe(-71.07);
+  });
+
+  it("rejects a slot without enough travel time and returns feasible alternatives", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    const worcesterNoon = new Date(2026, 3, 14, 12, 0, 0, 0); // local noon
+    prismaMock.booking.findMany.mockResolvedValue([
+      {
+        scheduledAt: worcesterNoon,
+        durationMin: 60,
+        latitude: 42.2626,
+        longitude: -71.8023,
+      },
+    ]);
+    mockGeocode.mockResolvedValue({
+      lat: 42.36,
+      lng: -71.06,
+      displayName: "Boston, MA",
+    });
+
+    // 10:00-11:30 is free of overlaps but leaves only 30 min to reach the
+    // Worcester booking that needs 108 min of travel + buffer.
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-14T10:00:00",
+      addressLine1: "10 Beacon St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.error).toMatch(/travel/i);
+    expect(result.availableSlots).toEqual(["15:00"]);
+    expect(prismaMock.booking.create).not.toHaveBeenCalled();
+  });
+
+  it("still creates the booking (without coordinates) when geocoding fails", async () => {
+    prismaMock.availabilitySlot.findFirst.mockResolvedValue({
+      startTime: "09:00",
+      endTime: "17:00",
+    });
+    prismaMock.booking.findMany.mockResolvedValue([]);
+    prismaMock.booking.findFirst.mockResolvedValue(null);
+    prismaMock.booking.create.mockResolvedValue({ id: "new-booking" });
+    mockGeocode.mockResolvedValue(null);
+
+    const result = await createBooking({
+      technicianId: "tech-profile-1",
+      serviceIds: ["service-1"],
+      scheduledAt: "2026-04-14T10:00:00",
+      addressLine1: "10 Beacon St",
+      city: "Boston",
+      state: "MA",
+      zipCode: "02108",
+    });
+
+    expect(result.success).toBe(true);
+    const createCall = prismaMock.booking.create.mock.calls[0][0];
+    expect(createCall.data.latitude).toBeNull();
+    expect(createCall.data.longitude).toBeNull();
   });
 });

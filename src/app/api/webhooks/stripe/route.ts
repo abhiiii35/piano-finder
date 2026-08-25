@@ -27,8 +27,12 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const bookingId = session.metadata?.bookingId;
+    // Tip is a separate Checkout line item; amount_total includes it, so back
+    // it out to get the booking's own amount (see createCheckoutSession).
+    const tipCents = Number(session.metadata?.tipCents ?? 0) || 0;
 
     if (bookingId) {
+      const amountCents = (session.amount_total ?? 0) - tipCents;
       const existing = await prisma.payment.findUnique({
         where: { bookingId },
       });
@@ -40,16 +44,19 @@ export async function POST(req: Request) {
             status: "SUCCEEDED",
             stripePaymentId: session.payment_intent as string,
             method: "CARD",
+            amountCents,
+            tipCents,
           },
         });
       } else {
         await prisma.payment.create({
           data: {
             bookingId,
-            amountCents: session.amount_total ?? 0,
+            amountCents,
             status: "SUCCEEDED",
             stripePaymentId: session.payment_intent as string,
             method: "CARD",
+            tipCents,
           },
         });
       }
