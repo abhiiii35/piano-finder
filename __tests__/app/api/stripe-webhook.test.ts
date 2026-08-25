@@ -57,6 +57,40 @@ describe("POST /api/webhooks/stripe", () => {
         status: "SUCCEEDED",
         stripePaymentId: "pi_test_123",
         method: "CARD",
+        tipCents: 0,
+      },
+    });
+  });
+
+  it("stores tipCents from session metadata and excludes it from amountCents", async () => {
+    mockConstructEvent.mockReturnValue({
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          metadata: { bookingId: "booking-1", tipCents: "2000" },
+          payment_intent: "pi_test_789",
+          amount_total: 19500, // 17500 booking + 2000 tip
+        },
+      },
+    });
+    prismaMock.payment.findUnique.mockResolvedValue(null);
+    prismaMock.payment.create.mockResolvedValue({});
+
+    const request = new Request("http://localhost:3000/api/webhooks/stripe", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(prismaMock.payment.create).toHaveBeenCalledWith({
+      data: {
+        bookingId: "booking-1",
+        amountCents: 17500,
+        status: "SUCCEEDED",
+        stripePaymentId: "pi_test_789",
+        method: "CARD",
+        tipCents: 2000,
       },
     });
   });

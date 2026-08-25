@@ -153,6 +153,77 @@ export async function getMessages(threadId: string) {
   };
 }
 
+export type InboxThread = {
+  threadId: string;
+  technicianId: string;
+  customerId: string;
+  bookingId: string | null;
+  otherPartyName: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+};
+
+// One row per Message; group them into threads (by threadId), keep the
+// latest message and the count of messages from the other party that are
+// still unread, and sort threads latest-first.
+export async function getInboxThreads() {
+  const auth = await getSessionUser();
+  if ("error" in auth) return { error: auth.error };
+
+  const userId = auth.session.user.id;
+
+  const profile = await prisma.technicianProfile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+
+  const messages = await prisma.message.findMany({
+    where: profile ? { technicianId: profile.id } : { customerId: userId },
+    orderBy: { createdAt: "asc" },
+    include: {
+      customer: { select: { name: true } },
+      technician: { select: { user: { select: { name: true } } } },
+    },
+  });
+
+  const threadsById = new Map<string, InboxThread>();
+  for (const m of messages) {
+    const otherPartyName = profile
+      ? (m.customer.name ?? "Customer")
+      : (m.technician.user.name ?? "Technician");
+
+    const existing = threadsById.get(m.threadId);
+    const isUnreadToMe = !m.isRead && m.senderId !== userId;
+
+    if (!existing) {
+      threadsById.set(m.threadId, {
+        threadId: m.threadId,
+        technicianId: m.technicianId,
+        customerId: m.customerId,
+        bookingId: m.bookingId,
+        otherPartyName,
+        lastMessage: m.content,
+        lastMessageAt: m.createdAt.toISOString(),
+        unreadCount: isUnreadToMe ? 1 : 0,
+      });
+    } else {
+      // messages are ordered oldest-first, so the last one processed per
+      // thread is always the latest
+      existing.lastMessage = m.content;
+      existing.lastMessageAt = m.createdAt.toISOString();
+      existing.bookingId = existing.bookingId ?? m.bookingId;
+      if (isUnreadToMe) existing.unreadCount += 1;
+    }
+  }
+
+  const threads = [...threadsById.values()].sort(
+    (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+  );
+
+  return { threads };
+}
+
 export async function getOrCreateThread(technicianId: string, bookingId?: string) {
   const auth = await getSessionUser();
   if ("error" in auth) return { error: auth.error };

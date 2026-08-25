@@ -52,6 +52,7 @@ export async function GET(
       city: booking.technician.city,
       state: booking.technician.state,
       zipCode: booking.technician.zipCode,
+      logoUrl: booking.technician.invoiceLogoUrl,
     },
     customer: {
       name: booking.customer.name ?? "Customer",
@@ -64,6 +65,7 @@ export async function GET(
       priceCents: bs.priceCents,
     })),
     totalCents: booking.totalCents,
+    tipCents: booking.payment?.tipCents ?? 0,
     isPaid: booking.payment?.status === "SUCCEEDED",
   };
 

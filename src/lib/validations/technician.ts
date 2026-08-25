@@ -22,6 +22,7 @@ export const profileSchema = z.object({
     z.coerce.number().int().min(0).max(336).optional()
   ),
   proposeTimesEnabled: z.preprocess((v) => v === "true", z.boolean().optional()),
+  invoiceLogoUrl: z.string().max(500).optional(),
 });
 
 export const serviceSchema = z.object({

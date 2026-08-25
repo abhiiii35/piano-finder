@@ -25,6 +25,12 @@ export default function ProfilePage() {
     { url: string; publicId: string }[]
   >([]);
   const [proposeTimesEnabled, setProposeTimesEnabled] = useState(false);
+  const [invoiceLogo, setInvoiceLogo] = useState<{
+    url: string;
+    publicId: string;
+  } | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/technician/profile")
@@ -33,6 +39,9 @@ export default function ProfilePage() {
         if (data.profile) {
           setProfile(data.profile);
           setProposeTimesEnabled(!!data.profile.proposeTimesEnabled);
+          if (data.profile.invoiceLogoUrl) {
+            setInvoiceLogo({ url: data.profile.invoiceLogoUrl, publicId: "" });
+          }
           try {
             const stored = JSON.parse(data.profile.portfolioPhotos || "[]");
             // stored is an array of {url, publicId} objects or plain URL strings
@@ -78,11 +87,37 @@ export default function ProfilePage() {
     setPortfolioPhotos((prev) => prev.filter((_, i) => i !== index));
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    const formData = new FormData();
+    formData.set("file", file);
+    formData.set("folder", "invoice-logos");
+    const result = await uploadPhoto(formData);
+    if (result.error) {
+      toast.error(result.error);
+    } else if (result.url && result.publicId) {
+      setInvoiceLogo({ url: result.url, publicId: result.publicId });
+    }
+    setUploadingLogo(false);
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  }
+
+  async function handleRemoveLogo() {
+    if (invoiceLogo?.publicId) {
+      await deletePhoto(invoiceLogo.publicId);
+    }
+    setInvoiceLogo(null);
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     formData.set("portfolioPhotos", JSON.stringify(portfolioPhotos));
+    formData.set("invoiceLogoUrl", invoiceLogo?.url ?? "");
     formData.set("proposeTimesEnabled", String(proposeTimesEnabled));
     const result = await updateProfile(formData);
     setLoading(false);
@@ -316,7 +351,59 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Button type="submit" disabled={loading || uploading}>
+        {/* Invoice Logo */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Invoice Logo</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Shown at the top of your PDF invoices. Recommended: a square or
+              landscape image with a transparent or white background.
+            </p>
+            <div className="flex items-center gap-3">
+              {invoiceLogo ? (
+                <div className="relative group">
+                  <img
+                    src={invoiceLogo.url}
+                    alt="Invoice logo"
+                    className="h-24 w-24 rounded-md object-contain border"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Remove invoice logo"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  className="flex h-24 w-24 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  {uploadingLogo ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <ImagePlus className="h-6 w-6" />
+                  )}
+                </button>
+              )}
+            </div>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleLogoUpload}
+              className="hidden"
+            />
+          </CardContent>
+        </Card>
+
+        <Button type="submit" disabled={loading || uploading || uploadingLogo}>
           {loading ? "Saving..." : "Save Profile"}
         </Button>
       </form>

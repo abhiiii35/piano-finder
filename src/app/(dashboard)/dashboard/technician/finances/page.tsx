@@ -27,7 +27,7 @@ import { ExpenseForm } from "@/components/finances/expense-form";
 import { MileageForm } from "@/components/finances/mileage-form";
 import { DeleteEntryButton } from "@/components/finances/delete-entry-button";
 import { EditMileageButton } from "@/components/finances/edit-mileage-button";
-import { Download, Receipt } from "lucide-react";
+import { Download, Receipt, FileText } from "lucide-react";
 
 const TABS = [
   { key: "income", label: "Income" },
@@ -395,13 +395,35 @@ async function ReportsTab({ from, to }: { from: string; to: string }) {
           A summary of what you&apos;ve recorded, ready to hand to your
           accountant. No tax amounts are calculated here.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <a href={exportUrl("transactions", from, to)} download>
             <Button variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
               Transactions CSV
             </Button>
           </a>
+          <form
+            action="/api/finances/tax-summary"
+            method="GET"
+            className="flex items-end gap-2"
+          >
+            <div className="grid gap-1">
+              <label htmlFor="taxYear" className="text-xs text-muted-foreground">
+                Year
+              </label>
+              <Input
+                id="taxYear"
+                name="year"
+                type="number"
+                defaultValue={parseLocalDate(to).getFullYear()}
+                className="w-24"
+              />
+            </div>
+            <Button type="submit" variant="outline" size="sm">
+              <FileText className="mr-2 h-4 w-4" />
+              Download tax summary (PDF)
+            </Button>
+          </form>
         </div>
       </div>
 

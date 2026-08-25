@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { formatCents } from "@/lib/utils";
 import { BookingStatusButtons } from "@/components/booking/booking-status-buttons";
-import { PayButton } from "@/components/booking/payment-actions";
+import { PayWithTipButton } from "@/components/booking/pay-with-tip";
 import { MessageThread } from "@/components/messages/message-thread";
 import { isProposalPending } from "@/lib/validations/reschedule";
 import Link from "next/link";
@@ -134,7 +134,7 @@ export default async function CustomerBookingDetailPage({
         />
         {booking.payment?.status !== "SUCCEEDED" && booking.status !== "CANCELLED" && (
           stripeEnabled ? (
-            <PayButton bookingId={booking.id} />
+            <PayWithTipButton bookingId={booking.id} totalCents={booking.totalCents} />
           ) : (
             <p className="text-sm text-muted-foreground">
               Payment will be arranged with your technician.

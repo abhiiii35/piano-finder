@@ -46,6 +46,7 @@ export async function updateProfile(formData: FormData) {
   }
 
   const portfolioPhotos = formData.get("portfolioPhotos") as string | null;
+  const invoiceLogoUrl = formData.get("invoiceLogoUrl") as string | null;
 
   await prisma.technicianProfile.update({
     where: { id: profile.id },
@@ -69,6 +70,7 @@ export async function updateProfile(formData: FormData) {
       latitude,
       longitude,
       ...(portfolioPhotos !== null && { portfolioPhotos }),
+      ...(invoiceLogoUrl !== null && { invoiceLogoUrl: invoiceLogoUrl || null }),
     },
   });
 

@@ -7,11 +7,17 @@ import {
   deleteAvailabilityException,
   listAvailabilityExceptions,
 } from "@/actions/availability-exception";
+import {
+  getCalendarFeedStatus,
+  enableCalendarFeed,
+  regenerateCalendarFeed,
+  disableCalendarFeed,
+} from "@/actions/calendar-feed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 type Exception = Awaited<ReturnType<typeof listAvailabilityExceptions>>[number];
@@ -55,6 +61,64 @@ export default function AvailabilityPage() {
     reason: "",
   });
   const [addingTimeOff, setAddingTimeOff] = useState(false);
+
+  const [calendarToken, setCalendarToken] = useState<string | null>(null);
+  const [calendarLoading, setCalendarLoading] = useState(true);
+  const [calendarBusy, setCalendarBusy] = useState(false);
+
+  useEffect(() => {
+    getCalendarFeedStatus()
+      .then((result) => {
+        if ("calendarToken" in result) setCalendarToken(result.calendarToken ?? null);
+      })
+      .finally(() => setCalendarLoading(false));
+  }, []);
+
+  function calendarUrl(token: string): string {
+    return `${window.location.origin}/api/calendar/${token}`;
+  }
+
+  async function handleEnableCalendar() {
+    setCalendarBusy(true);
+    const result = await enableCalendarFeed();
+    setCalendarBusy(false);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    setCalendarToken(result.calendarToken);
+    toast.success("Calendar feed enabled");
+  }
+
+  async function handleCopyCalendarUrl() {
+    if (!calendarToken) return;
+    await navigator.clipboard.writeText(calendarUrl(calendarToken));
+    toast.success("Link copied");
+  }
+
+  async function handleRegenerateCalendar() {
+    setCalendarBusy(true);
+    const result = await regenerateCalendarFeed();
+    setCalendarBusy(false);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    setCalendarToken(result.calendarToken);
+    toast.success("Link regenerated — the old link no longer works");
+  }
+
+  async function handleDisableCalendar() {
+    setCalendarBusy(true);
+    const result = await disableCalendarFeed();
+    setCalendarBusy(false);
+    if ("error" in result) {
+      toast.error(result.error);
+      return;
+    }
+    setCalendarToken(null);
+    toast.success("Calendar feed disabled");
+  }
 
   useEffect(() => {
     fetch("/api/technician/availability")
@@ -389,6 +453,63 @@ export default function AvailabilityPage() {
                 {addingTimeOff ? "Adding…" : "Add time off"}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-10">
+        <h2 className="text-xl font-bold">Calendar feed</h2>
+        <p className="mt-1 text-muted-foreground">
+          Subscribe from Google or Apple Calendar. Anyone with this link can
+          see your appointments — regenerate it if it leaks.
+        </p>
+
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>{calendarToken ? "Feed enabled" : "Feed disabled"}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {calendarLoading ? (
+              <p className="text-sm text-muted-foreground">Loading…</p>
+            ) : calendarToken ? (
+              <>
+                <Input
+                  readOnly
+                  value={calendarUrl(calendarToken)}
+                  onFocus={(e) => e.target.select()}
+                  className="font-mono text-xs"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyCalendarUrl}
+                  >
+                    Copy link
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRegenerateCalendar}
+                    disabled={calendarBusy}
+                  >
+                    Regenerate link
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDisableCalendar}
+                    disabled={calendarBusy}
+                  >
+                    Disable
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button onClick={handleEnableCalendar} disabled={calendarBusy}>
+                Enable calendar feed
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>

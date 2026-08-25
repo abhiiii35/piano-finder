@@ -60,9 +60,23 @@ export default async function TechnicianBookingDetailPage({
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p><span className="font-medium">Name:</span> {booking.customer.name}</p>
-            <p><span className="font-medium">Email:</span> {booking.customer.email}</p>
+            <p>
+              <span className="font-medium">Email:</span>{" "}
+              <a href={`mailto:${booking.customer.email}`} className="text-primary hover:underline">
+                {booking.customer.email}
+              </a>
+            </p>
             {booking.customer.phone && (
-              <p><span className="font-medium">Phone:</span> {booking.customer.phone}</p>
+              <p>
+                <span className="font-medium">Phone:</span>{" "}
+                <a href={`tel:${booking.customer.phone}`} className="text-primary hover:underline">
+                  {booking.customer.phone}
+                </a>
+                {" · "}
+                <a href={`sms:${booking.customer.phone}`} className="text-primary hover:underline">
+                  Text
+                </a>
+              </p>
             )}
           </CardContent>
         </Card>

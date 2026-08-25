@@ -3,6 +3,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   StyleSheet,
 } from "@react-pdf/renderer";
 import { formatCents } from "@/lib/utils";
@@ -19,6 +20,7 @@ export type InvoiceData = {
     city?: string | null;
     state?: string | null;
     zipCode?: string | null;
+    logoUrl?: string | null;
   };
   customer: {
     name: string;
@@ -31,6 +33,7 @@ export type InvoiceData = {
     priceCents: number;
   }[];
   totalCents: number;
+  tipCents?: number;
   isPaid: boolean;
 };
 
@@ -45,6 +48,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 32,
+  },
+  logo: {
+    width: 72,
+    height: 72,
+    marginBottom: 8,
+    objectFit: "contain",
   },
   title: {
     fontSize: 24,
@@ -150,12 +159,16 @@ const styles = StyleSheet.create({
 });
 
 export function InvoicePDF({ data }: { data: InvoiceData }) {
+  const tipCents = data.tipCents ?? 0;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
           <View>
+            {data.technician.logoUrl && (
+              <Image style={styles.logo} src={data.technician.logoUrl} />
+            )}
             <Text style={styles.title}>Invoice</Text>
             <Text style={styles.invoiceId}>
               #{data.bookingId.slice(0, 8)}
@@ -219,12 +232,33 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
               </Text>
             </View>
           ))}
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>
-              {formatCents(data.totalCents)}
-            </Text>
-          </View>
+          {tipCents > 0 ? (
+            <>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Subtotal</Text>
+                <Text style={styles.totalValue}>
+                  {formatCents(data.totalCents)}
+                </Text>
+              </View>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Tip</Text>
+                <Text style={styles.totalValue}>{formatCents(tipCents)}</Text>
+              </View>
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalValue}>
+                  {formatCents(data.totalCents + tipCents)}
+                </Text>
+              </View>
+            </>
+          ) : (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>
+                {formatCents(data.totalCents)}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Status */}

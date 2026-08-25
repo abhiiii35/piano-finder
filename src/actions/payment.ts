@@ -7,8 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { sendEmail } from "@/lib/email";
 import { paymentReceiptEmail } from "@/lib/emails/payment";
+import { isValidTipCents } from "@/lib/finance/tip";
 
-export async function createCheckoutSession(bookingId: string) {
+export async function createCheckoutSession(bookingId: string, tipCents = 0) {
   const session = await getServerSession(authOptions);
   if (!session) return { error: "Unauthorized" };
 
@@ -24,6 +25,9 @@ export async function createCheckoutSession(bookingId: string) {
   if (booking.payment?.status === "SUCCEEDED") {
     return { error: "Already paid" };
   }
+  if (!isValidTipCents(tipCents, booking.totalCents)) {
+    return { error: "Invalid tip amount" };
+  }
 
   const lineItems = booking.services.map((bs) => ({
     price_data: {
@@ -34,13 +38,24 @@ export async function createCheckoutSession(bookingId: string) {
     quantity: 1,
   }));
 
+  if (tipCents > 0) {
+    lineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: { name: "Tip for your technician" },
+        unit_amount: tipCents,
+      },
+      quantity: 1,
+    });
+  }
+
   const checkoutSession = await getStripe().checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: lineItems,
     mode: "payment",
     success_url: `${process.env.NEXTAUTH_URL}/dashboard/customer/bookings/${bookingId}?payment=success`,
     cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/customer/bookings/${bookingId}?payment=cancelled`,
-    metadata: { bookingId },
+    metadata: { bookingId, tipCents: String(tipCents) },
   });
 
   return { url: checkoutSession.url };
