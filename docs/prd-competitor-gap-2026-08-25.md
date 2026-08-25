@@ -335,6 +335,12 @@ Answers needed before (or during) implementation. Grouped; blocking items marked
 
 ---
 
+## 4.5 Implementation status — updated 2026-08-25 (same day, PR #7)
+
+Shipped on `feature/scheduling-upgrades`: **A1–A5** (reminder engine, recall queue, templates, appointment reminders — SMS A6 deferred pending Twilio/10DLC), **B1–B5** (Piano entity, service records w/ readings, trend graphs, attachments incl. PDF, environment alerts + Dampp-Chaser stat), **C1–C5** (multi-contact/location, CSV+XLSX import w/ Gazelle preset, vCard + Google Contacts, global search, tel/mailto), **D1–D3** (time blocks, reschedule + propose-times, calendar filters), **D4** export-side (ICS feed; import deferred), **D5** (route planner + auto-mileage, haversine), **E1–E3** (insights dashboard, retention/LTV/city, tax PDF), **F1** (client share page), **G2/G3** (tips, branded invoices), **H1/H2** (messages inbox, data export). Plus per-technician view-customization for service history (beyond both competitors).
+
+Still open: **G1 Stripe Connect** (blocked on commission decision Q-2/Q-22), **A6 SMS** (owner's Twilio + 10DLC), **A7 postcard log**, **H3 account deletion**, **H4/H5 PWA/native**, **E4**, multi-currency (Q-20). User guides for everything shipped: `docs/user-guide/`.
+
 ## 5. Out of scope (deliberately)
 
 - **Inventory/parts tracking** — roadmap-only at *both* competitors; no shipped product to match. Revisit when either ships.
