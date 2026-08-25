@@ -58,6 +58,14 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            authorization: {
+              params: {
+                // Default NextAuth scopes (openid email profile) plus
+                // read-only Contacts access for the customer-import wizard.
+                scope:
+                  "openid email profile https://www.googleapis.com/auth/contacts.readonly",
+              },
+            },
           }),
         ]
       : []),

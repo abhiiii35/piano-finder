@@ -16,6 +16,9 @@ import {
   FileText,
   Wallet,
   Navigation,
+  Bell,
+  Music,
+  Settings,
 } from "lucide-react";
 
 const technicianLinks = [
@@ -26,13 +29,16 @@ const technicianLinks = [
   { href: "/dashboard/technician/bookings", label: "Bookings", icon: CalendarDays },
   { href: "/dashboard/technician/route", label: "Route", icon: Navigation },
   { href: "/dashboard/technician/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/technician/reminders", label: "Reminders", icon: Bell },
   { href: "/dashboard/technician/finances", label: "Finances", icon: Wallet },
   { href: "/dashboard/technician/reviews", label: "Reviews", icon: Star },
+  { href: "/dashboard/technician/settings/history", label: "History Settings", icon: Settings },
 ];
 
 const customerLinks = [
   { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/customer/bookings", label: "My Bookings", icon: CalendarDays },
+  { href: "/dashboard/customer/pianos", label: "My Pianos", icon: Music },
   { href: "/search", label: "Find a Tuner", icon: Search },
 ];
 

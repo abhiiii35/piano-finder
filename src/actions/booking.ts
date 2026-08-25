@@ -11,6 +11,8 @@ import { filterFeasibleSlots, type DayStop } from "@/lib/travel-feasibility";
 import { sendEmail } from "@/lib/email";
 import { bookingCreatedEmail, bookingReceivedEmail, bookingStatusEmail, bookingCancelledEmail } from "@/lib/emails/booking";
 import { captureAutoMileage } from "@/lib/mileage-capture";
+import { generateRemindersForBooking } from "@/actions/reminders";
+import { createServiceRecordFromBooking } from "@/actions/service-record";
 
 export async function createBooking(data: {
   technicianId: string;
@@ -311,6 +313,18 @@ export async function updateBookingStatus(
       }
     } catch (error) {
       console.error("[CRM] Failed to auto-populate customer record:", error);
+    }
+
+    try {
+      await generateRemindersForBooking(bookingId);
+    } catch (error) {
+      console.error("[REMINDERS] Failed to generate tune reminders:", error);
+    }
+
+    try {
+      await createServiceRecordFromBooking(bookingId);
+    } catch (error) {
+      console.error("[RECORDS] Failed to create service record:", error);
     }
 
     try {

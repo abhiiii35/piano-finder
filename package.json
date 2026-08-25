@@ -11,6 +11,7 @@
     "db:seed:prod": "tsx prisma/seed-production.ts",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
+    "backfill:pianos": "tsx scripts/backfill-pianos.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
