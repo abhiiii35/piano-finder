@@ -97,6 +97,8 @@ model TechnicianProfile {
   pianoTypes      String? // JSON array: ["Grand", "Upright", etc.]
   travelFeeCents  Int?
   travelBufferMin Int     @default(30) // padding on each side of a job, on top of estimated travel time
+  rescheduleCutoffHours Int @default(48) // customers may self-reschedule until this many hours before the appointment
+  proposeTimesEnabled   Boolean @default(false) // opt-in: offer suggested times to the customer when rescheduling
   ptgMember       Boolean @default(false)
   stripeAccountId String?
   isVerified       Boolean @default(false)
@@ -110,6 +112,7 @@ model TechnicianProfile {
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   services         Service[]
   availabilitySlots AvailabilitySlot[]
+  availabilityExceptions AvailabilityException[]
   bookings         Booking[]         @relation("TechnicianBookings")
   customerRecords  CustomerRecord[]
   messages         Message[]
@@ -139,6 +142,20 @@ model AvailabilitySlot {
   endTime      String // HH:mm format
 
   technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+}
+
+model AvailabilityException {
+  id           String   @id @default(cuid())
+  technicianId String
+  startsAt     DateTime // local wall-clock instants, same convention as Booking.scheduledAt
+  endsAt       DateTime
+  allDay       Boolean  @default(false)
+  reason       String?  // optional label, e.g. "Vacation", "Dentist"
+  createdAt    DateTime @default(now())
+
+  technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+
+  @@index([technicianId, startsAt])
 }
 
 // ─── Bookings ────────────────────────────────────────────────────
@@ -172,6 +189,23 @@ model Booking {
   review     Review?
   messages   Message[]
   mileageLogs MileageLog[]
+  rescheduleProposals RescheduleProposal[]
+}
+
+model RescheduleProposal {
+  id        String   @id @default(cuid())
+  bookingId String
+  token     String   @unique // unguessable; emailed to the customer, no login required
+  slots     String   // JSON array of ISO datetime strings offered by the technician
+  status    String   @default("PENDING") // PENDING | ACCEPTED | EXPIRED | CANCELLED
+  chosenSlot DateTime? // set when the customer accepts one of the offered slots
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, status])
 }
 
 model BookingService {
@@ -226,6 +260,7 @@ model MileageLog {
   miles        Float
   purpose      String
   bookingId    String?
+  autoCaptured Boolean  @default(false) // created automatically at booking completion; still editable
   createdAt    DateTime @default(now())
 
   technician TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
