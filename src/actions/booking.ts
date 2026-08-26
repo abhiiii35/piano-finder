@@ -13,6 +13,7 @@ import { bookingCreatedEmail, bookingReceivedEmail, bookingStatusEmail, bookingC
 import { captureAutoMileage } from "@/lib/mileage-capture";
 import { generateRemindersForBooking } from "@/actions/reminders";
 import { createServiceRecordFromBooking } from "@/actions/service-record";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 export async function createBooking(data: {
   technicianId: string;
@@ -530,6 +531,14 @@ export async function getAvailableSlots(
   durationMin: number = 30,
   customerAddress?: BookingAddress
 ) {
+  // Unauthenticated (public booking page) and can fan out to a paid Google
+  // Maps call plus a free-but-abuse-limited Nominatim geocode — rate-limit
+  // by IP so a scripted loop can't run up the bill or get the shared
+  // server IP banned from Nominatim.
+  const ip = await getClientIp();
+  const limit = rateLimit(`available-slots:${ip}`, 30, 60_000);
+  if (!limit.ok) return [];
+
   let customer: LatLng | null = null;
   if (customerAddress?.addressLine1 && customerAddress.city) {
     customer = await geocodeBookingAddress(customerAddress);

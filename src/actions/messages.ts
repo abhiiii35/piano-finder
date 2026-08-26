@@ -8,6 +8,7 @@ import { sendEmail } from "@/lib/email";
 import { messageSchema } from "@/lib/validations/message";
 import { newMessageEmail } from "@/lib/emails/message";
 import { format } from "date-fns";
+import { rateLimit } from "@/lib/ratelimit";
 
 async function getSessionUser() {
   const session = await getServerSession(authOptions);
@@ -55,6 +56,11 @@ export async function sendMessage(data: {
 
   const { threadId, content, bookingId, technicianId } = parsed.data;
   const userId = auth.session.user.id;
+
+  // Each send also fires a transactional email — throttle call frequency,
+  // not just content length.
+  const limit = rateLimit(`send-message:${userId}`, 20, 60_000);
+  if (!limit.ok) return { error: "You're sending messages too quickly. Please wait a moment." };
 
   const participant = await validateParticipant(userId, technicianId, bookingId);
   if ("error" in participant) return { error: participant.error };

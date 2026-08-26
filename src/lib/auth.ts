@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
@@ -23,6 +24,12 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
+        }
+
+        // Bound brute-force guesses per account before touching the DB.
+        const limit = rateLimit(`login:${credentials.email.toLowerCase()}`, 10, 15 * 60_000);
+        if (!limit.ok) {
+          throw new Error("TOO_MANY_ATTEMPTS");
         }
 
         const user = await prisma.user.findUnique({

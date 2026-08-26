@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendAllDueReminders } from "@/actions/reminders";
+import { secretsMatch } from "@/lib/cron-auth";
 
 /**
  * Cron job to send tune reminder emails.
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (cronSecret !== expectedSecret) {
+  if (!cronSecret || !secretsMatch(cronSecret, expectedSecret)) {
     console.error("[tune-reminders cron] Invalid cron secret");
     return NextResponse.json(
       { error: "Unauthorized" },

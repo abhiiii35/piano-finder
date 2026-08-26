@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { apptReminderEmail } from "@/lib/emails/apptReminder";
+import { secretsMatch } from "@/lib/cron-auth";
 
 const DEFAULT_OFFSET_HOURS = 24;
 
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (cronSecret !== expectedSecret) {
+  if (!cronSecret || !secretsMatch(cronSecret, expectedSecret)) {
     console.error("[appointment-reminders cron] Invalid cron secret");
     return NextResponse.json(
       { error: "Unauthorized" },

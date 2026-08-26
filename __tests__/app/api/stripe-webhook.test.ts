@@ -132,4 +132,49 @@ describe("POST /api/webhooks/stripe", () => {
     const response = await POST(request);
     expect(response.status).toBe(400);
   });
+
+  it("is a no-op on a replayed event.id (idempotency) — no duplicate payment write", async () => {
+    mockConstructEvent.mockReturnValue({
+      id: "evt_replayed",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          metadata: { bookingId: "booking-1" },
+          payment_intent: "pi_test_123",
+          amount_total: 17500,
+        },
+      },
+    });
+    // Unique-constraint violation — this event.id was already recorded.
+    prismaMock.webhookEvent.create.mockRejectedValue({ code: "P2002" });
+
+    const request = new Request("http://localhost:3000/api/webhooks/stripe", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toEqual({ received: true, duplicate: true });
+    expect(prismaMock.payment.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 (so Stripe retries) on a non-duplicate error recording the event", async () => {
+    mockConstructEvent.mockReturnValue({
+      id: "evt_db_down",
+      type: "checkout.session.completed",
+      data: { object: { metadata: { bookingId: "booking-1" }, amount_total: 17500 } },
+    });
+    prismaMock.webhookEvent.create.mockRejectedValue(new Error("connection refused"));
+
+    const request = new Request("http://localhost:3000/api/webhooks/stripe", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(500);
+    expect(prismaMock.payment.create).not.toHaveBeenCalled();
+  });
 });

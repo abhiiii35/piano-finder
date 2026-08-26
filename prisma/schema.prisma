@@ -489,6 +489,16 @@ model Message {
   @@index([threadId, createdAt])
 }
 
+// ─── Webhook idempotency ────────────────────────────────────────────────
+
+// One row per processed Stripe event id. The webhook handler creates a row
+// before acting on an event; a unique-constraint failure means the event
+// was already handled, so it's a no-op replay (no duplicate emails/writes).
+model WebhookEvent {
+  id          String   @id // Stripe event.id — globally unique
+  processedAt DateTime @default(now())
+}
+
 // ─── Tune Reminders ────────────────────────────────────────────────
 
 model TuneReminder {

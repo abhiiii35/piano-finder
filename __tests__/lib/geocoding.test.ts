@@ -56,4 +56,32 @@ describe("geocode", () => {
     const result = await geocode("Boston");
     expect(result).toBeNull();
   });
+
+  it("caches a resolved address and does not refetch on the next call", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve([{ lat: "10", lon: "20", display_name: "Cache City, Test" }]),
+    });
+    global.fetch = mockFetch;
+
+    const first = await geocode("Cache City, Test Query");
+    const second = await geocode("Cache City, Test Query");
+
+    expect(first).toEqual(second);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("caching is case/whitespace-insensitive", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([{ lat: "1", lon: "2", display_name: "X" }]),
+    });
+    global.fetch = mockFetch;
+
+    await geocode("  Mixed Case Query  ");
+    await geocode("mixed case query");
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
 });

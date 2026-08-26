@@ -15,9 +15,15 @@ vi.mock("@/lib/emails/verification", () => ({
 
 import { signUp, resendVerification } from "@/actions/auth";
 import { sendEmail } from "@/lib/email";
+import { resetRateLimits } from "@/lib/ratelimit";
 
 describe("signUp", () => {
-  beforeEach(() => vi.clearAllMocks());
+  // signUp is per-IP rate-limited; tests share one process/IP bucket ("unknown"
+  // in this mocked next/headers env), so reset between tests to isolate them.
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetRateLimits();
+  });
 
   it("creates a customer successfully", async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);

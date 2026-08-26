@@ -40,7 +40,9 @@ function SignInForm() {
       setError(
         result.error === "SUSPENDED"
           ? "This account has been suspended. Please contact support."
-          : "Invalid email or password"
+          : result.error === "TOO_MANY_ATTEMPTS"
+            ? "Too many sign-in attempts. Please wait a few minutes and try again."
+            : "Invalid email or password"
       );
       return;
     }

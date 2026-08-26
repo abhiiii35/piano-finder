@@ -1,0 +1,5 @@
+-- CreateTable
+CREATE TABLE "WebhookEvent" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "processedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

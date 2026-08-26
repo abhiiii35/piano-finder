@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/ratelimit";
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +12,14 @@ export async function GET(
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const limit = rateLimit(`messages-poll:${session.user.id}`, 60, 60_000);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } }
+    );
   }
 
   const since = request.nextUrl.searchParams.get("since");
@@ -25,6 +34,19 @@ export async function GET(
     orderBy: { createdAt: "asc" },
     include: { sender: { select: { name: true } } },
   });
+
+  // Same ownership check as getMessages() in src/actions/messages.ts — this
+  // route must never return a thread the caller isn't a participant in.
+  if (messages.length > 0) {
+    const first = messages[0];
+    const tech = await prisma.technicianProfile.findUnique({
+      where: { id: first.technicianId },
+      select: { userId: true },
+    });
+    if (session.user.id !== first.customerId && session.user.id !== tech?.userId) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+  }
 
   return NextResponse.json({
     messages: messages.map((m) => ({

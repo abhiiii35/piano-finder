@@ -53,6 +53,23 @@ describe("authorize with suspension", () => {
       )
     ).rejects.toThrow("SUSPENDED");
   });
+
+  it("throws TOO_MANY_ATTEMPTS after 10 attempts for the same email within the window", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(baseUser);
+    const email = "bruteforce-target@example.com";
+
+    for (let i = 0; i < 10; i++) {
+      const result = await credentialsProvider.authorize!(
+        { email, password: "wrong" },
+        {} as never
+      );
+      expect(result).toMatchObject({ id: "u1" }); // limit not yet hit
+    }
+
+    await expect(
+      credentialsProvider.authorize!({ email, password: "wrong" }, {} as never)
+    ).rejects.toThrow("TOO_MANY_ATTEMPTS");
+  });
 });
 
 describe("signIn callback with suspension", () => {

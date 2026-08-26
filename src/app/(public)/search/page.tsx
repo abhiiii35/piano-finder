@@ -4,6 +4,7 @@ import { geocode } from "@/lib/geocoding";
 import { SearchFilters } from "@/components/search/search-filters";
 import { TechnicianCard } from "@/components/search/technician-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 export default async function SearchPage({
   searchParams,
@@ -47,7 +48,12 @@ async function SearchResults({
   let lat: number | undefined;
   let lng: number | undefined;
   if (filters.q) {
-    const geo = await geocode(filters.q);
+    // Fully public, unauthenticated page — bound per-IP query volume so a
+    // script varying the query string can't get the shared server IP
+    // rate-limited/banned by Nominatim (geocode() itself caches repeats).
+    const ip = await getClientIp();
+    const limit = rateLimit(`search-geocode:${ip}`, 20, 60_000);
+    const geo = limit.ok ? await geocode(filters.q) : null;
     if (geo) {
       lat = geo.lat;
       lng = geo.lng;

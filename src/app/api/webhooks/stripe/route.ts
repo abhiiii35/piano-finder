@@ -24,6 +24,22 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // Idempotency: claim this event.id before doing anything else. The unique
+  // constraint makes this atomic — a replayed/duplicated delivery of the
+  // same signed event hits a constraint violation (Prisma code P2002) and is
+  // a no-op (no duplicate payment writes, no duplicate receipt email). Any
+  // other error (DB down, etc.) is a real failure — surface it as a 500 so
+  // Stripe retries, instead of silently dropping the event.
+  try {
+    await prisma.webhookEvent.create({ data: { id: event.id } });
+  } catch (err) {
+    if (err && typeof err === "object" && "code" in err && err.code === "P2002") {
+      return Response.json({ received: true, duplicate: true });
+    }
+    console.error("[STRIPE WEBHOOK] Failed to record event id:", err);
+    return Response.json({ error: "Internal error" }, { status: 500 });
+  }
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const bookingId = session.metadata?.bookingId;
