@@ -7,10 +7,19 @@ import { sendEmail } from "@/lib/email";
 import { verificationEmail } from "@/lib/emails/verification";
 import { passwordResetEmail } from "@/lib/emails/passwordReset";
 import { signUpSchema, resetPasswordSchema } from "@/lib/validations/auth";
+import { rateLimit, getClientIp } from "@/lib/ratelimit";
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export async function signUp(formData: FormData) {
+  // Unauthenticated by definition — bound account-creation spam / verification
+  // email-bombing of arbitrary addresses.
+  const ip = await getClientIp();
+  const limit = rateLimit(`sign-up:${ip}`, 5, 60 * 60_000);
+  if (!limit.ok) {
+    return { error: "Too many sign-up attempts from this connection. Please try again later." };
+  }
+
   const raw = {
     name: formData.get("name") as string,
     email: formData.get("email") as string,

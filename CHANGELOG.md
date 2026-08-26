@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-08-26 — Security & compliance audit
+- **Fixed:** any signed-in user could read any other pair's private message thread by guessing/constructing a `threadId` (`GET /api/messages/[threadId]` had no participant check). Now scoped to the thread's actual customer/technician, matching the server-action equivalent.
+- **Fixed:** the public technician-profile API leaked every column of the technician's database row to any visitor — including exact home/business GPS coordinates and their Stripe Connect account id. Now returns an explicit public-field allow-list only.
+- **Fixed:** the Stripe webhook had no idempotency on `event.id` — a replayed signed webhook delivery could re-send a customer's payment receipt email. It now records processed event ids and no-ops on a replay (new `WebhookEvent` table).
+- **Added:** rate limiting (in-memory, per-IP or per-user) on sign-up, sign-in, sending a message, checking booking availability, the message-thread poll endpoint, and address search — closes several "loop this and run up the bill / spam a real user's inbox" paths.
+- **Added:** security response headers on every page (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, HSTS) plus a report-only Content-Security-Policy pending a full script/style audit.
+- **Added:** geocoded-address caching so repeated searches for the same address don't re-hit the free Nominatim geocoder (protects the whole app from a shared-IP ban).
+- **Fixed:** both cron endpoints (`tune-reminders`, `appointment-reminders`) compared the `CRON_SECRET` with `!==` instead of a constant-time comparison; now share one `timingSafeEqual`-based helper.
+- **Fixed:** `npm audit fix` (no `--force`) applied — 28 → 10 known advisories; remaining items need a major-version bump (`next`, `sharp`, `postcss`) or have no upstream fix (`xlsx`) — see `docs/compliance/2026-08-26-compliance-audit.md`.
+- See `docs/compliance/2026-08-26-compliance-audit.md` for the full audit record, and `docs/sessions/2026-08-26-security-compliance-audit.md` for what was checked and what's still open.
+
 ## 2026-08-25 — Scheduling upgrades (competitor-parity wave 1)
 - Reschedule: technicians reschedule any upcoming booking; customers self-reschedule until a per-technician notice window (`TechnicianProfile.rescheduleCutoffHours`, default 48h). Conflict + travel-feasibility re-checked; services/payment preserved; both parties emailed.
 - Propose times (opt-in `proposeTimesEnabled`): technician offers 2–4 open slots; client books one from a no-login email link (`/reschedule/[token]`, 7-day expiry) or opens the full scheduler.

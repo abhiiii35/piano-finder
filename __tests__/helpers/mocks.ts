@@ -47,6 +47,7 @@ export const prismaMock = {
   messageTemplate: createMockModel(),
   contact: createMockModel(),
   serviceRecord: createMockModel(),
+  webhookEvent: createMockModel(),
   // Interactive-transaction mock; tests typically override it to invoke the
   // callback with prismaMock itself (see booking.test.ts).
   $transaction: vi.fn(),

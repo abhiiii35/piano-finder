@@ -6,10 +6,28 @@ export async function GET(
 ) {
   const { id } = await params;
 
+  // Public endpoint — select only public-safe fields. Never spread the raw
+  // row: it also carries latitude/longitude/addressLine1 (home address) and
+  // stripeAccountId (financial account id), neither of which any caller of
+  // this route should see.
   const [technician, reviewAgg] = await Promise.all([
     prisma.technicianProfile.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        bio: true,
+        businessName: true,
+        yearsExperience: true,
+        certifications: true,
+        serviceRadius: true,
+        city: true,
+        state: true,
+        pianoTypes: true,
+        travelFeeCents: true,
+        ptgMember: true,
+        portfolioPhotos: true,
+        isVerified: true,
+        isActive: true,
         user: { select: { name: true } },
         services: { where: { isActive: true }, orderBy: { priceCents: "asc" } },
       },
